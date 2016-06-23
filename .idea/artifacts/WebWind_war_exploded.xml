@@ -1,0 +1,18 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" build-on-make="true" name="WebWind:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/WebWind_war_exploded</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="WebWind" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="org.json-20120521" />
+          <element id="library" level="project" name="quartz-jobs-2.2.2" />
+          <element id="library" level="project" name="gcm-server" />
+        </element>
+      </element>
+      <element id="javaee-facet-resources" facet="WebWind/web/Web" />
+    </root>
+  </artifact>
+</component>

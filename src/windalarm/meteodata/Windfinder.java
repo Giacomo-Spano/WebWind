@@ -1,0 +1,120 @@
+package windalarm.meteodata;
+
+//import com.google.appengine.repackaged.org.joda.time.DateTimeZone;
+
+import Wind.AlarmModel;
+import Wind.Core;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.TimeZone;
+import java.util.logging.Logger;
+
+
+public class Windfinder extends PullData {
+
+
+    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+    protected String mSpotUrl;
+
+    public Windfinder(int mSpotID) {
+        super(mSpotID);
+
+        switch (mSpotID) {
+            case AlarmModel.Spot_Scarlino:
+                mSpotUrl = "marina_di_scarlino";
+                //mWebcamUrl = "http://images.webcams.travel/webcam/1334396756-Meteo-GV-LNI-FOLLONICA-Webcam-Follonica.jpg";
+                mWebcamUrl = "http://www.meteoindiretta.it/get_webcam.php?src=http%3A%2F%2Fwww.parallelo43.it%2Fwebcam%2Fmarinascarlino.jpg&w=630";
+                //mImageName = AlarmModel.getSpotName(AlarmModel.Spot_Vassiliki) + ".jpg";
+                mImageName = "spot-" + mSpotID + ".jpg";
+                mName = "Marina di Scarlino (Toscana)";
+                //http://www.meteoindiretta.it/get_webcam.php?src=http%3A%2F%2Fwww.parallelo43.it%2Fwebcam%2Fmarinascarlino.jpg&w=630
+                //           //http://images.webcams.travel/preview/1334396756.jpg
+                break;
+            case AlarmModel.Spot_VassilikiPort:
+                mSpotUrl = "lefkada_port?fspot=vasiliki";
+                mWebcamUrl = "http://images.webcams.travel/preview/1323285421.jpg";
+                //mImageName = AlarmModel.getSpotName(AlarmModel.Spot_Vassiliki) + ".jpg";
+                mImageName = "spot-" + mSpotID + ".jpg";
+                mName = "Vassiliki Port - Lefkada (Grecia)";
+                break;
+            case AlarmModel.Spot_Dakhla:
+                mSpotUrl = "dakhla";
+                mName = "Dakhla (Marocco)";
+                break;
+        }
+    }
+
+
+    public MeteoStationData getMeteoData(/*String name, String spot*/ /*lake_como_colico*/) {
+
+        String htmlResultString = getHTMLPage("http://www.windfinder.com/report/" + mSpotUrl);
+        if (htmlResultString == null)
+            return null;
+        MeteoStationData meteoStationData = new MeteoStationData();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+        Calendar cal = Calendar.getInstance();
+        //Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Rome"));
+        //cal.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+        meteoStationData.sampledatetime = Core.getDate();
+        LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
+        LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
+        //DateTimeZone timeZone = DateTimeZone.forID( "Europe/Rome" );
+        //meteoStationData.sampledatetime = dateFormat.setTimeZone(timeZone);
+
+        //<span id="current-windspeed">1</span>
+
+
+        String txt = htmlResultString;
+        String keyword = "<span id=\"current-windspeed\">";
+        int start = txt.indexOf(keyword);
+        txt = txt.substring(start + keyword.length());
+        int end = txt.indexOf("</span>");
+        txt = txt.substring(0, end);
+        meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(txt));// * 1.85200; // convert knots to km/h
+
+        meteoStationData.averagespeed = Core.getAverage(mSpotID);
+
+        txt = htmlResultString;
+        keyword = "<span class=\"i i-wd-m i-wd-m-";
+        start = txt.indexOf(keyword);
+        if (start == -1) {
+            meteoStationData.direction = "";
+            meteoStationData.directionangle = -1.0;
+        } else {
+            txt = txt.substring(start + keyword.length());
+            end = txt.indexOf("\"></span>");
+            txt = txt.substring(0, end);
+            meteoStationData.direction = txt.toUpperCase();
+            meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
+        }
+
+        txt = htmlResultString;
+        keyword = "<span id=\"current-temperature\">";
+        start = txt.indexOf(keyword);
+        txt = txt.substring(start + keyword.length());
+        end = txt.indexOf("</span>");
+        txt = txt.substring(0, end);
+        meteoStationData.temperature = Double.valueOf(txt);
+
+        /*meteoStationData.spotName = mName;
+        meteoStationData.spotID = mSpotID;*/
+
+        String date = meteoStationData.sampledatetime.toString().substring(0,10);
+        String time = meteoStationData.sampledatetime.toString().substring(11,16);
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            meteoStationData.datetime = formatter.parse(date + " " + time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        return meteoStationData;
+    }
+}
