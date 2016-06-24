@@ -98,7 +98,25 @@ public class Alarm {
 
         spotID = jObject.getInt("spotId");
 
-        snoozeMinutes = jObject.getInt("snoozeminutes");
+        if (jObject.has("snoozeminutes"))
+            snoozeMinutes = jObject.getInt("snoozeminutes");
+        else
+            snoozeMinutes = 0;
+
+        if (jObject.has("lastringdate")) {
+            try {
+                lastRingDate = tf.parse(jObject.getString("lastringdate"));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        if (jObject.has("lastringtime")) {
+            try {
+                lastRingTime = df.parse(jObject.getString("lastringtime"));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
 
         //lastRingDate = dateFormatter.parseLocalDate(jObject.getString("lastringdate"));
 

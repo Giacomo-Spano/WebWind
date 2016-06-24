@@ -117,14 +117,22 @@ public class WindDatastore {
             DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
             String strStartDate = "'" + df.format(alarm.startDate) + "'";
             String strEndDate = "'" + df.format(alarm.endDate) + "'";
-            //String strLastRingDate = "'" + df.format(alarm.lastRingDate) + "'";
+            String strLastRingDate;
+            if (alarm.lastRingDate != null)
+                strLastRingDate = "'" + df.format(alarm.lastRingDate) + "'";
+            else
+                strLastRingDate = "null";
             DateFormat tf = new SimpleDateFormat("HH:mm:ss");
             String strStartTime = "'" + tf.format(alarm.startTime) + "'";
             String strEndTime = "'" + tf.format(alarm.endTime) + "'";
-            //String strLastRingTime = "'" + df.format(alarm.lastRingTime) + "'";
+            String strLastRingTime;
+            if (alarm.lastRingTime != null)
+                strLastRingTime = "'" + tf.format(alarm.lastRingTime) + "'";
+            else
+                strLastRingTime = "null";
 
 
-            String sql = "INSERT INTO alarms (id, regid, startdate,starttime,enddate,endtime,spotid,speed,avspeed,enabled,direction,mo,tu,we,th,fr,sa,su )" +
+            String sql = "INSERT INTO alarms (id, regid, startdate,starttime,enddate,endtime,lastringdate,lastringtime,snoozeminutes,spotid,speed,avspeed,enabled,direction,mo,tu,we,th,fr,sa,su )" +
                     " VALUES ("
                     + alarm.id + ","
                     + "'" + regId + "'" + ","
@@ -132,6 +140,9 @@ public class WindDatastore {
                     + strStartTime + ","
                     + strEndDate + ","
                     + strEndTime + ","
+                    + strLastRingDate + ","
+                    + strLastRingTime + ","
+                    + alarm.snoozeMinutes + ","
                     + alarm.spotID + ","
                     + alarm.speed + ","
                     + alarm.avspeed + ","
@@ -152,6 +163,9 @@ public class WindDatastore {
                     + "starttime=" + strStartTime + ","
                     + "enddate=" + strEndDate + ","
                     + "endtime=" + strEndTime + ","
+                    + "lastringdate=" + strLastRingDate + ","
+                    + "lastringtime=" + strLastRingTime + ","
+                    + "snoozeminutes=" + alarm.snoozeMinutes + ","
                     + "spotid=" + alarm.spotID + ","
                     + "speed=" + alarm.speed + ","
                     + "avspeed=" + alarm.avspeed + ","
@@ -408,19 +422,23 @@ public class WindDatastore {
                 Date today = Core.getDate();
                 SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
 
-                if (fmt.format(today).equals(fmt.format(alarm.lastRingDate))) {
+                if (alarm.lastRingDate != null && alarm.lastRingTime != null) {
 
-                    if (alarm.snoozeMinutes == 0)   // non suonare se ha già
-                                                    // suonato oggi ed è stato stoppato (snooze == =)
-                                         continue;
+                    if (fmt.format(today).equals(fmt.format(alarm.lastRingDate))) {
 
-                    Calendar cal = Calendar.getInstance(); // creates calendar
-                    cal.setTime(alarm.lastRingTime); // sets calendar time/date
-                    cal.add(Calendar.MINUTE, alarm.snoozeMinutes); // adds one hour
-                    Date snoozeTime = cal.getTime(); // returns new date object, one hour in the future
+                        if (alarm.snoozeMinutes == 0)   // non suonare se ha già
+                            // suonato oggi ed è stato stoppato (snooze == 0)
+                            continue;
 
-                    if (timeIsBefore(today,snoozeTime)) // non suonare se non è finito lo snooze time
-                        continue;
+
+                        Calendar cal = Calendar.getInstance(); // creates calendar
+                        cal.setTime(alarm.lastRingTime); // sets calendar time/date
+                        cal.add(Calendar.MINUTE, alarm.snoozeMinutes); // adds one hour
+                        Date snoozeTime = cal.getTime(); // returns new date object, one hour in the future
+
+                        if (timeIsBefore(today, snoozeTime)) // non suonare se non è finito lo snooze time
+                            continue;
+                    }
                 }
 
                 logger.info("alarm.regId=" + alarm.regId);
