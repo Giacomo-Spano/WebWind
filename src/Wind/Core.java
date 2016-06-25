@@ -107,7 +107,7 @@ public class Core {
 
     public static Date getDate() {
 
-        LOGGER.info("getDate");
+        //LOGGER.info("getDate");
         Date date = new Date();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         df.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));

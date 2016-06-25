@@ -390,19 +390,12 @@ public class WindDatastore {
 
     public static List<Alarm> getActiveAlarm(Double speed, Double avspeed, Date currentTime, Date currentDate, long spotId) {
 
-        logger.info("--->getActiveAlarm");
-        logger.info("speed=" + speed);
-        logger.info("avspeed=" + avspeed);
-        logger.info("currentTime=" + currentTime);
-        logger.info("currentDate=" + currentDate);
-        logger.info("spotId=" + spotId);
+        logger.info("GETACTIVEALARM: speed=" + speed+",avspeed=" + avspeed+",currentTime=" + currentTime+",currentDate=" + currentDate+",spotId=" + spotId);
 
-        //-----------
         List<Alarm> registeredAlarms = new ArrayList<Alarm>();
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             SimpleDateFormat stf = new SimpleDateFormat("HH:mm:ss");
-
 
             Class.forName("com.mysql.jdbc.Driver");
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
@@ -430,7 +423,6 @@ public class WindDatastore {
                             // suonato oggi ed è stato stoppato (snooze == 0)
                             continue;
 
-
                         Calendar cal = Calendar.getInstance(); // creates calendar
                         cal.setTime(alarm.lastRingTime); // sets calendar time/date
                         cal.add(Calendar.MINUTE, alarm.snoozeMinutes); // adds one hour
@@ -441,22 +433,12 @@ public class WindDatastore {
                     }
                 }
 
-                logger.info("alarm.regId=" + alarm.regId);
-                logger.info("alarm.speed=" + alarm.speed);
-                logger.info("alarm.avspeed=" + alarm.avspeed);
-                logger.info("alarm.direction=" + alarm.direction);
-                logger.info("alarm.id=" + alarm.id);
-                logger.info("alarm.startTime=" + alarm.startTime.toString());
-                logger.info("alarm.endTime=" + alarm.endTime.toString());
-                logger.info("alarm.startDate=" + alarm.startDate.toString());
-                logger.info("alarm.endDate=" + alarm.endDate.toString());
-                //logger.info("alarm.lastringtime=" + alarm.lastRingDate.toString());
-                //logger.info("alarm.lastringtime=" + alarm.lastRingTime.toString());
-                logger.info("alarm.spotId=" + alarm.spotID);
+                logger.info("ALARM ACTIVE: alarm.regId=" + alarm.regId+",alarm.speed=" + alarm.speed+",alarm.avspeed=" + alarm.avspeed+",alarm.direction=" + alarm.direction
+                    +",alarm.id=" + alarm.id+",alarm.startTime=" + alarm.startTime.toString()+",alarm.endTime=" + alarm.endTime.toString()+",alarm.startDate=" + alarm.startDate.toString()
+                    +",alarm.endDate=" + alarm.endDate.toString()+",alarm.spotId=" + alarm.spotID);
 
                 registeredAlarms.add(alarm);
             }
-            // Clean-up environment
             rs.close();
             stmt.close();
             conn.close();
@@ -469,12 +451,9 @@ public class WindDatastore {
             //Handle errors for Class.forName
             e.printStackTrace();
         }
-        logger.info("alarms size=" + registeredAlarms.size());
-        logger.info("registeredAlarms=" + registeredAlarms);
+        logger.info("FOUND " + registeredAlarms.size()+ " active alarms");
 
         return registeredAlarms;
-
-
     }
 
     public static boolean timeIsBefore(Date d1, Date d2) {

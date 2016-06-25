@@ -32,8 +32,8 @@ public class Bombolak extends PullData {
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         Calendar cal = Calendar.getInstance();
         meteoStationData.sampledatetime = Core.getDate();
-        LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
-        LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
+        //LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
+        //LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
 
         // speed
         String txt = htmlResultString;

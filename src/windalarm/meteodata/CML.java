@@ -75,8 +75,6 @@ public class CML extends PullData {
         Calendar cal = Calendar.getInstance();
         meteoStationData.sampledatetime = Core.getDate();
         meteoStationData.datetime = meteoStationData.sampledatetime;
-        LOGGER.info("xtime in rome=" + meteoStationData.sampledatetime);
-        LOGGER.info("xhour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
 
         String address = "http://rete.centrometeolombardo.com/@spot@/immagini/@image@.png";
         // http://www.centrometeolombardo.com/content.asp?contentid=6228&ContentType=Stazioni
@@ -85,13 +83,13 @@ public class CML extends PullData {
 
 
         address = address.replace("@spot@", mSpotUrl);
-        LOGGER.info("xaddress=" + address);
+        //LOGGER.info("xaddress=" + address);
         String value = "";
 
         String image = address.replace("@image@", "4");
-        LOGGER.info("ximage=" + image);
+        //LOGGER.info("ximage=" + image);
         value = getTextFromImage(image);
-        LOGGER.info("value" + value);
+        //LOGGER.info("value" + value);
         String[] split = value.split("km/h");
         meteoStationData.speed = Double.valueOf(split[0]);
         meteoStationData.direction = split[1];
@@ -105,7 +103,7 @@ public class CML extends PullData {
         char character = 176;// �
         String tt = new String(character + "c");
         value = value.replace(tt, "");
-        LOGGER.info("temoperature" + value);
+        //LOGGER.info("temoperature" + value);
         meteoStationData.temperature = Double.valueOf(value);
 
         image = address.replace("@image@", "2");
@@ -113,21 +111,21 @@ public class CML extends PullData {
         //value = value.replace("ob","");
         value = value.replace("%", "");
         //value = value.replace(" ",""); // carattere strano
-        LOGGER.info("humidity" + value);
+        //LOGGER.info("humidity" + value);
         meteoStationData.humidity = Double.valueOf(value);
 
         image = address.replace("@image@", "5");
         value = getTextFromImage(image);
         value = value.replace("hPa", "");
         value = value.replace(" ", ""); // carattere strano
-        LOGGER.info("pressure" + value);
+        //LOGGER.info("pressure" + value);
         meteoStationData.pressure = Double.valueOf(value);
 
         image = address.replace("@image@", "7");
         value = getTextFromImage(image);
         value = value.replace("mm/h", "");
         value = value.replace(" ", ""); // carattere strano
-        LOGGER.info("rainrate" + value);
+        //LOGGER.info("rainrate" + value);
         meteoStationData.rainrate = Double.valueOf(value);
 
         meteoStationData.spotName = mName;
@@ -175,13 +173,6 @@ public class CML extends PullData {
 
 
                 //--
-
-            /*final Image oldImage = ImagesServiceFactory.makeImage(baos.toByteArray());
-            ImagesService imagesService = ImagesServiceFactory.getImagesService();
-            Transform resize = ImagesServiceFactory.makeRotate(0);
-            OutputSettings os = new OutputSettings(ImagesService.OutputEncoding.JPEG);
-            Image newImage = imagesService.applyTransform(resize, oldImage, os);
-            byte[] newImageData = newImage.getImageData();*/
 
                 // prepare header
                 URL url = new URL(urlString);
@@ -236,7 +227,7 @@ public class CML extends PullData {
             LOGGER.severe("Debug - IOException error: " + ioe.toString());
             return "0";
         }
-        LOGGER.info("reponse_data=" + reponse_data);
+        //LOGGER.info("reponse_data=" + reponse_data);
         String tag = "Recognition result:<br><hr><pre>";
         int start = reponse_data.indexOf(tag);
         if (start == -1) {

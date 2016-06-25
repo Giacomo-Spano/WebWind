@@ -212,14 +212,28 @@ public class MeteoStationData {
 
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String strDatetime = "''";
-            if (datetime != null)
-                strDatetime = "'" + df.format(datetime) + "'";
+            if (datetime == null) {
+                LOGGER.severe("datetime null");
+                return 0;
+            }
+            strDatetime = "'" + df.format(datetime) + "'";
+
             String strSampleDatetime = "''";
-            if (sampledatetime != null)
-                strSampleDatetime = "'" + df.format(sampledatetime) + "'";
+            if (sampledatetime == null) {
+                LOGGER.severe("sampledatetime null");
+                return 0;
+            }
+            strSampleDatetime = "'" + df.format(sampledatetime) + "'";
+
+            // controlla se esiste già un record con la stessa data e ora
+            MeteoStationData lastMd = getLastMeteoStationData(spotID);
+            if (lastMd != null && datetime.equals(lastMd.datetime)) {
+                LOGGER.info("duplicate datetime: skip insert ");
+                return 0;
+            }
 
             String sql;
-            sql = "INSERT INTO wind (spotid, sampledatetime, datetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure)" +
+            sql = "INSERT INTO wind (spotid, datetime, sampledatetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure)" +
                     " VALUES (" + spotID + "," + strDatetime + "," + strSampleDatetime + "," + speed + "," + averagespeed + ",'" + direction + "'," + directionangle + "," + temperature + "," + humidity + "," + pressure + ") ";
 
             Statement stmt = conn.createStatement();
@@ -265,21 +279,10 @@ public class MeteoStationData {
 
             String sql;
             sql = "SELECT * FROM wind WHERE spotid=" + spotId
-                    + " AND sampledatetime BETWEEN " + strStartDate + " and " + strEndDate + ";";
+                    + " AND datetime BETWEEN " + strStartDate + " and " + strEndDate + ";";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                MeteoStationData md = new MeteoStationData();
-                md.id = rs.getInt("id");
-                md.datetime = rs.getTimestamp("datetime");
-                md.spotID = rs.getInt("spotid");
-                md.sampledatetime = rs.getTimestamp("sampledatetime");
-                md.speed = rs.getDouble("speed");
-                md.averagespeed = rs.getDouble("averagespeed");
-                md.directionangle = rs.getDouble("directionangle");
-                md.direction = rs.getString("direction");
-                md.temperature = rs.getDouble("temperature");
-                md.humidity = rs.getDouble("humidity");
-                md.pressure = rs.getDouble("pressure");
+                MeteoStationData md = getMeteoStationDataFromResulset(rs);
 
                 list.add(md);
             }
@@ -297,5 +300,53 @@ public class MeteoStationData {
         }
         return list;
     }
+
+    private MeteoStationData getMeteoStationDataFromResulset(ResultSet rs) throws SQLException {
+        MeteoStationData md = new MeteoStationData();
+        md.id = rs.getInt("id");
+        md.datetime = rs.getTimestamp("datetime");
+        md.spotID = rs.getInt("spotid");
+        md.sampledatetime = rs.getTimestamp("sampledatetime");
+        md.speed = rs.getDouble("speed");
+        md.averagespeed = rs.getDouble("averagespeed");
+        md.directionangle = rs.getDouble("directionangle");
+        md.direction = rs.getString("direction");
+        md.temperature = rs.getDouble("temperature");
+        md.humidity = rs.getDouble("humidity");
+        md.pressure = rs.getDouble("pressure");
+        return md;
+    }
+
+    public MeteoStationData getLastMeteoStationData(int spotId) {
+
+        MeteoStationData md = null;
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            String sql;
+            sql = "SELECT * FROM wind WHERE spotid=" + spotId + " ORDER BY sampledatetime DESC LIMIT 1;";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            if (rs.next()) {
+                md = getMeteoStationDataFromResulset(rs);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return md;
+    }
+
 
 }

@@ -229,11 +229,8 @@ public class AlarmModel {
         for (int i = 0; i < list.size(); i++) {
             String registrationId = list.get(i).regId;
             Alarm alarm = list.get(i);
-            //Long alarmId = list.get(i).id;
             LOGGER.info("i=" + i);
             sendAlarm(registrationId, alarm, speed, avspeed, localTime, localDate, spotId);
-            //Result result = sp.sendSingleMessage(registrationId, message);
-            //WindDatastore.updateAlarmLastRingDate(registrationId, alarm.id, localTime, localDate);
         }
     }
 
@@ -243,14 +240,7 @@ public class AlarmModel {
 
         AlarmLog al = new AlarmLog();
         al.insert("sendalarm",alarm.id,regId);
-        //SendPushMessages sp = new SendPushMessages();
-        //sp.init();
         Message notification = new Message.Builder()
-                // .collapseKey(collapsekey) // se c'? gi? un messaggio con lo
-                // stesso collapskey e red id allora l'ultimo sostituir? il
-                // precedente
-                // .timeToLive(3).delayWhileIdle(true) // numero di secondi per
-                // i quali il messagio rimane in coda (default 4 week)
                 .addData("title", "titolox")
                 .addData("alarmId", ""+alarm.id)
                 .addData("spotID", "" + alarm.spotID)
@@ -261,16 +251,13 @@ public class AlarmModel {
                 .addData("endTime", "" + alarm.endTime)
                 .addData("avspeed", "" + alarm.avspeed)
                 .addData("speed", "" + alarm.speed)
-
                 .addData("curspeed", "" + speed)
                 .addData("curavspeed", "" + avspeed)
                 .addData("curlocalTime", "" + currentTime)
                 .addData("curlocalDate", "" + currentDate)
                 .addData("curspotId", "" + spotId)
-
                 .addData("notificationtype", AlarmModel.NotificationType_Alarm)
                 .build();
-
         Core.sendPushNotification(regId, notification);
     }
 

@@ -23,8 +23,6 @@ public class WVC extends PullData {
 
     public MeteoStationData getMeteoData() {
 
-
-
         String htmlResultString = getHTMLPage("http://www.wcv.it/news.php");
         if (htmlResultString == null)
             return null;
@@ -36,8 +34,8 @@ public class WVC extends PullData {
         //Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Rome"));
         //cal.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         meteoStationData.sampledatetime = Core.getDate();//dateFormat.format(cal.getTime());
-        LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
-        LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
+        //LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
+        //LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
         //DateTimeZone timeZone = DateTimeZone.forID( "Europe/Rome" );
         //meteoStationData.sampledatetime = dateFormat.setTimeZone(timeZone);
 
@@ -141,10 +139,6 @@ public class WVC extends PullData {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
-        /*meteoStationData.spotName = mName;
-        meteoStationData.spotID = mSpotID;
-        meteoStationData.trend = getTrend();*/
 
         return meteoStationData;
     }

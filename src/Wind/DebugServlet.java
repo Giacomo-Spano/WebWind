@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -32,40 +34,23 @@ public class DebugServlet extends HttpServlet {
 
         // --------------- send notification
 
-        Alarm alarm = new Alarm();
-        LOGGER.info("sendAlarm spotID=" + alarm.spotID);
-        //SendPushMessages sp = new SendPushMessages();
-        //sp.init();
-        Message notification = new Message.Builder()
-                // .collapseKey(collapsekey) // se c'? gi? un messaggio con lo
-                // stesso collapskey e red id allora l'ultimo sostituir? il
-                // precedente
-                // .timeToLive(3).delayWhileIdle(true) // numero di secondi per
-                // i quali il messagio rimane in coda (default 4 week)
-                .addData("title", "titolox")
-                //.addData("message", "allarme"+spot)
-                .addData("spotID", "" + alarm.spotID)
-                .addData("startDate", "" + alarm.startDate)
-                .addData("startTime", "" + alarm.startTime)
-                .addData("lastRingTime", "" + alarm.lastRingTime)
-                .addData("endDate", "" + alarm.endDate)
-                .addData("endTime", "" + alarm.endTime)
-                .addData("avspeed", "" + alarm.avspeed)
-                .addData("speed", "" + alarm.speed)
+        Date localTime = Core.getDate();
+        Date localDate = Core.getDate();
+        double speed = 29.0;
+        double avspeed = 29.0;
 
-                /*addData("curspeed", "" + speed)
-                .addData("curavspeed", "" + avspeed)
-                .addData("curlocalTime", "" + currentTime)
-                .addData("curlocalDate", "" + currentDate)
-                .addData("curspotId", "" + spotId)*/
-
-                .addData("notificationtype", AlarmModel.NotificationType_Alarm)
-                .build();
-
-        //Core.sendPushNotification(notification);
+        //WindDatastore.updateAlarmLastRingDate(regi,Integer.valueOf(alarmid),date/*sdf.parse(date + " " + time)*/);
 
 
-        /// ---- end
+        int spotId = 0;
+        List<Alarm> list = WindDatastore.getActiveAlarm(speed,avspeed,localTime,localDate,spotId);
+        if (list.size() > 0) {
+            String registrationId = list.get(0).regId;
+            Alarm alarm = list.get(0);
+            AlarmModel.sendAlarm(registrationId, alarm, speed, avspeed, localTime, localDate, spotId);
+        }
+
+
 
 
         // Set response content type
