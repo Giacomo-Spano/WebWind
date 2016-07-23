@@ -20,6 +20,7 @@ import Wind.Device;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.logging.Logger;
 
 /**
  * DebugServlet that registers a device, whose registration id is identified by
@@ -32,12 +33,18 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class RegisterServlet extends BaseServlet {
 
+    private static final Logger LOGGER = Logger.getLogger(PushNotificationThread.class.getName());
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException {
 
 
+
+
         String regId = getParameter(req, "regId");
+
+        LOGGER.info("RegisterServlet regid=" + regId);
 
 
         Device device = new Device();

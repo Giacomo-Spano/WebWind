@@ -51,7 +51,7 @@ public class AlarmServlet extends HttpServlet {
             } else if (ringkey != null) {
 
                 AlarmLog al = new AlarmLog();
-                al.insert("ring enable",alarmid,regId);
+                al.insert("ring enable",alarmid,regId,0);
 
                 LOGGER.info("update ring date regId " + regId + ";id " + alarmid);
 
@@ -68,9 +68,9 @@ public class AlarmServlet extends HttpServlet {
 
             } else if (snoozekey != null) {
 
-                AlarmLog al = new AlarmLog();
-                al.insert("snooze alarm",alarmid,regId);
                 int snoozeMinutes = Integer.valueOf(request.getParameter("minutes"));
+                AlarmLog al = new AlarmLog();
+                al.insert("snooze alarm",alarmid,regId,snoozeMinutes);
                 LOGGER.info("snooze regId " + regId + ";id " + alarmid + ";snooze minutes="+snoozeMinutes);
                 WindDatastore.updateAlarmSnoozeMinutes(regId,Integer.valueOf(alarmid),snoozeMinutes);
 

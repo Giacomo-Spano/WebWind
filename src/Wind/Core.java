@@ -189,14 +189,21 @@ public class Core {
         d = new CML(AlarmModel.Spot_Dongo);
         alarmModel.addSpotData(d);
 
+        d = new CML(AlarmModel.Spot_Gravedona);
+        alarmModel.addSpotData(d);
+
+        d = new CML(AlarmModel.Spot_Gera);
+        alarmModel.addSpotData(d);
+
+
         d = new Windfinder(AlarmModel.Spot_VassilikiPort);
         alarmModel.addSpotData(d);
 
         d = new gvlnifollonica();
         alarmModel.addSpotData(d);
 
-        d = new Vassiliki();
-        alarmModel.addSpotData(d);
+        //d = new Vassiliki();
+        //alarmModel.addSpotData(d);
 
         d = new Windfinder(AlarmModel.Spot_Scarlino);
         alarmModel.addSpotData(d);

@@ -34,18 +34,21 @@ public class Vassiliki extends PullData {
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         Calendar cal = Calendar.getInstance();
         meteoStationData.sampledatetime = Core.getDate();
-        LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
-        LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
+        //LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
+        //LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
 
         String txt = htmlResultString;
         //wetterdaten.push({timestamp: '2015-08-09 08:12:53',aussentemperatur: 31,windgeschwindigkeit: 7.1610810810811,windrichtung: 225});
 
-        String keyword = "windgeschwindigkeit:";
+        //<div id="gaugeWindspeedValue">0 kn</div>
+
+
+        String keyword = "gaugeWindspeedValue";
         int start = txt.indexOf(keyword);
         if (start == -1)
             LOGGER.severe(txt + " not found " + keyword);
         txt = txt.substring(start + keyword.length());
-        int end = txt.indexOf(",");
+        int end = txt.indexOf("kn");
         txt = txt.substring(0, end);
         keyword = ",";
         meteoStationData.speed = Double.valueOf(txt.trim());

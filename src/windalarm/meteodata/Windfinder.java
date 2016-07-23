@@ -50,7 +50,9 @@ public class Windfinder extends PullData {
 
     public MeteoStationData getMeteoData(/*String name, String spot*/ /*lake_como_colico*/) {
 
-        String htmlResultString = getHTMLPage("http://www.windfinder.com/report/" + mSpotUrl);
+        LOGGER.info("getMeteoData: spotName=" + mName);
+
+        String htmlResultString = getHTMLPage("https://uk.windfinder.com/forecast/" + mSpotUrl);
         if (htmlResultString == null)
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();
@@ -70,49 +72,59 @@ public class Windfinder extends PullData {
 
 
         String txt = htmlResultString;
-        String keyword = "<span id=\"current-windspeed\">";
+        String keyword = "<span class=\"current__wind__speed\">";
         int start = txt.indexOf(keyword);
         txt = txt.substring(start + keyword.length());
-        int end = txt.indexOf("</span>");
+        int end = txt.indexOf("<span class=\"current__wind__unit\">kts</span>");
         txt = txt.substring(0, end);
         meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(txt));// * 1.85200; // convert knots to km/h
 
         meteoStationData.averagespeed = Core.getAverage(mSpotID);
 
         txt = htmlResultString;
-        keyword = "<span class=\"i i-wd-m i-wd-m-";
+        keyword = "<span class=\"current__wind__dir\">";
         start = txt.indexOf(keyword);
         if (start == -1) {
             meteoStationData.direction = "";
             meteoStationData.directionangle = -1.0;
         } else {
             txt = txt.substring(start + keyword.length());
-            end = txt.indexOf("\"></span>");
+            end = txt.indexOf("</span>");
             txt = txt.substring(0, end);
-            meteoStationData.direction = txt.toUpperCase();
+            txt = txt.replaceAll(" ", "");
+            txt = txt.replaceAll("-", "");
+            txt = txt.trim();
+            txt = txt.toUpperCase();
+            txt = txt.replaceAll("NORTH", "N");
+            txt = txt.replaceAll("SOUTH", "S");
+            txt = txt.replaceAll("EAST", "E");
+            txt = txt.replaceAll("WEST", "O");
+            meteoStationData.direction = txt;
             meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
         }
 
-        txt = htmlResultString;
-        keyword = "<span id=\"current-temperature\">";
+        /*txt = htmlResultString;
+        keyword = "spotmeta__notification";
         start = txt.indexOf(keyword);
         txt = txt.substring(start + keyword.length());
-        end = txt.indexOf("</span>");
+        end = txt.indexOf("ora locale.");
         txt = txt.substring(0, end);
-        meteoStationData.temperature = Double.valueOf(txt);
+        meteoStationData.temperature = Double.valueOf(txt);*/
 
         /*meteoStationData.spotName = mName;
         meteoStationData.spotID = mSpotID;*/
 
-        String date = meteoStationData.sampledatetime.toString().substring(0,10);
-        String time = meteoStationData.sampledatetime.toString().substring(11,16);
+        //String date = meteoStationData.sampledatetime.toString().substring(0,10);
+        //String time = meteoStationData.sampledatetime.toString().substring(11,16);
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        meteoStationData.datetime = meteoStationData.sampledatetime;
+
+        /*SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             meteoStationData.datetime = formatter.parse(date + " " + time);
         } catch (ParseException e) {
             e.printStackTrace();
-        }
+        }*/
 
 
         return meteoStationData;

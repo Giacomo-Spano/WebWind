@@ -3,8 +3,8 @@ package Wind;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.Date;
 import java.util.logging.Logger;
 
 /**
@@ -17,7 +17,11 @@ public class AlarmLog {
     public AlarmLog() {
     }
 
-    public boolean insert(String command, long alarmid, String regid) {
+    public boolean insert(String command, long alarmid, String regid, int snoozeminute) {
+        return insert(command, alarmid, regid, 0.0, 0.0,-1,snoozeminute);
+    }
+
+    public boolean insert(String command, long alarmid, String regid, Double speed, Double avspeed, long spotId, int snoozeminute) {
 
         try {
             // Register JDBC driver
@@ -25,9 +29,13 @@ public class AlarmLog {
             // Open a connection
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
 
+            java.util.Date date = Core.getDate();
+            DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:m:ss");
+            String strStartDate = "'" + df.format(date) + "'";
+
             String sql;
-            sql = "INSERT INTO alarmlog (regid, alarmid, command)" +
-                    " VALUES ('" + regid + "'," + alarmid + ",'" + command + "') " ;
+            sql = "INSERT INTO alarmlog (regid, date, alarmid, command, speed, avspeed, spotid,snoozeminutes)" +
+                    " VALUES ('" + regid + "'," + strStartDate + "," + alarmid + ",'" + command + "'," + speed + "," + avspeed + "," + spotId + "," + snoozeminute + ") " ;
 
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);

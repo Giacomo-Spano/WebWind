@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -32,6 +33,7 @@ public class MeteoServlet extends HttpServlet {
         String spotlist = request.getParameter("requestspotlist");
         String history = request.getParameter("history");
         String spot = request.getParameter("spot");
+        String fullinfo = request.getParameter("fullinfo");
 
         LOGGER.info("lastdata " + lastdata);
 
@@ -47,16 +49,31 @@ public class MeteoServlet extends HttpServlet {
 
             ArrayList<Spot> list = Core.getSpotList();
 
-            String str ="";
-            for(int i = 0; i < list.size(); i++) {
+            String str = "";
+            for (int i = 0; i < list.size(); i++) {
 
                 Spot s = list.get(i);
                 if (i != 0)
                     str += ",";
 
-                str += "{\"spotname\" : \"" + s.name/* AlarmModel.Spot_name[i]*/ + "\",";
-                str += "\"id\" : " + "\"" + s.ID/*i*/ + "\"}";
+                str += "{\"spotname\" : \"" + s.name + "\",";
 
+                MeteoStationData md = new MeteoStationData();
+                if (fullinfo != null && fullinfo.equals("true")) {
+                    md = md.getLastMeteoStationData(s.ID);
+                    if (md != null) {
+                        SimpleDateFormat df = new SimpleDateFormat("DD/MM/YYY HH:mm:ss");
+                        String date = "";
+                        if (md.sampledatetime!= null)
+                            date = df.format(md.sampledatetime);
+                        str += "\"speed\" : " + md.speed + ",";
+                        str += "\"avspeed\" : " + md.averagespeed + ",";
+                        str += "\"direction\" : " + "\"" + md.direction + "\",";
+                        str += "\"directionangle\" : " + md.directionangle + ",";
+                        str += "\"datetime\" : " + "\"" + md.sampledatetime + "\",";
+                    }
+                }
+                str += "\"id\" : " + s.ID + "}";
             }
             out.print(str);
             out.println("] }");
@@ -68,7 +85,7 @@ public class MeteoServlet extends HttpServlet {
             if (spot == null) {
 
                 ArrayList<Spot> sl = Core.getSpotList();
-                for (int i = 0; i < sl.size();i++) {
+                for (int i = 0; i < sl.size(); i++) {
                     MeteoStationData md = Core.getLastfromID(sl.get(i).ID);
                     if (md != null)
                         mdList.add(md);
@@ -103,7 +120,7 @@ public class MeteoServlet extends HttpServlet {
                 }
             }
             out.println("] }");
-        } else if (history != null && history.equals("true") && spot != null){
+        } else if (history != null && history.equals("true") && spot != null) {
 
             LOGGER.info("history");
 
@@ -111,12 +128,11 @@ public class MeteoServlet extends HttpServlet {
             Date end = Core.getDate();
             Calendar cal = Calendar.getInstance();
             cal.setTime(end);
-            cal.add(Calendar.HOUR_OF_DAY, - 6); //minus number would decrement the hours
+            cal.add(Calendar.HOUR_OF_DAY, -6); //minus number would decrement the hours
             Date start = cal.getTime();
 
             MeteoStationData md = new MeteoStationData();
             List<MeteoStationData> list = md.getHistory(Integer.valueOf(spot), start, end);
-
 
 
             //ArrayList<MeteoStationData> md = Core.getHistory(Integer.valueOf(spot));

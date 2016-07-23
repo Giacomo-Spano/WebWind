@@ -206,47 +206,6 @@ public class WindDatastore {
         return lastid;
     }
 
-    public static List<Alarm> getAlarms() {
-
-        /*Key alarmKey = KeyFactory.createKey("WindAlarm", "alarmName");
-        DatastoreService datastore = DatastoreServiceFactory
-                .getDatastoreService();
-
-        Query query = new Query("Alarm", alarmKey);
-        List<Entity> alarms = datastore.prepare(query).asList(
-                FetchOptions.Builder.withLimit(5));
-
-        programIds.removeAll(programIds);
-        // regIds.
-
-        for (int i = 0; i < alarms.size(); i++) {
-
-            Alarm alarm = new Alarm();
-            alarm.regId = (String) alarms.get(i).getProperty("regId");
-            alarm.startTime = (LocalTime) alarms.get(i).getProperty("startTime");
-            alarm.endTime = (LocalTime) alarms.get(i).getProperty("endTime");
-            alarm.startDate = (Date) alarms.get(i).getProperty("startDate");
-            alarm.endDate = (Date) alarms.get(i).getProperty("endDate");
-            alarm.speed = (Double) alarms.get(i).getProperty("speed");
-            alarm.avspeed = (Double) alarms.get(i).getProperty("avspeed");
-            alarm.enabled = (Boolean) alarms.get(i).getProperty("enabled");
-            alarm.direction = (String) alarms.get(i).getProperty("direction");
-            alarm.id = (Long) alarms.get(i).getProperty("id");
-
-            alarm.mo = (Boolean) alarms.get(i).getProperty("mo");
-            alarm.tu = (Boolean) alarms.get(i).getProperty("tu");
-            alarm.we = (Boolean) alarms.get(i).getProperty("we");
-            alarm.th = (Boolean) alarms.get(i).getProperty("th");
-            alarm.fr = (Boolean) alarms.get(i).getProperty("fr");
-            alarm.sa = (Boolean) alarms.get(i).getProperty("sa");
-            alarm.su = (Boolean) alarms.get(i).getProperty("su");
-
-            programIds.add(alarm);
-        }
-*/
-        return new ArrayList<Alarm>(programIds);
-    }
-
     public static Alarm getAlarm(String regId, String Id) {
 
         /*logger.info("regId=" + regId + ";Id=" + Id);
@@ -263,7 +222,7 @@ public class WindDatastore {
 
         if (alarms.size() > 0) {
             //Entity entityAlarm = alarms.get(0);
-            Alarm alarm = getWindAlarmProgram(alarms.get(0));
+            Alarm alarm = getAlarmFromResultSet(alarms.get(0));
 
             return alarm;
         } else {
@@ -354,7 +313,7 @@ public class WindDatastore {
     }
 
 
-    private static Alarm getWindAlarmProgram(ResultSet rs/*Entity entityAlarm*/) {
+    private static Alarm getAlarmFromResultSet(ResultSet rs/*Entity entityAlarm*/) {
 
         Alarm alarm = new Alarm();
 
@@ -388,9 +347,38 @@ public class WindDatastore {
         return alarm;
     }
 
-    public static List<Alarm> getActiveAlarm(Double speed, Double avspeed, Date currentTime, Date currentDate, long spotId) {
+    public static List<Alarm> getAlarms() {
 
-        logger.info("GETACTIVEALARM: speed=" + speed+",avspeed=" + avspeed+",currentTime=" + currentTime+",currentDate=" + currentDate+",spotId=" + spotId);
+        List<Alarm> alarms = new ArrayList<Alarm>();
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT * FROM alarms";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                Alarm alarm = getAlarmFromResultSet(rs);
+                alarms.add(alarm);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        }
+        return alarms;
+    }
+
+    public static List<Alarm> getActiveAlarm(Double speed, Double avspeed, /*Date currentTime, */Date currentDate, long spotId) {
+
+        logger.info("GETACTIVEALARM: speed=" + speed+",avspeed=" + avspeed/*+",currentTime=" + currentTime*/+",currentDate=" + currentDate+",spotId=" + spotId);
 
         List<Alarm> registeredAlarms = new ArrayList<Alarm>();
         try {
@@ -401,16 +389,19 @@ public class WindDatastore {
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
             Statement stmt = conn.createStatement();
             String sql;
-            sql = "SELECT * FROM alarms WHERE spotid=" + spotId + " AND " + "speed<=" + speed + " AND " + "enabled=true " +
-                    "AND startdate <= '" + sdf.format(currentDate) + "' " +
-                    "AND enddate >= '" + sdf.format(currentDate) + "' " +
-                    "AND starttime <= '" + stf.format(currentDate) + "' " +
-                    "AND endtime >= '" + stf.format(currentDate) + "' ";
+            sql = "SELECT * FROM alarms WHERE spotid=" + spotId +
+                    " AND " + "speed<=" + speed +
+                    " AND " + "avspeed<=" + avspeed +
+                    " AND " + "enabled=true " +
+                    " AND startdate <= '" + sdf.format(currentDate) + "'" +
+                    " AND enddate >= '" + sdf.format(currentDate) + "'" +
+                    " AND starttime <= '" + stf.format(currentDate) + "'" +
+                    " AND endtime >= '" + stf.format(currentDate) + "'";
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
 
-                Alarm alarm = getWindAlarmProgram(rs);
+                Alarm alarm = getAlarmFromResultSet(rs);
 
                 Date today = Core.getDate();
                 SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
@@ -528,7 +519,7 @@ public class WindDatastore {
         List<Alarm> registeredAlarms = new ArrayList<Alarm>();
         for (Entity result : pq.asIterable()) {
 
-            Alarm alarm = getWindAlarmProgram(result);
+            Alarm alarm = getAlarmFromResultSet(result);
 
             logger.info("alarm.regId=" + alarm.regId);
             logger.info("alarm.speed=" + alarm.speed);

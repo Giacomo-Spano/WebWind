@@ -15,6 +15,8 @@ import java.util.*;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import static java.util.Arrays.asList;
+
 /**
  * Created by giacomo on 07/06/2015.
  */
@@ -23,13 +25,13 @@ public class MeteoStationData {
     private static final Logger LOGGER = Logger.getLogger(MeteoStationData.class.getName());
 
     int id;
+    public boolean offline;
+    //public String source;
     public Double speed;
     public Double averagespeed = -1.0;
     public String direction;
     public Double directionangle;
     public Double trend;
-    //public String date;
-    //public String time;
     public java.util.Date datetime;
     public Double temperature;
     public Double pressure;
@@ -45,45 +47,43 @@ public class MeteoStationData {
             "SSW", "SW", "SWW", "W",
             "WNW", "NW", "NNW", "N",
             "NNE", "NE", "ENE"};
-    private ArrayList<ArrayList<String>> symbolList = new ArrayList<ArrayList<String>>();
+    private ArrayList<List<String>> symbolList = new ArrayList<List<String>>();
 
     public MeteoStationData() {
 
-        ArrayList<String> symbols;
-
-        /// RIABILITARE
-        /*symbols = Lists.newArrayList("E"); // 0
+        List<String> symbols;
+        symbols = asList("E","EAST"); // 0
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("NEE", "ENE");//1
+        symbols = asList("NEE", "ENE");//1
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("NE", "EN");//2
+        symbols = asList("NE", "EN");//2
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("NNE", "ENE");//3
+        symbols = asList("NNE", "ENE");//3
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("N");//4
+        symbols = asList("N");//4
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("NWN", "NNW", "NON", "NNO");//5
+        symbols = asList("NWN", "NNW", "NON", "NNO");//5
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("NW", "WN", "NO", "ON");//6
+        symbols = asList("NW", "WN", "NO", "ON");//6
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("WNW", "NWW", "ONO", "NON");//7
+        symbols = asList("WNW", "NWW", "ONO", "NON");//7
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("W", "O");//8
+        symbols = asList("W", "O");//8
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("WSW", "SWW", "OSO", "SSO");//9
+        symbols = asList("WSW", "SWW", "OSO", "SSO");//9
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("SW", "WS", "SO", "OS");//10
+        symbols = asList("SW", "WS", "SO", "OS");//10
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("SSW", "SWS", "SSO", "SOS");//11
+        symbols = asList("SSW", "SWS", "SSO", "SOS");//11
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("S");//12
+        symbols = asList("S");//12
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("SSE", "SEE");//13
+        symbols = asList("SSE", "SEE");//13
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("SE", "ES"); // 14
+        symbols = asList("SE", "ES"); // 14
         symbolList.add(symbols);
-        symbols = Lists.newArrayList("ESE", "SEE"); // 15
-        symbolList.add(symbols);*/
+        symbols = asList("ESE", "SEE"); // 15
+        symbolList.add(symbols);
 
 
     }
@@ -97,10 +97,7 @@ public class MeteoStationData {
                     return i * 22.5;
             }
         }
-        /*for (int i = 0; i < directionSymbols.length; i++) {
-            if(symbol.equals(directionSymbols[i]))
-                return i*22.5;
-        }*/
+        LOGGER.severe("cannot decode wind direction " + symbol);
         return -1;
     }
 
@@ -114,9 +111,9 @@ public class MeteoStationData {
             obj.put("direction", direction);
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             if (datetime != null)
-                obj.put("date", dateFormat.format(datetime));
+                obj.put("datetime", dateFormat.format(datetime));
             if (sampledatetime != null)
-                obj.put("date", dateFormat.format(sampledatetime));
+                obj.put("sampledatetime", dateFormat.format(sampledatetime));
             //obj.put("time", time);
             obj.put("temperature", temperature);
             obj.put("pressure", pressure);

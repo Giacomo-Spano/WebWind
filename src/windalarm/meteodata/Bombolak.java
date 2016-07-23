@@ -19,6 +19,7 @@ public class Bombolak extends PullData {
         mWebcamUrl = "http://bomboklat.it/wdmeteo/webcam.php";
         mImageName = "spot-" + mSpotID + ".jpg";
         mName = "Sorico (Lago di como)";
+        mSource = "http://bomboklat.it";
     }
 
     public MeteoStationData getMeteoData() {
@@ -32,45 +33,26 @@ public class Bombolak extends PullData {
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         Calendar cal = Calendar.getInstance();
         meteoStationData.sampledatetime = Core.getDate();
-        //LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
-        //LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
 
         // speed
         String txt = htmlResultString;
-        String keyword = "Ultima raffica:";
+        String keyword = "<span class='windspd'>";
         int start = txt.indexOf(keyword);
         if (start == -1)
             LOGGER.severe(txt + " not found " + keyword);
-        keyword = "<td class='meteotextbig'>";
-        start = txt.indexOf(keyword, start);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
         txt = txt.substring(start + keyword.length());
-        keyword = "kts";
+
+        keyword = " kts";
         int end = txt.indexOf(keyword);
         txt = txt.substring(0, end);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        //meteoStationData.speed = Double.valueOf(txt.trim());
-        meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(txt.trim()));// * 1.85200; // convert knots to km/h
 
-        // direction
-        txt = htmlResultString;
-        keyword = "<img src=\"anemometro";
-        start = txt.indexOf(keyword);
+        String[] split = txt.split(" ");
+
         if (start == -1)
             LOGGER.severe(txt + " not found " + keyword);
-        keyword = "/";
-        start = txt.indexOf(keyword, start);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + keyword.length());
-        keyword = ".png";
-        end = txt.indexOf(keyword);
-        txt = txt.substring(0, end);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        meteoStationData.direction = txt.trim();
+        meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(split[1].trim()));// * 1.85200; // convert knots to km/h
+
+        meteoStationData.direction = split[0].trim();
         meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
 
         // temperature
@@ -143,13 +125,14 @@ public class Bombolak extends PullData {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         try {
             meteoStationData.datetime = formatter.parse(txt);
+            long difference = meteoStationData.datetime .getTime() - Core.getDate() .getTime();
+            if (difference/1000/60 >  60)
+                meteoStationData.offline = true;
+            else
+                meteoStationData.offline = false;
         } catch (ParseException e) {
             e.printStackTrace();
         }
-
-        /*meteoStationData.spotName = mName;
-        meteoStationData.spotID = mSpotID;
-        meteoStationData.trend = getTrend();*/
 
         return meteoStationData;
     }

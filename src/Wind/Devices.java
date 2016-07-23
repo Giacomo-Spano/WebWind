@@ -130,6 +130,9 @@ public class Devices {
                     " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\") " +
                     "ON DUPLICATE KEY UPDATE id=" + device.id + ", regid=\"" + device.regId + "\", date=" + date + ", name=\"" + device.name + "\"";
 
+            LOGGER.info("SQL=" + sql);
+
+
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = stmt.getGeneratedKeys();
@@ -143,11 +146,13 @@ public class Devices {
         } catch (SQLException se) {
             //Handle errors for JDBC
             se.printStackTrace();
+            LOGGER.severe(se.toString());
             return 0;
 
         } catch (Exception e) {
             //Handle errors for Class.forName
             e.printStackTrace();
+            LOGGER.severe(e.toString());
             return 0;
         }
         return lastid;

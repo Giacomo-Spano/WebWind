@@ -43,11 +43,11 @@ public class DebugServlet extends HttpServlet {
 
 
         int spotId = 0;
-        List<Alarm> list = WindDatastore.getActiveAlarm(speed,avspeed,localTime,localDate,spotId);
+        List<Alarm> list = WindDatastore.getAlarms();
         if (list.size() > 0) {
             String registrationId = list.get(0).regId;
             Alarm alarm = list.get(0);
-            AlarmModel.sendAlarm(registrationId, alarm, speed, avspeed, localTime, localDate, spotId);
+            AlarmModel.sendAlarm(registrationId, alarm, speed, avspeed/*, localTime*/, localDate, spotId);
         }
 
 

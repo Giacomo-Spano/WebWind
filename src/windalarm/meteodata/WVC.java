@@ -19,9 +19,12 @@ public class WVC extends PullData {
         mWebcamUrl = "http://www.wcv.it/webcam05/currenth.jpg";
         mImageName = "spot-" + mSpotID + ".jpg";
         mName = "Valmadrera";
+        mSource = "http://www.wcv.it";
     }
 
     public MeteoStationData getMeteoData() {
+
+        LOGGER.info("getMeteoData: spotName=" + mName);
 
         String htmlResultString = getHTMLPage("http://www.wcv.it/news.php");
         if (htmlResultString == null)

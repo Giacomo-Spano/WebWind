@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -46,6 +47,8 @@ public class AlarmModel {
     public static final int Spot_Jeri = 11;
     public static final int Spot_Colico = 12;
     public static final int Spot_Sorico = 13;
+    public static final int Spot_Gravedona = 14;
+    //public static final int Spot_GeraLario = 15;
 
     private ArrayList<PullData> mSpotDataList = new ArrayList<PullData>();
     //private LocalTime HighWindNotificationTime = getCurrentTime();
@@ -106,8 +109,6 @@ public class AlarmModel {
 
     public void evaluate() {
 
-        //Date localTime = AlarmModel.getCurrentTime();
-        //Date localDate = AlarmModel.getCurrentDate();
         Date localTime = Core.getDate();
         Date localDate = localTime;
 
@@ -119,31 +120,12 @@ public class AlarmModel {
             if (len < 1)
                 continue;
             MeteoStationData md = meteoHistory.get(spot).get(len - 1);
-            evaluateAlarms(md.speed, md.averagespeed, localTime, localDate, md.spotID);
+            evaluateAlarms(md.speed, md.averagespeed, /*localTime, */localDate, md.spotID);
             evaluateNotifications(md);
         }
         LOGGER.info("<---evaluate ALARMS");
     }
 
-    /*public ArrayList<MeteoStationData> getLast() {
-        if (meteoHistory.size() == 0)
-            return null;
-
-        ArrayList<MeteoStationData> list = new ArrayList<MeteoStationData>();
-
-        for (int i = 0; i < meteoHistory.size();i++) {
-
-
-
-
-            int len = meteoHistory.get(i).size();
-            if (len == 0) continue;
-            MeteoStationData md = meteoHistory.get(i).get(len-1);
-            list.add(md);
-
-        }
-        return list;
-    }*/
     public MeteoStationData getLastfromID(int id) {
 
         int index = getIndexFromID(id);
@@ -219,10 +201,10 @@ public class AlarmModel {
     }
 
 
-    public static void evaluateAlarms(Double speed, Double avspeed, Date localTime, Date localDate, long spotId) {
-        LOGGER.info("evaluateAlarms localTime=" + localTime);
+    public static void evaluateAlarms(Double speed, Double avspeed, /*Date localTime, */Date localDate, long spotId) {
+        //LOGGER.info("evaluateAlarms localTime=" + localTime);
         LOGGER.info("LocalDate=" + localDate);
-        List<Alarm> list = WindDatastore.getActiveAlarm(speed, avspeed, localTime, localDate, spotId);
+        List<Alarm> list = WindDatastore.getActiveAlarm(speed, avspeed, /*localTime, */localDate, spotId);
 
         LOGGER.info("list.size=" + list.size());
 
@@ -230,16 +212,18 @@ public class AlarmModel {
             String registrationId = list.get(i).regId;
             Alarm alarm = list.get(i);
             LOGGER.info("i=" + i);
-            sendAlarm(registrationId, alarm, speed, avspeed, localTime, localDate, spotId);
+            sendAlarm(registrationId, alarm, speed, avspeed,/* localTime, */localDate, spotId);
         }
     }
 
-    public static void sendAlarm(String regId, Alarm alarm, Double speed, Double avspeed, Date currentTime, Date currentDate, long spotId) {
+    public static void sendAlarm(String regId, Alarm alarm, Double speed, Double avspeed, /*Date currentTime, */Date currentDate, long spotId) {
 
         LOGGER.info("sendAlarm spotID=" + spotId);
 
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
         AlarmLog al = new AlarmLog();
-        al.insert("sendalarm",alarm.id,regId);
+        al.insert("sendalarm",alarm.id,regId, speed, avspeed, spotId,0);
         Message notification = new Message.Builder()
                 .addData("title", "titolox")
                 .addData("alarmId", ""+alarm.id)
@@ -253,8 +237,9 @@ public class AlarmModel {
                 .addData("speed", "" + alarm.speed)
                 .addData("curspeed", "" + speed)
                 .addData("curavspeed", "" + avspeed)
-                .addData("curlocalTime", "" + currentTime)
-                .addData("curlocalDate", "" + currentDate)
+                //.addData("curlocalTime", "" + currentTime)
+
+                .addData("curDate", "" + dateFormat.format(currentDate))
                 .addData("curspotId", "" + spotId)
                 .addData("notificationtype", AlarmModel.NotificationType_Alarm)
                 .build();

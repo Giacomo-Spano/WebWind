@@ -21,6 +21,7 @@ public abstract class PullData {
     protected String mName;
     protected String mWebcamUrl = "";
     protected String mImageName = "";
+    protected String mSource = "";
 
     public int getSpotID() {
         return mSpotID;
@@ -41,14 +42,16 @@ public abstract class PullData {
 
         try {
             MeteoStationData md = getMeteoData();
-            md.spotName = mName;
-            md.spotID = mSpotID;
-            md.trend = Core.getTrend(mSpotID);
-            md.webcamurl = mWebcamUrl;
-            Core.sendData(md, mSpotID);
+            if (md != null) {
+                md.spotName = mName;
+                md.spotID = mSpotID;
+                md.trend = Core.getTrend(mSpotID);
+                md.webcamurl = mWebcamUrl;
+                Core.sendData(md, mSpotID);
 
-            if(mWebcamUrl != "")
-                 Core.sendImage(mWebcamUrl/*"http://www.wcv.it/webcam05/currenth.jpg"*/, mImageName);
+                if (mWebcamUrl != "")
+                    Core.sendImage(mWebcamUrl/*"http://www.wcv.it/webcam05/currenth.jpg"*/, mImageName);
+            }
 
 
         } catch (Exception e) {

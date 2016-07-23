@@ -22,6 +22,7 @@ public class gvlnifollonica extends PullData {
         mWebcamUrl = "http://www.gvlnifollonica.it/gvcam.jpg";
         mImageName = "spot-" + mSpotID + ".jpg";
         mName = "Follonica";
+        mSource = "http://www.gvlnifollonica.it";
     }
 
     public MeteoStationData getMeteoData() {
@@ -49,6 +50,11 @@ public class gvlnifollonica extends PullData {
                 SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                 try {
                     meteoStationData.datetime = formatter.parse(date + " " + time);
+                    long difference = meteoStationData.datetime .getTime() - Core.getDate() .getTime();
+                    if (difference/1000/60 >  60)
+                        meteoStationData.offline = true;
+                    else
+                        meteoStationData.offline = false;
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }

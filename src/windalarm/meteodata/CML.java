@@ -17,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
@@ -26,6 +27,7 @@ public class CML extends PullData {
     public static final String Gera = "Como/geralario";
     public static final String Abbadia = "Lecco/abbadia";
     public static final String Dongo = "Como/dongo";
+    public static final String Gravedona = "Como/gravedona";
 
     protected String mSpotUrl;
 
@@ -55,6 +57,12 @@ public class CML extends PullData {
                 mWebcamUrl = "http://www.skiffsailing.it/webcam/video.jpg";
                 mName = "Dongo (Como)";
                 break;
+            case AlarmModel.Spot_Gravedona:
+                mSpotUrl = Gravedona;
+                mWebcamUrl = "http://rete.centrometeolombardo.com/Como/gravedona/public/gravedona.jpg";
+                mName = "Gravedona (Como)";
+                break;
+
         }
 
         mImageName = "spot-" + mSpotID + ".jpg";
@@ -62,73 +70,106 @@ public class CML extends PullData {
 
     @Override
     MeteoStationData getMeteoData() {
-        //return null;
-        //}
 
-        //public MeteoStationData getMeteoData(String name, String spot) {
+        LOGGER.info("getMeteoData: spotName=" + mName);
 
-        String htmlResultString = "";
         MeteoStationData meteoStationData = new MeteoStationData();
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
-        Calendar cal = Calendar.getInstance();
         meteoStationData.sampledatetime = Core.getDate();
         meteoStationData.datetime = meteoStationData.sampledatetime;
 
-        String address = "http://rete.centrometeolombardo.com/@spot@/immagini/@image@.png";
-        // http://www.centrometeolombardo.com/content.asp?contentid=6228&ContentType=Stazioni
+        MeteoStationData lastMd = new MeteoStationData();
+        lastMd = lastMd.getLastMeteoStationData(mSpotID);
 
-        //<img src="http://rete.centrometeolombardo.com/Lecco/abbadia/immagini/4.png" width="338" height="40">
+        if (lastMd != null) {
+            long minutes = (meteoStationData.sampledatetime.getTime() - lastMd.sampledatetime.getTime());
+            minutes /= 1000;
+            minutes /= 60;
+            if(minutes < 5 ) {
+                LOGGER.info("CML last item less then 5  minutes difference: skip ");
+                return null;
+            }
+        }
 
-
+        String address = "http://rete.centrometeolombardo.com/@spot@/immagini/v.png";
         address = address.replace("@spot@", mSpotUrl);
-        //LOGGER.info("xaddress=" + address);
         String value = "";
-
-        String image = address.replace("@image@", "4");
-        //LOGGER.info("ximage=" + image);
-        value = getTextFromImage(image);
-        //LOGGER.info("value" + value);
-        String[] split = value.split("km/h");
-        meteoStationData.speed = Double.valueOf(split[0]);
-        meteoStationData.direction = split[1];
-        meteoStationData.direction = meteoStationData.direction.toUpperCase();
-
-        meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
-
-        image = address.replace("@image@", "1");
-        value = getTextFromImage(image);
+        value = getTextFromImage(address);
+        LOGGER.info("value=" + value);
 
         char character = 176;// �
         String tt = new String(character + "c");
-        value = value.replace(tt, "");
-        //LOGGER.info("temoperature" + value);
-        meteoStationData.temperature = Double.valueOf(value);
+        value = value.replace(tt, "C");
+        value = value.replace("ob","%");
+        value = value.replace("°b","%");
 
-        image = address.replace("@image@", "2");
-        value = getTextFromImage(image);
-        //value = value.replace("ob","");
-        value = value.replace("%", "");
-        //value = value.replace(" ",""); // carattere strano
-        //LOGGER.info("humidity" + value);
-        meteoStationData.humidity = Double.valueOf(value);
+        String keyword = new String("C");
+        int end = value.indexOf(keyword);
+        if (end == -1)
+            LOGGER.severe(value + " not found " + keyword);
+        String str = value.substring(0,end);
+        meteoStationData.temperature = Double.valueOf(str);
+        value = value.substring(end+keyword.length());
 
-        image = address.replace("@image@", "5");
-        value = getTextFromImage(image);
-        value = value.replace("hPa", "");
-        value = value.replace(" ", ""); // carattere strano
-        //LOGGER.info("pressure" + value);
-        meteoStationData.pressure = Double.valueOf(value);
+        keyword = "%";
+        end = value.indexOf(keyword);
+        if (end == -1)
+            LOGGER.severe(value + " not found " + keyword);
+        str = value.substring(0,end);
+        meteoStationData.humidity = Double.valueOf(str);
+        value = value.substring(end+keyword.length());
 
-        image = address.replace("@image@", "7");
-        value = getTextFromImage(image);
-        value = value.replace("mm/h", "");
-        value = value.replace(" ", ""); // carattere strano
-        //LOGGER.info("rainrate" + value);
-        meteoStationData.rainrate = Double.valueOf(value);
+        keyword = new String("C");
+        end = value.indexOf(keyword);
+        if (end == -1)
+            LOGGER.severe(value + " not found " + keyword);
+        str = value.substring(0,end);
+        value = value.substring(end+keyword.length());
+
+        keyword = "km/h";
+        end = value.indexOf(keyword);
+        if (end == -1)
+            LOGGER.severe(value + " not found " + keyword);
+        str = value.substring(0,end);
+        meteoStationData.speed = Double.valueOf(str);
+        value = value.substring(end+keyword.length());
+
+        int i = 0;
+        while (i < value.length() && !Character.isDigit(value.charAt(i))) i++;
+        str = value.substring(0,i);
+        meteoStationData.direction = str;
+        meteoStationData.direction = meteoStationData.direction.toUpperCase();
+        meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
+        value = value.substring(i);
+
+        keyword = "hPa";
+        end = value.indexOf(keyword);
+        if (end == -1)
+            LOGGER.severe(value + " not found " + keyword);
+        str = value.substring(0,end);
+        meteoStationData.pressure = Double.valueOf(str);
+        value = value.substring(end+keyword.length());
+
+        keyword = "mm";
+        end = value.indexOf(keyword);
+        if (end == -1)
+            LOGGER.severe(value + " not found " + keyword);
+        str = value.substring(0,end);
+        value = value.substring(end+keyword.length());
+
+        keyword = "mm/h";
+        end = value.indexOf(keyword);
+        if (end == -1)
+            LOGGER.severe(value + " not found " + keyword);
+        str = value.substring(0,end);
+        meteoStationData.rainrate = Double.valueOf(str);
+        value = value.substring(end+keyword.length());
 
         meteoStationData.spotName = mName;
+
+        LOGGER.info("meteoData=" + meteoStationData.toString());
 
         return meteoStationData;
     }

@@ -19,6 +19,7 @@ public class Colico extends PullData {
         mWebcamUrl = "http://www.wcv.it/webcam02/currenth.jpg";
         mImageName = "spot-" + mSpotID + ".jpg";
         mName = "Colico";
+        mSource = "http://web.tiscali.it/meteocolico/";
     }
 
     public MeteoStationData getMeteoData() {
@@ -112,8 +113,7 @@ public class Colico extends PullData {
 
         // humidity
         txt = htmlResultString;
-        txt = htmlResultString;
-        keyword = "Umidita' max:";
+        keyword = "Umidita':";
         start = txt.indexOf(keyword);
         if (start == -1)
             LOGGER.severe(txt + " not found " + keyword);
@@ -193,6 +193,13 @@ public class Colico extends PullData {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         try {
             meteoStationData.datetime = formatter.parse(txt);
+
+            long difference = meteoStationData.datetime .getTime() - Core.getDate() .getTime();
+            if (difference/1000/60 >  60)
+                meteoStationData.offline = true;
+            else
+                meteoStationData.offline = false;
+
         } catch (ParseException e) {
             e.printStackTrace();
         }

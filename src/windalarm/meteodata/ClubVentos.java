@@ -19,6 +19,7 @@ public class ClubVentos extends PullData {
         mWebcamUrl = "";
         mImageName = "spot-" + mSpotID + ".jpg";
         mName = "Jericoacoara (Brasile)";
+        mSource = "http://www.clubventos.com";
     }
 
     public MeteoStationData getMeteoData() {
@@ -131,6 +132,13 @@ public class ClubVentos extends PullData {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yy - K:mm a");
         try {
             meteoStationData.datetime = formatter.parse(txt);
+
+            long difference = meteoStationData.datetime .getTime() - Core.getDate() .getTime();
+            if (difference/1000/60 >  60)
+                meteoStationData.offline = true;
+            else
+                meteoStationData.offline = false;
+
         } catch (ParseException e) {
             e.printStackTrace();
         }
