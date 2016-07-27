@@ -147,6 +147,15 @@ public class AlarmModel {
         return -1;
     }
 
+    public String getNameFromID(int spotID) {
+
+        for (int i = 0; i < mSpotDataList.size(); i++) {
+            if (mSpotDataList.get(i).getSpotID() == spotID)
+                return mSpotDataList.get(i).getName();
+        }
+        return "";
+    }
+
     public ArrayList<MeteoStationData> getHistory(int spotID) {
 
         int index = getIndexFromID(spotID);
@@ -209,21 +218,21 @@ public class AlarmModel {
         LOGGER.info("list.size=" + list.size());
 
         for (int i = 0; i < list.size(); i++) {
-            String registrationId = list.get(i).regId;
+            int deviceId = list.get(i).deviceId;
             Alarm alarm = list.get(i);
             LOGGER.info("i=" + i);
-            sendAlarm(registrationId, alarm, speed, avspeed,/* localTime, */localDate, spotId);
+            sendAlarm(deviceId, alarm, speed, avspeed,/* localTime, */localDate, spotId);
         }
     }
 
-    public static void sendAlarm(String regId, Alarm alarm, Double speed, Double avspeed, /*Date currentTime, */Date currentDate, long spotId) {
+    public static void sendAlarm(int deviceId, Alarm alarm, Double speed, Double avspeed, /*Date currentTime, */Date currentDate, long spotId) {
 
         LOGGER.info("sendAlarm spotID=" + spotId);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
         AlarmLog al = new AlarmLog();
-        al.insert("sendalarm",alarm.id,regId, speed, avspeed, spotId,0);
+        al.insert("sendalarm",alarm.id,"deviceId" + deviceId, speed, avspeed, spotId,0);
         Message notification = new Message.Builder()
                 .addData("title", "titolox")
                 .addData("alarmId", ""+alarm.id)
@@ -243,7 +252,7 @@ public class AlarmModel {
                 .addData("curspotId", "" + spotId)
                 .addData("notificationtype", AlarmModel.NotificationType_Alarm)
                 .build();
-        Core.sendPushNotification(regId, notification);
+        Core.sendPushNotification(deviceId, notification);
     }
 
 

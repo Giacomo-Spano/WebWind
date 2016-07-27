@@ -15,11 +15,12 @@
  */
 package Wind;
 
-import Wind.Device;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -35,26 +36,52 @@ public class RegisterServlet extends BaseServlet {
 
     private static final Logger LOGGER = Logger.getLogger(PushNotificationThread.class.getName());
 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        try {
+
+            String regId = request.getParameter("regid");
+            Devices devices =  new Devices();
+            PrintWriter out = response.getWriter();
+
+            if (devices != null) {
+                Device device = devices.getDeviceFromRegId(regId);
+                response.setContentType("application/json");
+                out.println("{\"id\" : \"" + device.id + "\" }");
+            }
+
+            out.close();
+
+            setSuccess(response);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException {
 
+        String registeruser = getParameter(req, "registeruser");
+        //String deviceId = getParameter(req, "deviceId");
 
 
+        if (registeruser != null && registeruser.equals("true")) {
+            String authCode = getParameter(req, "authcode");
 
-        String regId = getParameter(req, "regId");
+        } else {
+            String regId = getParameter(req, "regId");
+            LOGGER.info("RegisterServlet regid=" + regId);
 
-        LOGGER.info("RegisterServlet regid=" + regId);
-
-
-        Device device = new Device();
-        device.regId = regId;
-        device.id = 0;
-        device.name = getParameter(req, "name");
-        device.date = Core.getDate();
-
-        Core.addDevice(device);
-
+            Device device = new Device();
+            device.regId = regId;
+            device.id = 0;
+            device.name = getParameter(req, "name");
+            device.date = Core.getDate();
+            //device.deviceId = deviceId;
+            Core.addDevice(device);
+        }
 
         setSuccess(resp);
     }

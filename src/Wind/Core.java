@@ -79,11 +79,11 @@ public class Core {
 
     }
 
-    public static void sendPushNotification(String regId, Message notification) {
+    public static void sendPushNotification(int deviceId, Message notification) {
 
         LOGGER.info("sendPushNotification");
         //new PushNotificationThread(type,title,description,value).start();
-        new PushNotificationThread(regId, notification).start();
+        new PushNotificationThread(deviceId, notification).start();
 
         LOGGER.info("sendPushNotification sent");
     }
@@ -100,9 +100,9 @@ public class Core {
         devices.delete(regId);
     }
 
-    public static List<Device> getDevicesFromId(String regId) {
+    public static List<Device> getDevicesFromDeviceId(int deviceID) {
         Devices devices = new Devices();
-        return devices.getDevices(regId);
+        return devices.getDeviceFromDeviceId(deviceID);
     }
 
     public static Date getDate() {
@@ -220,6 +220,7 @@ public class Core {
         if (index < 0) return null;
         return alarmModel.getSpotList().get(index);
     }
+
 
     private static final String CONTENT_TYPE = "text/html; charset=windows-1252";
 

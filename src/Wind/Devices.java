@@ -4,7 +4,6 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -69,12 +68,13 @@ public class Devices {
         } catch (Exception e) {
             //Handle errors for Class.forName
             e.printStackTrace();
-        }
+        d
     }*/
 
-    public List<Device> getDevices(String regId) {
 
-        LOGGER.info(" getDevices");
+    public List<Device> getDeviceFromDeviceId(int deviceId) {
+
+        LOGGER.info(" getDeviceFromDeviceId");
 
         List<Device> list = new ArrayList<Device>();
 
@@ -84,17 +84,15 @@ public class Devices {
             Statement stmt = conn.createStatement();
 
             String sql;
-            sql = "SELECT id, name, regid, date FROM devices";
-            if (regId != null)
-                sql += " WHERE regid='" + regId + "'";
+            sql = "SELECT * FROM devices WHERE id=" + deviceId + ";";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 Device device = new Device();
                 device.id = rs.getInt("id");
+                //device.deviceId = rs.getString("deviceid");
                 device.regId = rs.getString("regid");
                 device.name = rs.getString("name");
                 device.date = rs.getDate("date");
-
                 list.add(device);
             }
             rs.close();
@@ -112,6 +110,44 @@ public class Devices {
         return list;
     }
 
+    public Device getDeviceFromRegId(String regId) {
+
+        LOGGER.info(" getDevices");
+
+        Device device = new Device();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            String sql;
+            sql = "SELECT * FROM devices WHERE regid='" + regId + "'";
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                device.id = rs.getInt("id");
+                device.regId = rs.getString("regid");
+                device.name = rs.getString("name");
+                device.date = rs.getDate("date");
+                //device.deviceId = rs.getString("deviceid");
+            } else {
+                device = null;
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return device;
+    }
+
     public int insert(Device device) {
 
         int lastid;
@@ -127,8 +163,8 @@ public class Devices {
 
             String sql;
             sql = "INSERT INTO devices (id, regid, date, name)" +
-                    " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\") " +
-                    "ON DUPLICATE KEY UPDATE id=" + device.id + ", regid=\"" + device.regId + "\", date=" + date + ", name=\"" + device.name + "\"";
+                    " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\"" + "\") " +
+                    "ON DUPLICATE KEY UPDATE id=" + device.id + ", regid=\"" + device.regId + "\", date=" + date + ", name=\"" + device.name + "\"" + "\"";
 
             LOGGER.info("SQL=" + sql);
 

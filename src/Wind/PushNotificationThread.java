@@ -1,6 +1,5 @@
 package Wind;
 
-import Wind.SendPushMessages;
 import com.google.android.gcm.server.Message;
 
 import java.util.List;
@@ -13,7 +12,7 @@ public class PushNotificationThread extends Thread {
 
     private static final Logger LOGGER = Logger.getLogger(PushNotificationThread.class.getName());
 
-    String regId;
+    int deviceId;
     String type;
     String title;
     String description;
@@ -29,10 +28,10 @@ public class PushNotificationThread extends Thread {
         this.value = value;
     }*/
 
-    public PushNotificationThread(String regId, Message notification) {
+    public PushNotificationThread(int deviceId, Message notification) {
         super("str");
         this.notification = notification;
-        this.regId = regId;
+        this.deviceId = deviceId;
     }
 
     public void run() {
@@ -40,7 +39,7 @@ public class PushNotificationThread extends Thread {
         LOGGER.info("PushNotificationThread type=" + type + "title=" + title + "value=" + value);
         SendPushMessages sp = new SendPushMessages(notification);
         //SendPushMessages sp = new SendPushMessages(type, title, description, value);
-        List<Device> devices = Core.getDevicesFromId(regId);
+        List<Device> devices = Core.getDevicesFromDeviceId(deviceId);
         sp.send(devices);
         LOGGER.info("PushNotificationThread type=" + type + "title=" + title + "value=" + value);
     }

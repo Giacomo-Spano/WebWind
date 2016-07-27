@@ -18,7 +18,7 @@ public class Alarm {
     private static final Logger LOGGER = Logger.getLogger(Alarm.class.getName());
 
     public long spotID;
-    public String regId; // id di registrazione
+    public int deviceId; // id di registrazione
     public Date startDate;
     public Date endDate;
     public double speed;

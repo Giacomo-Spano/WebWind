@@ -1,7 +1,5 @@
 package Wind;
 
-import com.google.android.gcm.server.Message;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -34,24 +32,17 @@ public class DebugServlet extends HttpServlet {
 
         // --------------- send notification
 
-        Date localTime = Core.getDate();
         Date localDate = Core.getDate();
         double speed = 29.0;
         double avspeed = 29.0;
-
-        //WindDatastore.updateAlarmLastRingDate(regi,Integer.valueOf(alarmid),date/*sdf.parse(date + " " + time)*/);
-
-
         int spotId = 0;
+
         List<Alarm> list = WindDatastore.getAlarms();
         if (list.size() > 0) {
-            String registrationId = list.get(0).regId;
+            int deviceId = list.get(0).deviceId;
             Alarm alarm = list.get(0);
-            AlarmModel.sendAlarm(registrationId, alarm, speed, avspeed/*, localTime*/, localDate, spotId);
+            AlarmModel.sendAlarm(deviceId, alarm, speed, avspeed, localDate, spotId);
         }
-
-
-
 
         // Set response content type
         response.setContentType("text/html");
@@ -64,7 +55,6 @@ public class DebugServlet extends HttpServlet {
         final String dateInString = df.format(Core.getDate());
         out.println("Data = " + dateInString);
         out.println("\n");
-
 
         String envVar = System.getenv("OPENSHIFT_APP_DNS");
         out.println("OPENSHIFT_APP_DNS = " + envVar);

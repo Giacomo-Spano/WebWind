@@ -45,7 +45,7 @@ public class WindDatastore {
     }
 
 
-    public static void updateAlarmLastRingDate(String regId, long alarmId, Date date) {
+    public static void updateAlarmLastRingDate(String IMEI, long alarmId, Date date) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -62,7 +62,7 @@ public class WindDatastore {
                     + "snoozeminutes=0 "
                     + " WHERE "
                     + "id='" + alarmId + "' AND "
-                    + "regid='" + regId + "';";
+                    + "IMEI='" + IMEI + "';";
 
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
@@ -82,7 +82,7 @@ public class WindDatastore {
         }
     }
 
-    public static void updateAlarmSnoozeMinutes(String regId, long alarmId, int snoozeMminutes) {
+    public static void updateAlarmSnoozeMinutes(String IMEI, long alarmId, int snoozeMminutes) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -107,7 +107,7 @@ public class WindDatastore {
         }
     }
 
-    public long saveAlarm(String regId, Alarm alarm) {
+    public long saveAlarm(int deviceId, Alarm alarm) {
 
         long lastid;
         try {
@@ -131,11 +131,10 @@ public class WindDatastore {
             else
                 strLastRingTime = "null";
 
-
-            String sql = "INSERT INTO alarms (id, regid, startdate,starttime,enddate,endtime,lastringdate,lastringtime,snoozeminutes,spotid,speed,avspeed,enabled,direction,mo,tu,we,th,fr,sa,su )" +
+            String sql = "INSERT INTO alarms (id, deviceId, startdate,starttime,enddate,endtime,lastringdate,lastringtime,snoozeminutes,spotid,speed,avspeed,enabled,direction,mo,tu,we,th,fr,sa,su )" +
                     " VALUES ("
                     + alarm.id + ","
-                    + "'" + regId + "'" + ","
+                    + deviceId + ","
                     + strStartDate + ","
                     + strStartTime + ","
                     + strEndDate + ","
@@ -158,7 +157,7 @@ public class WindDatastore {
                     + ") "
                     + "ON DUPLICATE KEY UPDATE "
                     + "id=" + alarm.id + ","
-                    + "regid=" + "'" + regId + "'" + ","
+                    + "deviceid=" + deviceId + ","
                     + "startdate=" + strStartDate + ","
                     + "starttime=" + strStartTime + ","
                     + "enddate=" + strEndDate + ","
@@ -187,9 +186,7 @@ public class WindDatastore {
             } else {
                 lastid = alarm.id;
             }
-
             stmt.close();
-
             conn.close();
         } catch (SQLException se) {
             //Handle errors for JDBC
@@ -206,32 +203,8 @@ public class WindDatastore {
         return lastid;
     }
 
-    public static Alarm getAlarm(String regId, String Id) {
 
-        /*logger.info("regId=" + regId + ";Id=" + Id);
-
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
-        Query.Filter regIdFilter = new Query.FilterPredicate("regId", Query.FilterOperator.EQUAL, regId);
-        //Query.Filter IdFilter = new Query.FilterPredicate("id", Query.FilterOperator.EQUAL, Id);
-        //Query.Filter filter = Query.CompositeFilterOperator.and(regIdFilter, IdFilter);
-
-        Query query = new Query(alarmName)
-                .setFilter(regIdFilter);
-        List<Entity> alarms = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(5));
-
-        if (alarms.size() > 0) {
-            //Entity entityAlarm = alarms.get(0);
-            Alarm alarm = getAlarmFromResultSet(alarms.get(0));
-
-            return alarm;
-        } else {
-            return null;
-        }*/
-        return null;
-    }
-
-    public static long deleteAlarm(String regId, int id) {
+    public static long deleteAlarm(int deviceId, int id) {
 
         int deletedItems = 0;
 
@@ -240,7 +213,7 @@ public class WindDatastore {
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
 
             String sql;
-            sql = "DELETE FROM alarms WHERE id=" + id + " AND regid='" + regId + "'";
+            sql = "DELETE FROM alarms WHERE id=" + id + " AND deviceid=" + deviceId + ";";
             Statement stmt = conn.createStatement();
             deletedItems = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
 
@@ -258,16 +231,16 @@ public class WindDatastore {
         return deletedItems;
     }
 
-    public static List<Alarm> getAlarmsFromRegId(String regId) {
+    public static List<Alarm> getAlarmsFromDeviceID(int deviceId) {
 
-        logger.info("regId=" + regId);
+        logger.info("deviceId=" + deviceId);
         List<Alarm> registeredAlarms = new ArrayList<Alarm>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
             Statement stmt = conn.createStatement();
             String sql;
-            sql = "SELECT * FROM alarms WHERE regid='" + regId + "'";
+            sql = "SELECT * FROM alarms WHERE deviceid=" + deviceId + ";";
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
@@ -319,8 +292,7 @@ public class WindDatastore {
 
         try {
             alarm.id = rs.getInt("id");
-            alarm.regId = rs.getString("regId");
-
+            alarm.deviceId = rs.getInt("deviceId");
             alarm.startDate = rs.getDate("startdate");
             alarm.endDate = rs.getDate("enddate");
             alarm.startTime = rs.getTime("starttime");
@@ -424,7 +396,7 @@ public class WindDatastore {
                     }
                 }
 
-                logger.info("ALARM ACTIVE: alarm.regId=" + alarm.regId+",alarm.speed=" + alarm.speed+",alarm.avspeed=" + alarm.avspeed+",alarm.direction=" + alarm.direction
+                logger.info("ALARM ACTIVE: alarm.deviceId=" + alarm.deviceId +",alarm.speed=" + alarm.speed+",alarm.avspeed=" + alarm.avspeed+",alarm.direction=" + alarm.direction
                     +",alarm.id=" + alarm.id+",alarm.startTime=" + alarm.startTime.toString()+",alarm.endTime=" + alarm.endTime.toString()+",alarm.startDate=" + alarm.startDate.toString()
                     +",alarm.endDate=" + alarm.endDate.toString()+",alarm.spotId=" + alarm.spotID);
 

@@ -10,10 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -40,41 +37,35 @@ public class MeteoServlet extends HttpServlet {
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-
         if (spotlist != null && spotlist.equals("true")) {
 
             LOGGER.info("spotlist");
-
             out.print("{\"spotlist\" : [");
 
-            ArrayList<Spot> list = Core.getSpotList();
+            MeteoStationData md = new MeteoStationData();
+            List<MeteoStationData> mdList = md.getLastMeteoStationData();
+            Iterator<MeteoStationData> iterator = mdList.iterator();
 
             String str = "";
-            for (int i = 0; i < list.size(); i++) {
+            int count = 0;
+            while (iterator.hasNext()) {
 
-                Spot s = list.get(i);
-                if (i != 0)
+                MeteoStationData meteoStationData = iterator.next();
+                if (count++ != 0)
                     str += ",";
 
-                str += "{\"spotname\" : \"" + s.name + "\",";
+                String name = Core.getSpotFromID(meteoStationData.spotID).name;
+                str += "{\"spotname\" : \"" + name/*meteoStationData.spotName*/ + "\",";
 
-                MeteoStationData md = new MeteoStationData();
-                if (fullinfo != null && fullinfo.equals("true")) {
-                    md = md.getLastMeteoStationData(s.ID);
-                    if (md != null) {
-                        SimpleDateFormat df = new SimpleDateFormat("DD/MM/YYY HH:mm:ss");
-                        String date = "";
-                        if (md.sampledatetime!= null)
-                            date = df.format(md.sampledatetime);
-                        str += "\"speed\" : " + md.speed + ",";
-                        str += "\"avspeed\" : " + md.averagespeed + ",";
-                        str += "\"direction\" : " + "\"" + md.direction + "\",";
-                        str += "\"directionangle\" : " + md.directionangle + ",";
-                        str += "\"datetime\" : " + "\"" + md.sampledatetime + "\",";
-                    }
-                }
-                str += "\"id\" : " + s.ID + "}";
+                SimpleDateFormat df = new SimpleDateFormat("DD/MM/YYY HH:mm:ss");
+                str += "\"speed\" : " + meteoStationData.speed + ",";
+                str += "\"avspeed\" : " + meteoStationData.averagespeed + ",";
+                str += "\"direction\" : " + "\"" + meteoStationData.direction + "\",";
+                str += "\"directionangle\" : " + meteoStationData.directionangle + ",";
+                str += "\"datetime\" : " + "\"" + meteoStationData.sampledatetime + "\",";
+                str += "\"id\" : " + meteoStationData.spotID + "}";
             }
+
             out.print(str);
             out.println("] }");
 

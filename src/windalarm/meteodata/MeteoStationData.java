@@ -277,7 +277,9 @@ public class MeteoStationData {
             String sql;
             sql = "SELECT * FROM wind WHERE spotid=" + spotId
                     + " AND datetime BETWEEN " + strStartDate + " and " + strEndDate + ";";
+            LOGGER.info("START" + Core.getDate().toString());
             ResultSet rs = stmt.executeQuery(sql);
+            LOGGER.info("END" + Core.getDate().toString());
             while (rs.next()) {
                 MeteoStationData md = getMeteoStationDataFromResulset(rs);
 
@@ -343,6 +345,40 @@ public class MeteoStationData {
             return null;
         }
         return md;
+    }
+
+    public List<MeteoStationData> getLastMeteoStationData() {
+
+        List<MeteoStationData> list = new ArrayList<MeteoStationData>();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            String sql;
+            sql = "SELECT id, spotid, datetime, MAX(sampledatetime) AS sampledatetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure FROM wind GROUP BY spotid ;";
+            //sql = "SELECT * FROM wind;";
+
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                MeteoStationData md = null;
+                md = getMeteoStationDataFromResulset(rs);
+                list.add(md);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return list;
     }
 
 
