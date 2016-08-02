@@ -34,13 +34,7 @@ public class WVC extends PullData {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         Calendar cal = Calendar.getInstance();
-        //Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Rome"));
-        //cal.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         meteoStationData.sampledatetime = Core.getDate();//dateFormat.format(cal.getTime());
-        //LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
-        //LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
-        //DateTimeZone timeZone = DateTimeZone.forID( "Europe/Rome" );
-        //meteoStationData.sampledatetime = dateFormat.setTimeZone(timeZone);
 
         String txt = htmlResultString;
         String keyword = "Velocit&agrave; del vento:";
@@ -142,6 +136,12 @@ public class WVC extends PullData {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
+       long difference = meteoStationData.datetime.getTime() - meteoStationData.sampledatetime.getTime();
+        if (difference / 1000 / 60 > 60)
+           offline = true;
+        else
+           offline = false;
 
         return meteoStationData;
     }

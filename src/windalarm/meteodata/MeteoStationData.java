@@ -26,7 +26,6 @@ public class MeteoStationData {
 
     int id;
     public boolean offline;
-    //public String source;
     public Double speed;
     public Double averagespeed = -1.0;
     public String direction;
@@ -114,19 +113,16 @@ public class MeteoStationData {
                 obj.put("datetime", dateFormat.format(datetime));
             if (sampledatetime != null)
                 obj.put("sampledatetime", dateFormat.format(sampledatetime));
-            //obj.put("time", time);
             obj.put("temperature", temperature);
             obj.put("pressure", pressure);
             obj.put("humidity", humidity);
             obj.put("rainrate", rainrate);
-
-            //obj.put("sampledatetime", /*sampledatetime*/date + " " + time);
             obj.put("spotname", spotName);
-            obj.put("source", source);
             obj.put("directionangle", directionangle);
             obj.put("trend", trend);
             obj.put("spotid", spotID);
             obj.put("webcamurl", webcamurl);
+            obj.put("offline", offline);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -169,18 +165,12 @@ public class MeteoStationData {
                 }
 
             }
-            if (obj.has("spotname"))
-                spotName = obj.getString("spotname");
-            if (obj.has("source"))
-                source = obj.getString("source");
             if (obj.has("directionangle"))
                 directionangle = obj.getDouble("directionangle");
             if (obj.has("trend"))
                 directionangle = obj.getDouble("trend");
             if (obj.has("spotid"))
                 spotID = obj.getInt("spotid");
-            if (obj.has("webcamurl"))
-                webcamurl = obj.getString("webcamurl");
 
 
         } catch (JSONException e) {
@@ -356,10 +346,23 @@ public class MeteoStationData {
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
             Statement stmt = conn.createStatement();
 
-            String sql;
-            sql = "SELECT id, spotid, datetime, MAX(sampledatetime) AS sampledatetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure FROM wind GROUP BY spotid ;";
-            //sql = "SELECT * FROM wind;";
+            ArrayList<Spot> sl= Core.getSpotList();
+            Iterator<Spot> iterator = sl.iterator();
+            while (iterator.hasNext()) {
+                int spotId = iterator.next().ID;
+                String sql;
+                sql = "SELECT id, spotid, datetime, sampledatetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure FROM wind WHERE spotid=" + spotId + " ORDER BY sampledatetime DESC LIMIT 1 ;";
+                ResultSet rs = stmt.executeQuery(sql);
+                if (rs.next()) {
+                    MeteoStationData md = null;
+                    md = getMeteoStationDataFromResulset(rs);
+                    list.add(md);
+                }
+                rs.close();
+            }
 
+            /*String sql;
+            sql = "SELECT id, spotid, datetime, MAX(sampledatetime) AS sampledatetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure FROM wind GROUP BY spotid ;";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 MeteoStationData md = null;
@@ -367,6 +370,7 @@ public class MeteoStationData {
                 list.add(md);
             }
             rs.close();
+            */
             stmt.close();
             conn.close();
 

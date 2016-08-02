@@ -50,7 +50,7 @@ public class gvlnifollonica extends PullData {
                 SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                 try {
                     meteoStationData.datetime = formatter.parse(date + " " + time);
-                    long difference = meteoStationData.datetime .getTime() - Core.getDate() .getTime();
+                    long difference = Core.getDate().getTime() - meteoStationData.sampledatetime.getTime();
                     if (difference/1000/60 >  60)
                         meteoStationData.offline = true;
                     else
@@ -96,7 +96,7 @@ public class gvlnifollonica extends PullData {
 
         /*meteoStationData.spotName = AlarmModel.getSpotName(AlarmModel.Spot_Follonica);
         meteoStationData.spotID = mSpotID;*/
-        meteoStationData.source = "gvlnifollonica";
+        //meteoStationData.source = "gvlnifollonica";
 
         return meteoStationData;
     }

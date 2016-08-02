@@ -65,6 +65,7 @@ public class CML extends PullData {
 
         }
 
+        mSource = "www.centrometeolombardo.com/";
         mImageName = "spot-" + mSpotID + ".jpg";
     }
 

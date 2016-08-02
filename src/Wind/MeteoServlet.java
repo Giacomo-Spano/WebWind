@@ -54,15 +54,20 @@ public class MeteoServlet extends HttpServlet {
                 if (count++ != 0)
                     str += ",";
 
-                String name = Core.getSpotFromID(meteoStationData.spotID).name;
-                str += "{\"spotname\" : \"" + name/*meteoStationData.spotName*/ + "\",";
+                //String name = Core.getSpotFromID(meteoStationData.spotID).name;
+                str += "{\"spotname\" : \"" + Core.getSpotFromID(meteoStationData.spotID).name + "\",";
+                str += "\"sourceurl\" : " + "\"" + Core.getSpotFromID(meteoStationData.spotID).sourceUrl + "\",";
+                str += "\"webcamurl\" : " + "\"" + Core.getSpotFromID(meteoStationData.spotID).webcamUrl + "\",";
 
-                SimpleDateFormat df = new SimpleDateFormat("DD/MM/YYY HH:mm:ss");
-                str += "\"speed\" : " + meteoStationData.speed + ",";
-                str += "\"avspeed\" : " + meteoStationData.averagespeed + ",";
-                str += "\"direction\" : " + "\"" + meteoStationData.direction + "\",";
-                str += "\"directionangle\" : " + meteoStationData.directionangle + ",";
-                str += "\"datetime\" : " + "\"" + meteoStationData.sampledatetime + "\",";
+
+                if (fullinfo != null && fullinfo.equals("true")) {
+                    SimpleDateFormat df = new SimpleDateFormat("DD/MM/YYY HH:mm:ss");
+                    str += "\"speed\" : " + meteoStationData.speed + ",";
+                    str += "\"avspeed\" : " + meteoStationData.averagespeed + ",";
+                    str += "\"direction\" : " + "\"" + meteoStationData.direction + "\",";
+                    str += "\"directionangle\" : " + meteoStationData.directionangle + ",";
+                    str += "\"datetime\" : " + "\"" + meteoStationData.sampledatetime + "\",";
+                }
                 str += "\"id\" : " + meteoStationData.spotID + "}";
             }
 
@@ -102,6 +107,12 @@ public class MeteoServlet extends HttpServlet {
                 LOGGER.info("md=" + mdList.toString());
 
                 for (int i = 0; i < mdList.size(); i++) {
+
+                    MeteoStationData md = mdList.get(i);
+                    Spot spotInfo = Core.getSpotFromID(md.spotID);
+                    md.spotName = spotInfo.webcamUrl;
+                    md.source = spotInfo.sourceUrl;
+                    md.webcamurl = spotInfo.webcamUrl;
                     String jsonText = mdList.get(i).toJson();
                     LOGGER.info("jsonText meteodata " + jsonText);
 

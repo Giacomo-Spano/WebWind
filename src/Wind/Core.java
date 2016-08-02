@@ -88,10 +88,10 @@ public class Core {
         LOGGER.info("sendPushNotification sent");
     }
 
-    public static void addDevice(Device device) {
+    public static int addDevice(Device device) {
 
         Devices devices = new Devices();
-        devices.insert(device);
+        return devices.insert(device);
     }
 
     public static void removeDevice(String regId) {

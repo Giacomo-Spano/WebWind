@@ -29,18 +29,31 @@ public class ClubVentos extends PullData {
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
-        Calendar cal = Calendar.getInstance();
-        meteoStationData.sampledatetime = Core.getDate();
-        //LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
-        //LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
 
         // speed
         String txt = htmlResultString;
-        //String keyword = "Peak wind";   // non va bene, questa � la raffica max giornaliera
-        String keyword = "Average wind";
+
+        String keyword = "Jericoacoara Weather: ";
         int start = txt.indexOf(keyword);
+        if (start == -1)
+            LOGGER.severe(txt + " not found " + keyword);
+        txt = txt.substring(start + keyword.length());
+        keyword = ".";
+        int end = txt.indexOf(keyword);
+        txt = txt.substring(0, end);
+
+        // 12/05/15 - 2:40 PM
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy - hh:mm a");
+        try {
+            meteoStationData.sampledatetime = dateFormat.parse(txt);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        // speed
+        txt = htmlResultString;
+        keyword = "Average wind";
+        start = txt.indexOf(keyword);
         if (start == -1)
             LOGGER.severe(txt + " not found " + keyword);
         keyword = ": ";
@@ -49,7 +62,7 @@ public class ClubVentos extends PullData {
             LOGGER.severe(txt + " not found " + keyword);
         txt = txt.substring(start + keyword.length());
         keyword = "kts";
-        int end = txt.indexOf(keyword);
+        end = txt.indexOf(keyword);
         txt = txt.substring(0, end);
         if (start == -1)
             LOGGER.severe(txt + " not found " + keyword);
@@ -79,13 +92,13 @@ public class ClubVentos extends PullData {
         meteoStationData.temperature = Double.valueOf(txt.trim());
 
         // pressure
-        meteoStationData.pressure = -1.0;
+        meteoStationData.pressure = null;
 
         // humidity
-        meteoStationData.humidity = -1.0;
+        meteoStationData.humidity = null;
 
         // rain rate
-        meteoStationData.rainrate = -1.0;
+        meteoStationData.rainrate = null;
 
         // average speed
         txt = htmlResultString;
@@ -106,46 +119,13 @@ public class ClubVentos extends PullData {
         txt = txt.substring(0, end).trim();
         meteoStationData.averagespeed = Double.valueOf(txt.trim());
 
-        // date
-        txt = htmlResultString;
-        keyword = "Jericoacoara Weather:";
-        start = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        keyword = ": ";
-        start = txt.indexOf(keyword, start);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + keyword.length());
-        keyword = ".";
-        end = txt.indexOf(keyword);
-        if (end == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(0, end);
-        txt = txt.trim();
-        //txt = txt.replace("\t","");
-        /*String str = txt.substring(0,8);
-        String date = txt.trim();
-        str = txt.substring(10,17);
-        String time = txt.trim();*/
 
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yy - K:mm a");
-        try {
-            meteoStationData.datetime = formatter.parse(txt);
-
-            long difference = meteoStationData.datetime .getTime() - Core.getDate() .getTime();
-            if (difference/1000/60 >  60)
-                meteoStationData.offline = true;
-            else
-                meteoStationData.offline = false;
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        /*meteoStationData.spotName = mName;
-        meteoStationData.spotID = mSpotID;
-        meteoStationData.trend = getTrend();*/
+        meteoStationData.datetime = Core.getDate();
+        long difference = meteoStationData.datetime.getTime() - meteoStationData.sampledatetime.getTime();
+        if (difference / 1000 / 60 > 60)
+            meteoStationData.offline = true;
+        else
+            meteoStationData.offline = false;
 
         return meteoStationData;
     }

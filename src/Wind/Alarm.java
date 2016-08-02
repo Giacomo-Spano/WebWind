@@ -49,6 +49,10 @@ public class Alarm {
         LOGGER.info("startDate=" + jObject.getString("startDate"));
         LOGGER.info("startTime=" + jObject.getString("startTime"));
 
+        if (jObject.has("startTime")) {
+            deviceId = jObject.getInt("deviceId");
+        }
+
         speed = jObject.getDouble("speed");
         avspeed = jObject.getDouble("avspeed");
 
@@ -127,6 +131,7 @@ public class Alarm {
         JSONObject obj = new JSONObject();
 
         try {
+            obj.put("deviceId", deviceId);
             obj.put("speed", speed);
             obj.put("avspeed", avspeed);
 

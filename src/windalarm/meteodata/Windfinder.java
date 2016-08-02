@@ -25,13 +25,9 @@ public class Windfinder extends PullData {
         switch (mSpotID) {
             case AlarmModel.Spot_Scarlino:
                 mSpotUrl = "marina_di_scarlino";
-                //mWebcamUrl = "http://images.webcams.travel/webcam/1334396756-Meteo-GV-LNI-FOLLONICA-Webcam-Follonica.jpg";
                 mWebcamUrl = "http://www.meteoindiretta.it/get_webcam.php?src=http%3A%2F%2Fwww.parallelo43.it%2Fwebcam%2Fmarinascarlino.jpg&w=630";
-                //mImageName = AlarmModel.getSpotName(AlarmModel.Spot_Vassiliki) + ".jpg";
                 mImageName = "spot-" + mSpotID + ".jpg";
                 mName = "Marina di Scarlino (Toscana)";
-                //http://www.meteoindiretta.it/get_webcam.php?src=http%3A%2F%2Fwww.parallelo43.it%2Fwebcam%2Fmarinascarlino.jpg&w=630
-                //           //http://images.webcams.travel/preview/1334396756.jpg
                 break;
             case AlarmModel.Spot_VassilikiPort:
                 mSpotUrl = "lefkada_port?fspot=vasiliki";
@@ -45,6 +41,7 @@ public class Windfinder extends PullData {
                 mName = "Dakhla (Marocco)";
                 break;
         }
+        mSource = "www.windfinder.it";
     }
 
 
@@ -103,6 +100,8 @@ public class Windfinder extends PullData {
             meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
         }
 
+        meteoStationData.temperature = null;
+
         /*txt = htmlResultString;
         keyword = "spotmeta__notification";
         start = txt.indexOf(keyword);
@@ -119,12 +118,19 @@ public class Windfinder extends PullData {
 
         meteoStationData.datetime = meteoStationData.sampledatetime;
 
-        /*SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         try {
-            meteoStationData.datetime = formatter.parse(date + " " + time);
+            meteoStationData.datetime = formatter.parse(txt);
+
+            long difference = Core.getDate().getTime() - meteoStationData.sampledatetime.getTime();
+            if (difference/1000/60 >  60)
+                meteoStationData.offline = true;
+            else
+                meteoStationData.offline = false;
+
         } catch (ParseException e) {
             e.printStackTrace();
-        }*/
+        }
 
 
         return meteoStationData;

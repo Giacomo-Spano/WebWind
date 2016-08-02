@@ -78,7 +78,7 @@ public class AlarmModel {
         ArrayList<Spot> list = new ArrayList<Spot>();
         for (int i = 0; i < mSpotDataList.size(); i++) {
 
-            list.add(new Spot(mSpotDataList.get(i).getName(), mSpotDataList.get(i).getSpotID()));
+            list.add(new Spot(mSpotDataList.get(i).getName(), mSpotDataList.get(i).getSpotID(),mSpotDataList.get(i).getSourceUrl(), mSpotDataList.get(i).getWebcamUrl()));
         }
         return list;
     }
@@ -101,8 +101,7 @@ public class AlarmModel {
         if (meteoHistory.get(index).size() > 1000)
             meteoHistory.get(index).remove(0);
 
-        //LocalTime localTime = AlarmModel.getCurrentTime();
-        //Date localDate = AlarmModel.getCurrentDate();
+
         return true;
 
     }
@@ -135,6 +134,11 @@ public class AlarmModel {
         if (len == 0) return null;
 
         MeteoStationData md = meteoHistory.get(index).get(len - 1);
+
+        Spot spot = Core.getSpotFromID(id);
+        if (spot.offline)
+            md.offline = true;
+
         return md;
     }
 

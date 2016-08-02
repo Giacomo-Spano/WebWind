@@ -15,11 +15,17 @@
  */
 package Wind;
 
+import windalarm.meteodata.MeteoStationData;
+import windalarm.meteodata.Spot;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -41,7 +47,7 @@ public class RegisterServlet extends BaseServlet {
         try {
 
             String regId = request.getParameter("regid");
-            Devices devices =  new Devices();
+            Devices devices = new Devices();
             PrintWriter out = response.getWriter();
 
             if (devices != null) {
@@ -64,13 +70,15 @@ public class RegisterServlet extends BaseServlet {
             throws ServletException {
 
         String registeruser = getParameter(req, "registeruser");
-        //String deviceId = getParameter(req, "deviceId");
+        String registerdevice = getParameter(req, "registerdevice");
 
 
         if (registeruser != null && registeruser.equals("true")) {
             String authCode = getParameter(req, "authcode");
 
-        } else {
+            setSuccess(resp);
+
+        } else if (registerdevice != null && registerdevice.equals("true")) {
             String regId = getParameter(req, "regId");
             LOGGER.info("RegisterServlet regid=" + regId);
 
@@ -79,11 +87,40 @@ public class RegisterServlet extends BaseServlet {
             device.id = 0;
             device.name = getParameter(req, "name");
             device.date = Core.getDate();
-            //device.deviceId = deviceId;
-            Core.addDevice(device);
+            int deviceId = Core.addDevice(device);
+
+            resp.setContentType("application/json");
+            PrintWriter out = null;
+            try {
+                out = resp.getWriter();
+                out.println("{\"id\" : \"" + deviceId + "\", \"spotlist\" : [");
+
+                ArrayList<Spot> spotlist = Core.getSpotList();
+                Iterator<Spot> iterator = spotlist.iterator();
+                String str = "";
+                int count = 0;
+                while (iterator.hasNext()) {
+                    Spot spot = iterator.next();
+                    if (count++ != 0)
+                        str += ",";
+                    str += "{\"spotname\" : \"" + spot.name + "\",";
+                    str += "\"id\" : " + "\"" + spot.ID + "\",";
+                    str += "\"sourceurl\" : " + "\"" + spot.sourceUrl + "\",";
+                    str += "\"webcamurl\" : " + "\"" + spot.webcamUrl + "\"}";
+                }
+                str += "] }";
+                out.println(str);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            out.close();
+
+
+            setSuccess(resp);
+
         }
 
-        setSuccess(resp);
+
     }
 
 }

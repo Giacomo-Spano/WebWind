@@ -107,7 +107,7 @@ public class WindDatastore {
         }
     }
 
-    public long saveAlarm(int deviceId, Alarm alarm) {
+    public long saveAlarm(Alarm alarm) {
 
         long lastid;
         try {
@@ -134,7 +134,7 @@ public class WindDatastore {
             String sql = "INSERT INTO alarms (id, deviceId, startdate,starttime,enddate,endtime,lastringdate,lastringtime,snoozeminutes,spotid,speed,avspeed,enabled,direction,mo,tu,we,th,fr,sa,su )" +
                     " VALUES ("
                     + alarm.id + ","
-                    + deviceId + ","
+                    + alarm.deviceId + ","
                     + strStartDate + ","
                     + strStartTime + ","
                     + strEndDate + ","
@@ -157,7 +157,7 @@ public class WindDatastore {
                     + ") "
                     + "ON DUPLICATE KEY UPDATE "
                     + "id=" + alarm.id + ","
-                    + "deviceid=" + deviceId + ","
+                    + "deviceid=" + alarm.deviceId + ","
                     + "startdate=" + strStartDate + ","
                     + "starttime=" + strStartTime + ","
                     + "enddate=" + strEndDate + ","
@@ -204,7 +204,7 @@ public class WindDatastore {
     }
 
 
-    public static long deleteAlarm(int deviceId, int id) {
+    public static long deleteAlarm(int id) {
 
         int deletedItems = 0;
 
@@ -213,7 +213,7 @@ public class WindDatastore {
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
 
             String sql;
-            sql = "DELETE FROM alarms WHERE id=" + id + " AND deviceid=" + deviceId + ";";
+            sql = "DELETE FROM alarms WHERE id=" + id + ";";
             Statement stmt = conn.createStatement();
             deletedItems = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
 

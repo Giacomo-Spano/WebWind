@@ -125,7 +125,7 @@ public class Bombolak extends PullData {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         try {
             meteoStationData.datetime = formatter.parse(txt);
-            long difference = meteoStationData.datetime .getTime() - Core.getDate() .getTime();
+            long difference = Core.getDate().getTime() - meteoStationData.sampledatetime.getTime();
             if (difference/1000/60 >  60)
                 meteoStationData.offline = true;
             else

@@ -34,7 +34,7 @@ public class AlarmServlet extends HttpServlet {
         String deletekey = request.getParameter("delete");
         String ringkey = request.getParameter("ring");
         String snoozekey = request.getParameter("snooze");
-        String deviceId = request.getParameter("deviceId");
+        //String deviceId = request.getParameter("deviceId");
         String strAlarmId = request.getParameter("alarmId");
         String test = request.getParameter("test");
 
@@ -48,8 +48,8 @@ public class AlarmServlet extends HttpServlet {
         try {
             if (deletekey != null) {
 
-                LOGGER.info("delete alarm deviceId=" + Integer.valueOf(deviceId) + " id=" + alarmid);
-                WindDatastore.deleteAlarm(Integer.valueOf(deviceId), alarmid);
+                LOGGER.info("delete alarm  id=" + alarmid);
+                WindDatastore.deleteAlarm(alarmid);
 
             } else if (ringkey != null) {
 
@@ -60,14 +60,7 @@ public class AlarmServlet extends HttpServlet {
 
                 Date date = Core.getDate();
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                //String date = request.getParameter("date");
-                //String time = request.getParameter("time");
-
-                //try {
                 WindDatastore.updateAlarmLastRingDate(regId, Integer.valueOf(alarmid), date/*sdf.parse(date + " " + time)*/);
-                /*} catch (ParseException e) {
-                    e.printStackTrace();
-                }*/
 
             } else if (snoozekey != null) {
 
@@ -80,9 +73,6 @@ public class AlarmServlet extends HttpServlet {
             } else if (test != null && test.equals("true")) {
 
                 LOGGER.info("testing alarm");
-                /*LocalTime localTime = AlarmModel.getCurrentTime();
-                Date localDate = AlarmModel.getCurrentDate();
-                AlarmModel.evaluateAlarms(20.0, 20.0, localTime, localDate, 0);*/
                 Date localDate = Core.getDate();
                 double speed = 29.0;
                 double avspeed = 29.0;
@@ -93,9 +83,9 @@ public class AlarmServlet extends HttpServlet {
                 while (iterator.hasNext()) {
 
                     Alarm alarm = iterator.next();
-                    if (alarm.deviceId == Integer.valueOf(deviceId) && alarm.id == alarmid) {
+                    if (alarm.id == alarmid) {
 
-                        AlarmModel.sendAlarm(Integer.valueOf(deviceId), alarm, speed, avspeed, localDate, spotId);
+                        AlarmModel.sendAlarm(alarm.deviceId, alarm, speed, avspeed, localDate, spotId);
                     }
                 }
 
@@ -104,7 +94,7 @@ public class AlarmServlet extends HttpServlet {
 
                 JSONObject json = new JSONObject(jsonData);
                 Alarm alarm = new Alarm(json);
-                Core.windDatastore.saveAlarm(Integer.valueOf(deviceId), alarm);
+                Core.windDatastore.saveAlarm(alarm);
 
                 response.setContentType("application/json");
                 PrintWriter out = response.getWriter();

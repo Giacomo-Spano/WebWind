@@ -163,8 +163,8 @@ public class Devices {
 
             String sql;
             sql = "INSERT INTO devices (id, regid, date, name)" +
-                    " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\"" + "\") " +
-                    "ON DUPLICATE KEY UPDATE id=" + device.id + ", regid=\"" + device.regId + "\", date=" + date + ", name=\"" + device.name + "\"" + "\"";
+                    " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\") " +
+                    "ON DUPLICATE KEY UPDATE date=" + date + ", name=\"" + device.name + "\"";
 
             LOGGER.info("SQL=" + sql);
 

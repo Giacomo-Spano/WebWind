@@ -22,6 +22,7 @@ public abstract class PullData {
     protected String mWebcamUrl = "";
     protected String mImageName = "";
     protected String mSource = "";
+    public Boolean offline = false;
 
     public int getSpotID() {
         return mSpotID;
@@ -29,6 +30,13 @@ public abstract class PullData {
     public String getName() {
         return mName;
     }
+    public String getWebcamUrl() {
+        return mWebcamUrl;
+    }
+    public String getSourceUrl() {
+        return mSource;
+    }
+
 
     abstract MeteoStationData getMeteoData();
 
@@ -46,7 +54,7 @@ public abstract class PullData {
                 md.spotName = mName;
                 md.spotID = mSpotID;
                 md.trend = Core.getTrend(mSpotID);
-                md.webcamurl = mWebcamUrl;
+                //md.webcamurl = mWebcamUrl;
                 Core.sendData(md, mSpotID);
 
                 if (mWebcamUrl != "")
