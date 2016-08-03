@@ -74,7 +74,7 @@ public class MeteoServlet extends HttpServlet {
             out.print(str);
             out.println("] }");
 
-        } else if (lastdata != null && lastdata.equals("true")) {
+        } else if (lastdata != null && lastdata.equals("true")) { // Last meteo data
 
             ArrayList<MeteoStationData> mdList = new ArrayList<MeteoStationData>();
 
@@ -99,9 +99,7 @@ public class MeteoServlet extends HttpServlet {
                     }
                 }
             }
-
-            //ArrayList<MeteoStationData> md = PullDataServlet.getLast();
-            out.println("{\"meteodata\" : [");
+           out.println("{\"meteodata\" : [");
 
             if (mdList != null) {
                 LOGGER.info("md=" + mdList.toString());
@@ -122,11 +120,9 @@ public class MeteoServlet extends HttpServlet {
                 }
             }
             out.println("] }");
-        } else if (history != null && history.equals("true") && spot != null) {
+        } else if (history != null && history.equals("true") && spot != null) { // Historical data
 
             LOGGER.info("history");
-
-
             Date end = Core.getDate();
             Calendar cal = Calendar.getInstance();
             cal.setTime(end);
@@ -134,10 +130,8 @@ public class MeteoServlet extends HttpServlet {
             Date start = cal.getTime();
 
             MeteoStationData md = new MeteoStationData();
-            List<MeteoStationData> list = md.getHistory(Integer.valueOf(spot), start, end);
-
-
-            //ArrayList<MeteoStationData> md = Core.getHistory(Integer.valueOf(spot));
+            //List<MeteoStationData> list = md.getHistory(Integer.valueOf(spot), start, end);
+            List<MeteoStationData> list = Core.getHistory(Integer.valueOf(spot));
 
             LOGGER.info("md=" + list.toString());
 

@@ -142,7 +142,9 @@ public class Core {
     //-------------------------------------
 
     public static double getAverage(int spotID) {
-        return alarmModel.getAverage(spotID);
+
+        return 0;
+        //return alarmModel.getAverage(spotID);
     }
 
     public static double getTrend(int spotID) {
@@ -160,13 +162,16 @@ public class Core {
     }
 
 
-    public static ArrayList<MeteoStationData> getHistory(int spotID) {
-        return alarmModel.getHistory(spotID);
+    public static List<MeteoStationData> getHistory(int spotID) {
+        return alarmModel.getHistory(spotID,100);
     }
 
     public void init() {
 
         PullData d;
+
+        d = new VassilikiWindguru();
+        alarmModel.addSpotData(d);
 
         d = new ClubVentos();
         alarmModel.addSpotData(d);

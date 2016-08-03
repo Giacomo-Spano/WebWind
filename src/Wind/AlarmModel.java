@@ -48,14 +48,14 @@ public class AlarmModel {
     public static final int Spot_Colico = 12;
     public static final int Spot_Sorico = 13;
     public static final int Spot_Gravedona = 14;
-    //public static final int Spot_GeraLario = 15;
+    public static final int Spot_VassilikiWindguru = 15;
 
     private ArrayList<PullData> mSpotDataList = new ArrayList<PullData>();
-    //private LocalTime HighWindNotificationTime = getCurrentTime();
-    private ArrayList<ArrayList<MeteoStationData>> meteoHistory;// = new ArrayList<ArrayList<MeteoStationData>>();
+    //private ArrayList<ArrayList<MeteoStationData>> meteoHistory;// = new ArrayList<ArrayList<MeteoStationData>>();
+    private ArrayList<List<MeteoStationData>> meteoHistory;// = new ArrayList<ArrayList<MeteoStationData>>();
 
     public AlarmModel() {
-        meteoHistory = new ArrayList<ArrayList<MeteoStationData>>();
+        meteoHistory = new ArrayList<List<MeteoStationData>>();
     }
 
     public String getSpotName(int spotID) {
@@ -70,7 +70,17 @@ public class AlarmModel {
     public void addSpotData(PullData pd) {
 
         mSpotDataList.add(pd);
-        meteoHistory.add(new ArrayList<MeteoStationData>());
+        //meteoHistory.add(new ArrayList<MeteoStationData>());
+
+        Date end = Core.getDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(end);
+        cal.add(Calendar.HOUR_OF_DAY, -6); //minus number would decrement the hours
+        Date start = cal.getTime();
+        MeteoStationData md = new MeteoStationData();
+        List<MeteoStationData> list = md.getHistory(Integer.valueOf(pd.getSpotID()), start, end);
+        meteoHistory.add(list);
+
     }
 
     public ArrayList<Spot> getSpotList() {
@@ -160,12 +170,18 @@ public class AlarmModel {
         return "";
     }
 
-    public ArrayList<MeteoStationData> getHistory(int spotID) {
+    public List<MeteoStationData> getHistory(int spotID, int maxSampleData) {
 
         int index = getIndexFromID(spotID);
         if (index < 0) return null;
 
-        return meteoHistory.get(index);
+        List<MeteoStationData> list = new ArrayList<MeteoStationData>();
+        Iterator<MeteoStationData> iterator = meteoHistory.get(index).iterator();
+        while (iterator.hasNext() && list.size() < maxSampleData) {
+            list.add(iterator.next());
+        }
+        return list;
+        //return meteoHistory.get(index);
     }
 
     public void evaluateNotifications(MeteoStationData md) {
@@ -285,7 +301,7 @@ public class AlarmModel {
         int index = getIndexFromID(spotID);
         if (index < 0) return 0;
 
-        ArrayList<MeteoStationData> list = getHistory(index);
+        List<MeteoStationData> list = getHistory(index,5);
 
         double average = 0;
         int samples = 5;
@@ -305,13 +321,14 @@ public class AlarmModel {
         int index = getIndexFromID(spotID);
         if (index < 0) return 0;
 
-        ArrayList<MeteoStationData> list = getHistory(index);
+        int samples = 5;
+        List<MeteoStationData> list = getHistory(index,samples);
 
         double trend = 0;
         if (list == null || list.size() == 0)
             return 0;
 
-        int samples = 5;
+
         if (samples > list.size())
             samples = list.size();
 
