@@ -41,7 +41,7 @@ public class DebugServlet extends HttpServlet {
         if (list.size() > 0) {
             int deviceId = list.get(0).deviceId;
             Alarm alarm = list.get(0);
-            AlarmModel.sendAlarm(deviceId, alarm, speed, avspeed, localDate, spotId);
+            AlarmModel.sendAlarm(deviceId, alarm, speed, avspeed, localDate, spotId,0);
         }
 
         // Set response content type

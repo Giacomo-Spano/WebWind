@@ -116,22 +116,25 @@ public class AlarmModel {
 
     }
 
-    public void evaluate() {
+    public void evaluate(int windid, MeteoStationData md) {
 
         Date localTime = Core.getDate();
         Date localDate = localTime;
-
         LOGGER.info("--->evaluate ALARMS " + localDate.toString());
 
-        for (int spot = 0; spot < meteoHistory.size(); spot++) {
+        evaluateAlarms(md.speed, md.averagespeed, /*localTime, */localDate, md.spotID,windid);
+
+
+
+        /*for (int spot = 0; spot < meteoHistory.size(); spot++) {
             // fa un loop su tutti gli spot per trovare gli allarmi attivi
             int len = meteoHistory.get(spot).size();
             if (len < 1)
                 continue;
             MeteoStationData md = meteoHistory.get(spot).get(len - 1);
-            evaluateAlarms(md.speed, md.averagespeed, /*localTime, */localDate, md.spotID);
-            evaluateNotifications(md);
-        }
+            evaluateAlarms(md.speed, md.averagespeed, localDate, md.spotID,windid);
+            //evaluateNotifications(md);
+        }*/
         LOGGER.info("<---evaluate ALARMS");
     }
 
@@ -176,10 +179,19 @@ public class AlarmModel {
         if (index < 0) return null;
 
         List<MeteoStationData> list = new ArrayList<MeteoStationData>();
-        Iterator<MeteoStationData> iterator = meteoHistory.get(index).iterator();
-        while (iterator.hasNext() && list.size() < maxSampleData) {
-            list.add(iterator.next());
+        //Iterator<MeteoStationData> iterator = meteoHistory.get(index).iterator();
+
+        int count = meteoHistory.get(index).size() - maxSampleData;
+        if (count < 0)
+            count = 0;
+        while (count++ < meteoHistory.get(index).size() - 1) {
+            list.add(meteoHistory.get(index).get(count));
         }
+
+
+        /*while (iterator.hasNext() && list.size() < maxSampleData) {
+            list.add(iterator.next());
+        }*/
         return list;
         //return meteoHistory.get(index);
     }
@@ -230,29 +242,30 @@ public class AlarmModel {
     }
 
 
-    public static void evaluateAlarms(Double speed, Double avspeed, /*Date localTime, */Date localDate, long spotId) {
-        //LOGGER.info("evaluateAlarms localTime=" + localTime);
+    public static void evaluateAlarms(Double speed, Double avspeed, Date localDate, long spotId,int windid) {
         LOGGER.info("LocalDate=" + localDate);
-        List<Alarm> list = WindDatastore.getActiveAlarm(speed, avspeed, /*localTime, */localDate, spotId);
+        List<Alarm> list = WindDatastore.sendActiveAlarm(speed, avspeed, localDate, spotId, windid);
 
         LOGGER.info("list.size=" + list.size());
 
-        for (int i = 0; i < list.size(); i++) {
+        /*for (int i = 0; i < list.size(); i++) {
             int deviceId = list.get(i).deviceId;
             Alarm alarm = list.get(i);
             LOGGER.info("i=" + i);
-            sendAlarm(deviceId, alarm, speed, avspeed,/* localTime, */localDate, spotId);
-        }
+            sendAlarm(deviceId, alarm, speed, avspeed,localDate, spotId);
+        }*/
     }
 
-    public static void sendAlarm(int deviceId, Alarm alarm, Double speed, Double avspeed, /*Date currentTime, */Date currentDate, long spotId) {
+    public static void sendAlarm(int deviceId, Alarm alarm, Double speed, Double avspeed, Date currentDate, long spotId, int windid) {
 
         LOGGER.info("sendAlarm spotID=" + spotId);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
         AlarmLog al = new AlarmLog();
-        al.insert("sendalarm",alarm.id,"deviceId" + deviceId, speed, avspeed, spotId,0);
+        al.insert("sendalarm",alarm.id,deviceId, speed, avspeed, spotId,0,windid);
+        WindDatastore.updateAlarmLastRingDate(alarm.deviceId,alarm.id,currentDate);
+
         Message notification = new Message.Builder()
                 .addData("title", "titolox")
                 .addData("alarmId", ""+alarm.id)
@@ -266,11 +279,10 @@ public class AlarmModel {
                 .addData("speed", "" + alarm.speed)
                 .addData("curspeed", "" + speed)
                 .addData("curavspeed", "" + avspeed)
-                //.addData("curlocalTime", "" + currentTime)
-
                 .addData("curDate", "" + dateFormat.format(currentDate))
                 .addData("curspotId", "" + spotId)
                 .addData("notificationtype", AlarmModel.NotificationType_Alarm)
+                .addData("windid", "" + windid)
                 .build();
         Core.sendPushNotification(deviceId, notification);
     }

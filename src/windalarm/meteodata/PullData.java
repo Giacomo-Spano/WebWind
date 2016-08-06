@@ -54,13 +54,11 @@ public abstract class PullData {
                 md.spotName = mName;
                 md.spotID = mSpotID;
                 md.trend = Core.getTrend(mSpotID);
-                //md.webcamurl = mWebcamUrl;
                 Core.sendData(md, mSpotID);
 
                 if (mWebcamUrl != "")
                     Core.sendImage(mWebcamUrl/*"http://www.wcv.it/webcam05/currenth.jpg"*/, mImageName);
             }
-
 
         } catch (Exception e) {
             LOGGER.severe("cannot get data for spot " + mName + "("+mSpotID+")");

@@ -72,7 +72,6 @@ public class RegisterServlet extends BaseServlet {
         String registeruser = getParameter(req, "registeruser");
         String registerdevice = getParameter(req, "registerdevice");
 
-
         if (registeruser != null && registeruser.equals("true")) {
             String authCode = getParameter(req, "authcode");
 
@@ -115,12 +114,8 @@ public class RegisterServlet extends BaseServlet {
             }
             out.close();
 
-
             setSuccess(resp);
-
         }
-
-
     }
 
 }

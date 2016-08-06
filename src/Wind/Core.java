@@ -162,9 +162,10 @@ public class Core {
     }
 
 
-    public static List<MeteoStationData> getHistory(int spotID) {
-        return alarmModel.getHistory(spotID,100);
+    public static List<MeteoStationData> getHistory(int spotID, int sampledata) {
+        return alarmModel.getHistory(spotID,sampledata);
     }
+
 
     public void init() {
 
@@ -292,15 +293,15 @@ public class Core {
             LOGGER.severe("cannot get data for dervio" + e.toString());
         }*/
 
-        alarmModel.evaluate();
+        //alarmModel.evaluate();
 
     }
 
     public static void sendData(MeteoStationData meteoData, int spotID) {
         //mdList.add(meteoData);
-        meteoData.insert();
+        int windId = meteoData.insert();
         alarmModel.Add(meteoData, spotID);
-
+        alarmModel.evaluate(windId,meteoData);
         //sendToWorksheet(meteoData);
     }
 

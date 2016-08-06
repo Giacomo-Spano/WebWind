@@ -51,7 +51,7 @@ public class MeteoStationData {
     public MeteoStationData() {
 
         List<String> symbols;
-        symbols = asList("E","EAST"); // 0
+        symbols = asList("E", "EAST"); // 0
         symbolList.add(symbols);
         symbols = asList("NEE", "ENE");//1
         symbolList.add(symbols);
@@ -103,7 +103,6 @@ public class MeteoStationData {
     public String toJson() {
 
         JSONObject obj = new JSONObject();
-
         try {
             obj.put("speed", speed);
             obj.put("avspeed", averagespeed);
@@ -123,6 +122,24 @@ public class MeteoStationData {
             obj.put("spotid", spotID);
             obj.put("webcamurl", webcamurl);
             obj.put("offline", offline);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return obj.toString();
+    }
+
+    public String toSpeedHistoryJson() {
+
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("speed", speed);
+            obj.put("avspeed", averagespeed);
+            obj.put("direction", direction);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            if (datetime != null) obj.put("datetime", dateFormat.format(datetime));
+            obj.put("directionangle", directionangle);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -226,15 +243,14 @@ public class MeteoStationData {
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = stmt.getGeneratedKeys();
-            /*if (rs.next()) {
+            if (rs.next()) {
                 lastid = rs.getInt(1);
             } else {
-                //lastid = device.id;
-            }*/
-
+                lastid = -1;
+            }
             stmt.close();
-
             conn.close();
+            return lastid;
         } catch (SQLException se) {
             //Handle errors for JDBC
             se.printStackTrace();
@@ -245,9 +261,6 @@ public class MeteoStationData {
             e.printStackTrace();
             return 0;
         }
-
-        //read(); // reload data
-        return 1;
     }
 
     public List<MeteoStationData> getHistory(int spotId, Date startDate, Date endDate) {
@@ -346,7 +359,7 @@ public class MeteoStationData {
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
             Statement stmt = conn.createStatement();
 
-            ArrayList<Spot> sl= Core.getSpotList();
+            ArrayList<Spot> sl = Core.getSpotList();
             Iterator<Spot> iterator = sl.iterator();
             while (iterator.hasNext()) {
                 int spotId = iterator.next().ID;

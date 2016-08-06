@@ -45,7 +45,7 @@ public class WindDatastore {
     }
 
 
-    public static void updateAlarmLastRingDate(String IMEI, long alarmId, Date date) {
+    public static void updateAlarmLastRingDate(int deviceId, long alarmId, Date date) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -62,7 +62,7 @@ public class WindDatastore {
                     + "snoozeminutes=0 "
                     + " WHERE "
                     + "id='" + alarmId + "' AND "
-                    + "IMEI='" + IMEI + "';";
+                    + "deviceid=" + deviceId + ";";
 
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
@@ -82,13 +82,13 @@ public class WindDatastore {
         }
     }
 
-    public static void updateAlarmSnoozeMinutes(String IMEI, long alarmId, int snoozeMminutes) {
+    public static void updateAlarmSnoozeMinutes(long alarmId, int snoozeMminutes) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
 
-            String sql = "UPDATE alarms SET snoozeminutes=" + snoozeMminutes + ";";
+            String sql = "UPDATE alarms SET snoozeminutes=" + snoozeMminutes + " WHERE id=" + alarmId + ";";
 
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
@@ -348,9 +348,9 @@ public class WindDatastore {
         return alarms;
     }
 
-    public static List<Alarm> getActiveAlarm(Double speed, Double avspeed, /*Date currentTime, */Date currentDate, long spotId) {
+    public static List<Alarm> sendActiveAlarm(Double speed, Double avspeed, Date currentDate, long spotId, int windid) {
 
-        logger.info("GETACTIVEALARM: speed=" + speed+",avspeed=" + avspeed/*+",currentTime=" + currentTime*/+",currentDate=" + currentDate+",spotId=" + spotId);
+        logger.info("GETACTIVEALARM: speed=" + speed+",avspeed=" + avspeed+",currentDate=" + currentDate+",spotId=" + spotId);
 
         List<Alarm> registeredAlarms = new ArrayList<Alarm>();
         try {
@@ -372,35 +372,40 @@ public class WindDatastore {
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-
                 Alarm alarm = getAlarmFromResultSet(rs);
 
                 Date today = Core.getDate();
-                SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-
+                SimpleDateFormat dateFmt = new SimpleDateFormat("dd/MM/yyy");
+                SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm");
+                SimpleDateFormat datetimeFmt = new SimpleDateFormat("dd/MM/yyy HH:mm");
                 if (alarm.lastRingDate != null && alarm.lastRingTime != null) {
 
-                    if (fmt.format(today).equals(fmt.format(alarm.lastRingDate))) {
+                    String strLastRingDateTime = dateFmt.format(alarm.lastRingDate) + " " + timeFmt.format(alarm.lastRingTime);
+                    Date lastRingDate = datetimeFmt.parse(strLastRingDateTime);
 
-                        if (alarm.snoozeMinutes == 0)   // non suonare se ha già
-                            // suonato oggi ed è stato stoppato (snooze == 0)
-                            continue;
+                    Long minutesTimeDifference = (today.getTime() - lastRingDate.getTime()) / 1000 / 60;
+                    if (minutesTimeDifference < 30) { // allarme già suonato da meno di 30 minuti
 
-                        Calendar cal = Calendar.getInstance(); // creates calendar
-                        cal.setTime(alarm.lastRingTime); // sets calendar time/date
-                        cal.add(Calendar.MINUTE, alarm.snoozeMinutes); // adds one hour
-                        Date snoozeTime = cal.getTime(); // returns new date object, one hour in the future
+                        if (alarm.snoozeMinutes == 0)
+                            continue; // se non è impostato snoozetime non suonare
 
-                        if (timeIsBefore(today, snoozeTime)) // non suonare se non è finito lo snooze time
-                            continue;
+                        if (minutesTimeDifference < alarm.snoozeMinutes) {
+                            continue;   // non suonare se non è ancora finito lo snooze time
+                        }
                     }
+
+
                 }
+                AlarmModel.sendAlarm(alarm.deviceId,alarm,speed,avspeed,currentDate,spotId,windid);
+                //updateAlarmLastRingDate(alarm.deviceId,alarm.id,currentDate);
+
+
 
                 logger.info("ALARM ACTIVE: alarm.deviceId=" + alarm.deviceId +",alarm.speed=" + alarm.speed+",alarm.avspeed=" + alarm.avspeed+",alarm.direction=" + alarm.direction
                     +",alarm.id=" + alarm.id+",alarm.startTime=" + alarm.startTime.toString()+",alarm.endTime=" + alarm.endTime.toString()+",alarm.startDate=" + alarm.startDate.toString()
                     +",alarm.endDate=" + alarm.endDate.toString()+",alarm.spotId=" + alarm.spotID);
 
-                registeredAlarms.add(alarm);
+                //registeredAlarms.add(alarm);
             }
             rs.close();
             stmt.close();

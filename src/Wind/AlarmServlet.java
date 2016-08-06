@@ -30,11 +30,11 @@ public class AlarmServlet extends HttpServlet {
         // to accept the json data
 
         String jsonData = request.getParameter("json");
-        String regId = request.getParameter("regId");
+        //String regId = request.getParameter("regId");
         String deletekey = request.getParameter("delete");
         String ringkey = request.getParameter("ring");
         String snoozekey = request.getParameter("snooze");
-        //String deviceId = request.getParameter("deviceId");
+        //String strDeviceId = request.getParameter("deviceId");
         String strAlarmId = request.getParameter("alarmId");
         String test = request.getParameter("test");
 
@@ -52,24 +52,16 @@ public class AlarmServlet extends HttpServlet {
                 WindDatastore.deleteAlarm(alarmid);
 
             } else if (ringkey != null) {
-
                 AlarmLog al = new AlarmLog();
-                al.insert("ring enable", alarmid, regId, 0);
-
-                LOGGER.info("update ring date regId " + regId + ";id " + alarmid);
-
-                Date date = Core.getDate();
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                WindDatastore.updateAlarmLastRingDate(regId, Integer.valueOf(alarmid), date/*sdf.parse(date + " " + time)*/);
-
+                al.insert("ring enable", alarmid, -1, 0, 0);
+                LOGGER.info("update ring date alarmid " + alarmid);
             } else if (snoozekey != null) {
 
                 int snoozeMinutes = Integer.valueOf(request.getParameter("minutes"));
                 AlarmLog al = new AlarmLog();
-                al.insert("snooze alarm", alarmid, regId, snoozeMinutes);
-                LOGGER.info("snooze regId " + regId + ";id " + alarmid + ";snooze minutes=" + snoozeMinutes);
-                WindDatastore.updateAlarmSnoozeMinutes(regId, Integer.valueOf(alarmid), snoozeMinutes);
-
+                al.insert("snooze alarm", alarmid, -1, snoozeMinutes, 0);
+                LOGGER.info("snooze alarmid " + alarmid + ";snooze minutes=" + snoozeMinutes);
+                WindDatastore.updateAlarmSnoozeMinutes(alarmid, snoozeMinutes);
             } else if (test != null && test.equals("true")) {
 
                 LOGGER.info("testing alarm");
@@ -85,7 +77,7 @@ public class AlarmServlet extends HttpServlet {
                     Alarm alarm = iterator.next();
                     if (alarm.id == alarmid) {
 
-                        AlarmModel.sendAlarm(alarm.deviceId, alarm, speed, avspeed, localDate, spotId);
+                        AlarmModel.sendAlarm(alarm.deviceId, alarm, speed, avspeed, localDate, spotId, 0);
                     }
                 }
 
