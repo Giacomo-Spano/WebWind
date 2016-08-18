@@ -202,14 +202,18 @@ public class Devices {
             date = "'" + df.format((device.date)) + "'";
 
             String sql;
-            sql = "INSERT INTO devices (id, regid, date, name, personid)" +
+            sql = "DELETE FROM devices WHERE personid=" + "'" + device.personId + "' AND name=" + "'" + device.name + "';";
+            Statement stmt = conn.createStatement();
+            int res = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+
+            /*sql = "INSERT INTO devices (id, regid, date, name, personid)" +
                     " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\",\"" + device.personId + "\") " +
                     "ON DUPLICATE KEY UPDATE date=" + date + ", name=\"" + device.name + "\", personid=\"" + device.personId + "\";";
+*/
+            sql = "INSERT INTO devices (id, regid, date, name, personid)" +
+                    " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\",\"" + device.personId + "\") ;";
 
-            LOGGER.info("SQL=" + sql);
-
-
-            Statement stmt = conn.createStatement();
+            //Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) {

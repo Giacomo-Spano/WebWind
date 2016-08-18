@@ -273,7 +273,7 @@ public class AlarmModel {
 
         PullData spotdata = getSpotInfoFromId(md.spotID);
 
-        if (md.averagespeed > 15.0 /*&& md.spotID == 0*/) {
+        if (md.averagespeed > 15.0 && md.spotID == 0) {
 
             long differenceInMinutes = -1;
             if (spotdata.lastHighWindNotificationSentDate != null)
@@ -283,6 +283,7 @@ public class AlarmModel {
                 Message notification = new Message.Builder()
                         .addData("title", md.spotName)
                         .addData("message", md.spotName + " - Vento forte " + md.speed + "km/h (" + md.averagespeed + ")")
+                        .addData("spotID", "" + md.spotID)
                         .addData("notificationtype", AlarmModel.NotificationType_Info)
                         .build();
 
@@ -292,7 +293,7 @@ public class AlarmModel {
                 setLastHighWindNotificationDate(md.spotID,Core.getDate());
 
             }
-        } else if (md.trend > 150.0 /*&& md.spotID == 0*/) {
+        } else if (md.trend > 150.0 && md.spotID == 0) {
 
             long differenceInMinutes = -1;
             if (spotdata.lastWindIncreaseNotificationSentDate != null)
@@ -302,6 +303,7 @@ public class AlarmModel {
                 Message notification = new Message.Builder()
                         .addData("title", md.spotName)
                         .addData("message", md.spotName + " - Vento in forte aumento ")
+                        .addData("spotID", "" + md.spotID)
                         .addData("notificationtype", AlarmModel.NotificationType_Info)
                         .build();
 
