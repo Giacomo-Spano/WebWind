@@ -62,4 +62,15 @@
         <url-pattern>/debug</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>NotificationServlet</servlet-name>
+        <servlet-class>Wind.NotificationServlet</servlet-class>
+
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>NotificationServlet</servlet-name>
+        <url-pattern>/notification</url-pattern>
+    </servlet-mapping>
+
 </web-app>

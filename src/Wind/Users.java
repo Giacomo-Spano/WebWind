@@ -9,15 +9,16 @@ import java.util.logging.Logger;
 /**
  * Created by Giacomo Span� on 08/11/2015.
  */
-public class User {
+public class Users {
 
-    private static final Logger LOGGER = Logger.getLogger(User.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Users.class.getName());
 
-    public User() {
+    public Users() {
     }
 
-    public int insert(String authcode) {
+    public int insert(String personId, String personName, String personEmail, String authCode) {
 
+        int lastid;
         try {
             // Register JDBC driver
             Class.forName("com.mysql.jdbc.Driver");
@@ -26,15 +27,22 @@ public class User {
 
             Date date = Core.getDate();
             DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:m:ss");
-            String strStartDate = "'" + df.format(date) + "'";
+            String strdate = "'" + df.format(date) + "'";
 
             String sql;
-            sql = "INSERT INTO user (type, date, user, params)" +
-                    " VALUES ('" + authcode + "') " ;
+            sql = "INSERT INTO users (id, date, personid, personname, personemail, authcode)" +
+                    " VALUES (1," + strdate + ",\"" + personId + "\",\"" + personName + "\",\"" + personEmail + "\",\"" + authCode  + "\")" +
+                    " ON DUPLICATE KEY UPDATE date=" + strdate + ",personid=\"" + personId + "\",personName=\"" + personName + "\""
+                            + ",personemail=\"" + personEmail + "\",authcode=\"" + authCode + "\"" + ";";
 
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                lastid = rs.getInt(1);
+            } else {
+                lastid = 1;
+            }
             stmt.close();
             conn.close();
         } catch (SQLException se) {
@@ -47,6 +55,6 @@ public class User {
             e.printStackTrace();
             return -1;
         }
-        return 0;
+        return lastid;
     }
 }

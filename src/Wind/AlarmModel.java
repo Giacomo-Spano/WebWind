@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -30,6 +31,8 @@ public class AlarmModel {
 
     public static final String NotificationType_Alarm = "Alarm";
     public static final String NotificationType_Info = "info";
+
+    public static final long ONE_MINUTE_IN_MILLIS = 60000;//millisecs
 
     private static final Logger LOGGER = Logger.getLogger(AlarmModel.class.getName());
 
@@ -51,7 +54,6 @@ public class AlarmModel {
     public static final int Spot_VassilikiWindguru = 15;
 
     private ArrayList<PullData> mSpotDataList = new ArrayList<PullData>();
-    //private ArrayList<ArrayList<MeteoStationData>> meteoHistory;// = new ArrayList<ArrayList<MeteoStationData>>();
     private ArrayList<List<MeteoStationData>> meteoHistory;// = new ArrayList<ArrayList<MeteoStationData>>();
 
     public AlarmModel() {
@@ -88,7 +90,7 @@ public class AlarmModel {
         ArrayList<Spot> list = new ArrayList<Spot>();
         for (int i = 0; i < mSpotDataList.size(); i++) {
 
-            list.add(new Spot(mSpotDataList.get(i).getName(), mSpotDataList.get(i).getSpotID(),mSpotDataList.get(i).getSourceUrl(), mSpotDataList.get(i).getWebcamUrl()));
+            list.add(new Spot(mSpotDataList.get(i).getName(), mSpotDataList.get(i).getSpotID(), mSpotDataList.get(i).getSourceUrl(), mSpotDataList.get(i).getWebcamUrl()));
         }
         return list;
     }
@@ -122,8 +124,8 @@ public class AlarmModel {
         Date localDate = localTime;
         LOGGER.info("--->evaluate ALARMS " + localDate.toString());
 
-        evaluateAlarms(md.speed, md.averagespeed, /*localTime, */localDate, md.spotID,windid);
-
+        evaluateAlarms(md.speed, md.averagespeed, localDate, md.spotID, windid);
+        evaluateNotifications(md);
 
 
         /*for (int spot = 0; spot < meteoHistory.size(); spot++) {
@@ -179,70 +181,140 @@ public class AlarmModel {
         if (index < 0) return null;
 
         List<MeteoStationData> list = new ArrayList<MeteoStationData>();
-        //Iterator<MeteoStationData> iterator = meteoHistory.get(index).iterator();
-
         int count = meteoHistory.get(index).size() - maxSampleData;
         if (count < 0)
             count = 0;
         while (count++ < meteoHistory.get(index).size() - 1) {
             list.add(meteoHistory.get(index).get(count));
         }
-
-
-        /*while (iterator.hasNext() && list.size() < maxSampleData) {
-            list.add(iterator.next());
-        }*/
         return list;
-        //return meteoHistory.get(index);
+    }
+
+    public List<MeteoStationData> getHistory(int spotID, Date startDate, Date endDate) {
+
+        int index = getIndexFromID(spotID);
+        if (index < 0) return null;
+
+        int start = getIndexAtTime(spotID, startDate);
+        if (start == -1) return null;
+
+        int end = getIndexAtTime(spotID, endDate);
+        if (end == -1) return null;
+
+        List<MeteoStationData> list = new ArrayList<MeteoStationData>();
+        for (int i = start; i <= end; i++) {
+            list.add(meteoHistory.get(index).get(i));
+        }
+        return list;
+    }
+
+    protected int getIndexAtTime(int spotID, Date date) {
+
+        int spotIndex = getIndexFromID(spotID);
+        if (spotIndex < 0) return -1;
+
+        List<MeteoStationData> list = meteoHistory.get(spotIndex);
+        ListIterator iterator = list.listIterator(list.size());
+
+        if (list == null || list.size() == 0)
+            return -1;
+
+        int index = list.size() - 1;
+        while (iterator.hasPrevious() && list.get(index).datetime.getTime() > date.getTime()) {
+            index--;
+            if (index == 0)
+                break;
+        }
+        return index;
+    }
+
+    protected double getTrend(int spotID, Date startDate, Date endDate) {
+
+        List<MeteoStationData> list = getHistory(spotID, startDate, endDate);
+        if (list == null || list.size() == 0)
+            return 0;
+
+        MeteoStationData startMeteodata;
+        MeteoStationData endMeteodata;
+        endMeteodata = (MeteoStationData) list.get(list.size() - 1);
+        startMeteodata = (MeteoStationData) list.get(0);
+
+        double trend = 0.0;
+        long timeDifference = (endMeteodata.datetime.getTime() - startMeteodata.datetime.getTime()) / ONE_MINUTE_IN_MILLIS;
+        if (timeDifference == 0)
+            return 0;
+        trend = (endMeteodata.averagespeed - startMeteodata.averagespeed) / timeDifference;
+        trend = Math.round(trend * 100);
+        trend = 10 * trend;
+        return trend;
+    }
+
+    public PullData getSpotInfoFromId(int id) {
+        for (int i = 0; i < mSpotDataList.size(); i++) {
+            if (mSpotDataList.get(i).getSpotID() == id)
+                return mSpotDataList.get(i);
+        }
+        return null;
+    }
+    public void setLastHighWindNotificationDate(int id, Date date) {
+        for (int i = 0; i < mSpotDataList.size(); i++) {
+            if (mSpotDataList.get(i).getSpotID() == id)
+                mSpotDataList.get(i).lastHighWindNotificationSentDate = date;
+        }
+    }
+    public void setLastIncreaseWindNotificationDate(int id, Date date) {
+        for (int i = 0; i < mSpotDataList.size(); i++) {
+            if (mSpotDataList.get(i).getSpotID() == id)
+                mSpotDataList.get(i).lastWindIncreaseNotificationSentDate = date;
+        }
     }
 
     public void evaluateNotifications(MeteoStationData md) {
 
-       /* LocalTime current = new LocalTime();
+        PullData spotdata = getSpotInfoFromId(md.spotID);
 
+        if (md.averagespeed > 15.0 /*&& md.spotID == 0*/) {
 
-        if (Double.valueOf(md.averagespeed) > 15.0) {
+            long differenceInMinutes = -1;
+            if (spotdata.lastHighWindNotificationSentDate != null)
+                differenceInMinutes= TimeUnit.MILLISECONDS.toMinutes(Core.getDate().getTime() - spotdata.lastHighWindNotificationSentDate.getTime());
+            if (differenceInMinutes == -1 || differenceInMinutes > 30) {
 
-            HighWindNotificationTime = getCurrentTime();
+                Message notification = new Message.Builder()
+                        .addData("title", md.spotName)
+                        .addData("message", md.spotName + " - Vento forte " + md.speed + "km/h (" + md.averagespeed + ")")
+                        .addData("notificationtype", AlarmModel.NotificationType_Info)
+                        .build();
 
-            Message message = new Message.Builder()
-                    // .collapseKey(collapsekey) // se c'? gi? un messaggio con lo
-                    // stesso collapskey e red id allora l'ultimo sostituir? il
-                    // precedente
-                    // .timeToLive(3).delayWhileIdle(true) // numero di secondi per
-                    // i quali il messagio rimane in coda (default 4 week)
-                    .addData("title", "titoloy")
-                    .addData("message", "allarme")
-                    .addData("notificationtype", SendPushMessages.NotificationType_Info)
-                    .build();
+                List<Device> devices = Core.getDevices();
+                Core.sendPushNotification(devices, notification);
 
-            SendPushMessages sp = new SendPushMessages();
-            sp.init();
-            //sp.send("vento forte",SendPushMessages.App_WindAlarm,message);
+                setLastHighWindNotificationDate(md.spotID,Core.getDate());
 
+            }
+        } else if (md.trend > 150.0 /*&& md.spotID == 0*/) {
+
+            long differenceInMinutes = -1;
+            if (spotdata.lastWindIncreaseNotificationSentDate != null)
+                differenceInMinutes= TimeUnit.MILLISECONDS.toMinutes(Core.getDate().getTime() - spotdata.lastWindIncreaseNotificationSentDate.getTime());
+            if (differenceInMinutes == -1 || differenceInMinutes > 30) {
+
+                Message notification = new Message.Builder()
+                        .addData("title", md.spotName)
+                        .addData("message", md.spotName + " - Vento in forte aumento ")
+                        .addData("notificationtype", AlarmModel.NotificationType_Info)
+                        .build();
+
+                List<Device> devices = Core.getDevices();
+                Core.sendPushNotification(devices, notification);
+
+                setLastIncreaseWindNotificationDate(md.spotID,Core.getDate());
+            }
         }
-        if (Double.valueOf(md.averagespeed) > 18.0) {
-
-            Message message = new Message.Builder()
-                    // .collapseKey(collapsekey) // se c'? gi? un messaggio con lo
-                    // stesso collapskey e red id allora l'ultimo sostituir? il
-                    // precedente
-                    // .timeToLive(3).delayWhileIdle(true) // numero di secondi per
-                    // i quali il messagio rimane in coda (default 4 week)
-                    .addData("title", "vento in aumento")
-                    .addData("message", "vento in aumento. Vento medio " + md.averagespeed + "vento " + md.speed)
-                    .addData("notificationtype", SendPushMessages.NotificationType_Info)
-                    .build();
-
-            SendPushMessages sp = new SendPushMessages();
-            sp.init();
-            //sp.send("vento forte",SendPushMessages.App_WindAlarm,message);
-
-        }*/
     }
 
 
-    public static void evaluateAlarms(Double speed, Double avspeed, Date localDate, long spotId,int windid) {
+    public static void evaluateAlarms(Double speed, Double avspeed, Date localDate, long spotId, int windid) {
         LOGGER.info("LocalDate=" + localDate);
         List<Alarm> list = WindDatastore.sendActiveAlarm(speed, avspeed, localDate, spotId, windid);
 
@@ -263,12 +335,12 @@ public class AlarmModel {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
         AlarmLog al = new AlarmLog();
-        al.insert("sendalarm",alarm.id,deviceId, speed, avspeed, spotId,0,windid);
-        WindDatastore.updateAlarmLastRingDate(alarm.deviceId,alarm.id,currentDate);
+        al.insert("sendalarm", alarm.id, deviceId, speed, avspeed, spotId, 0, windid);
+        WindDatastore.updateAlarmLastRingDate(alarm.deviceId, alarm.id, currentDate);
 
         Message notification = new Message.Builder()
                 .addData("title", "titolox")
-                .addData("alarmId", ""+alarm.id)
+                .addData("alarmId", "" + alarm.id)
                 .addData("spotID", "" + alarm.spotID)
                 .addData("startDate", "" + alarm.startDate)
                 .addData("startTime", "" + alarm.startTime)
@@ -286,7 +358,6 @@ public class AlarmModel {
                 .build();
         Core.sendPushNotification(deviceId, notification);
     }
-
 
 
     public boolean getHistoricalMeteoData() {// inizializza historical meteo data
@@ -313,7 +384,7 @@ public class AlarmModel {
         int index = getIndexFromID(spotID);
         if (index < 0) return 0;
 
-        List<MeteoStationData> list = getHistory(index,5);
+        List<MeteoStationData> list = getHistory(index, 5);
 
         double average = 0;
         int samples = 5;
@@ -334,7 +405,7 @@ public class AlarmModel {
         if (index < 0) return 0;
 
         int samples = 5;
-        List<MeteoStationData> list = getHistory(index,samples);
+        List<MeteoStationData> list = getHistory(index, samples);
 
         double trend = 0;
         if (list == null || list.size() == 0)
@@ -414,4 +485,6 @@ public class AlarmModel {
         }
         return true;
     }
+
+
 }

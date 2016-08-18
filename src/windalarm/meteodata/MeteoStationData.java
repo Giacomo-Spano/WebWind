@@ -42,10 +42,12 @@ public class MeteoStationData {
     public Integer spotID = -1;
     public String webcamurl = "";
 
-    private static String[] directionSymbols = {"E", "ESE", "SE", "SSE", "S",
-            "SSW", "SW", "SWW", "W",
-            "WNW", "NW", "NNW", "N",
-            "NNE", "NE", "ENE"};
+   /*private static String[] directionSymbols = {
+            "E", "ENE", "NE", "NEN",
+            "N", "NNO", "NO", "NOO",
+            "O", "OSO", "SO", "SOS",
+            "S", "SSE", "SE", "SEE"};
+    */
     private ArrayList<List<String>> symbolList = new ArrayList<List<String>>();
 
     public MeteoStationData() {
@@ -140,6 +142,8 @@ public class MeteoStationData {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             if (datetime != null) obj.put("datetime", dateFormat.format(datetime));
             obj.put("directionangle", directionangle);
+            obj.put("temperature", temperature);
+            obj.put("trend", trend);
 
         } catch (JSONException e) {
             e.printStackTrace();

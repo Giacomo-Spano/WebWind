@@ -1,5 +1,7 @@
 package windalarm.meteodata;
 
+import java.util.Date;
+
 /**
  * Created by giacomo on 13/09/2015.
  */
@@ -9,6 +11,7 @@ public class Spot {
     public String sourceUrl;
     public String webcamUrl;
     public Boolean offline = false;
+
 
     public Spot(String name, int ID,String sourceUrl, String webcamUrl) {
         this.name = name;

@@ -30,7 +30,7 @@ public class RequestLog {
 
             String sql;
             sql = "INSERT INTO alarmlog (authcode, type, date, user, params)" +
-                    " VALUES ('" + authcode + "','" + type + "'," + user + ",'" + params + "') " ;
+                    " VALUES ('" + authcode + "','" + type + "'," + strStartDate + "," + user + ",'" + params + "') " ;
 
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);

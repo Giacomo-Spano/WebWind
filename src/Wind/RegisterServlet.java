@@ -73,26 +73,50 @@ public class RegisterServlet extends BaseServlet {
         String registerdevice = getParameter(req, "registerdevice");
 
         if (registeruser != null && registeruser.equals("true")) {
-            String authCode = getParameter(req, "authcode");
+
+            String personId = getParameter(req, "personId");
+            String personName = getParameter(req, "personName");
+            String personEmail = getParameter(req, "personEmail");
+            String personPhoto = getParameter(req, "personPhoto");
+            String authCode = getParameter(req, "authCode");
+
+            int userid = Core.addUser(personId,personName,personEmail,authCode,personPhoto,authCode);
+
+            resp.setContentType("application/json");
+            PrintWriter out = null;
+            try {
+                out = resp.getWriter();
+                out.println("{\"id\" : \"" + userid + "\", \"personid\" : \"" + personId + "\" }");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            out.close();
 
             setSuccess(resp);
 
         } else if (registerdevice != null && registerdevice.equals("true")) {
             String regId = getParameter(req, "regId");
-            LOGGER.info("RegisterServlet regid=" + regId);
+            String personId = getParameter(req, "personId");
+            String personName = getParameter(req, "personName");
+            String personEmail = getParameter(req, "personEmail");
+            String personPhoto = getParameter(req, "personPhoto");
+            String authCode = getParameter(req, "authCode");
+
+            int userid = Core.addUser(personId,personName,personEmail,authCode,personPhoto,authCode);
 
             Device device = new Device();
             device.regId = regId;
             device.id = 0;
             device.name = getParameter(req, "name");
             device.date = Core.getDate();
+            device.personId = personId;
             int deviceId = Core.addDevice(device);
 
             resp.setContentType("application/json");
             PrintWriter out = null;
             try {
                 out = resp.getWriter();
-                out.println("{\"id\" : \"" + deviceId + "\", \"spotlist\" : [");
+                out.println("{\"deviceid\" : " + deviceId + ", \"userid\" : " + userid + ", \"spotlist\" : [");  // todo eliminare il tag spotlist
 
                 ArrayList<Spot> spotlist = Core.getSpotList();
                 Iterator<Spot> iterator = spotlist.iterator();

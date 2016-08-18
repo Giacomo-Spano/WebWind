@@ -72,7 +72,9 @@ public class Devices {
     }*/
 
 
-    public List<Device> getDeviceFromDeviceId(int deviceId) {
+    public List<Device> getDevices(
+
+    ) {
 
         LOGGER.info(" getDeviceFromDeviceId");
 
@@ -84,7 +86,7 @@ public class Devices {
             Statement stmt = conn.createStatement();
 
             String sql;
-            sql = "SELECT * FROM devices WHERE id=" + deviceId + ";";
+            sql = "SELECT * FROM devices;";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 Device device = new Device();
@@ -108,6 +110,44 @@ public class Devices {
             return null;
         }
         return list;
+    }
+
+    public Device getDeviceFromDeviceId(int deviceId) {
+
+        LOGGER.info(" getDeviceFromDeviceId");
+
+        Device device = null;
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            String sql;
+            sql = "SELECT * FROM devices WHERE id=" + deviceId + ";";
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                device = new Device();
+                device.id = rs.getInt("id");
+                //device.deviceId = rs.getString("deviceid");
+                device.regId = rs.getString("regid");
+                device.name = rs.getString("name");
+                device.date = rs.getDate("date");
+
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return device;
     }
 
     public Device getDeviceFromRegId(String regId) {
@@ -162,9 +202,9 @@ public class Devices {
             date = "'" + df.format((device.date)) + "'";
 
             String sql;
-            sql = "INSERT INTO devices (id, regid, date, name)" +
-                    " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\") " +
-                    "ON DUPLICATE KEY UPDATE date=" + date + ", name=\"" + device.name + "\"";
+            sql = "INSERT INTO devices (id, regid, date, name, personid)" +
+                    " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\",\"" + device.personId + "\") " +
+                    "ON DUPLICATE KEY UPDATE date=" + date + ", name=\"" + device.name + "\", personid=\"" + device.personId + "\";";
 
             LOGGER.info("SQL=" + sql);
 

@@ -22,42 +22,45 @@ public class Core {
     private static final Logger LOGGER = Logger.getLogger(Core.class.getName());
 
     public static String  APP_DNS_OPENSHIFT = "jbossews-giacomohome.rhcloud.com";
+    public static String  APP_DNS_OPENSHIFTTEST = "jbossewstest-giacomohome.rhcloud.com";
+
+
     protected static String appDNS_envVar;
     protected static String mysqlDBHost_envVar;
     protected static String mysqlDBPort_envVar;
     protected static String tmpDir_envVar;
 
-    private static final String USER = "root";
-    private static final String PASS = "giacomo";
-    private static String DB_URL = "jdbc:mysql://127.0.0.1:3306/winddb";
-    private Devices mDevices = new Devices();
-
-
     public static String getUser() {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
             return "adminzdVX5dl";
+        else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
+            return "adminw8ZVVu2";
         else
             return "root";
     }
     public static String getPassword() {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
             return "eEySMcJ6WCj4";
+        else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
+            return "MhbY-61ZlqU4";
         else
             return "giacomo";
     }
     public static String getDbUrl() {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
             return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
+        } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
+            return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
         }
-        else
-            return "jdbc:mysql://127.0.0.1:3306/winddb";
+            return "jdbc:mysql://127.0.0.1:3306/jbossews";
     }
 
     public static String getTmpDir() {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
             return tmpDir_envVar;
-        }
-        else
+        } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
+            return tmpDir_envVar;
+        } else
             return "c:\\scratch";
     }
 
@@ -88,10 +91,22 @@ public class Core {
         LOGGER.info("sendPushNotification sent");
     }
 
+    public static void sendPushNotification(List<Device> devices, Message notification) {
+
+        new PushNotificationThread(devices, notification).start();
+
+    }
+
     public static int addDevice(Device device) {
 
         Devices devices = new Devices();
         return devices.insert(device);
+    }
+
+    public static int addUser(String personId, String personName, String personEmail, String authCode, String authcode, String name) {
+
+        Users users = new Users();
+        return users.insert(personId, personName, personEmail, authCode);
     }
 
     public static void removeDevice(String regId) {
@@ -100,9 +115,14 @@ public class Core {
         devices.delete(regId);
     }
 
-    public static List<Device> getDevicesFromDeviceId(int deviceID) {
+    public static Device getDevicesFromDeviceId(int deviceID) {
         Devices devices = new Devices();
         return devices.getDeviceFromDeviceId(deviceID);
+    }
+
+    public static List<Device> getDevices() {
+        Devices devices = new Devices();
+        return devices.getDevices();
     }
 
     public static Date getDate() {
@@ -114,9 +134,7 @@ public class Core {
 
         final String dateInString;// = df.format(date);
 
-        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
-
-
+        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT) || appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
             cal.add(Calendar.HOUR_OF_DAY, 6); //minus number would decrement the hours
@@ -147,8 +165,8 @@ public class Core {
         //return alarmModel.getAverage(spotID);
     }
 
-    public static double getTrend(int spotID) {
-        return alarmModel.getTrend(spotID);
+    public static double getTrend(int spotID, Date startDate, Date endDate) {
+        return alarmModel.getTrend(spotID,startDate,endDate);
     }
 
     /*public static ArrayList<MeteoStationData> getLast() {
@@ -164,6 +182,10 @@ public class Core {
 
     public static List<MeteoStationData> getHistory(int spotID, int sampledata) {
         return alarmModel.getHistory(spotID,sampledata);
+    }
+
+    public static List<MeteoStationData> getHistory(int spotID, Date start, Date end) {
+        return alarmModel.getHistory(spotID,start,end);
     }
 
 

@@ -1,5 +1,6 @@
 package windalarm.meteodata;
 
+import Wind.AlarmModel;
 import Wind.Core;
 
 import java.io.BufferedReader;
@@ -8,6 +9,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -23,6 +26,10 @@ public abstract class PullData {
     protected String mImageName = "";
     protected String mSource = "";
     public Boolean offline = false;
+    public Date lastHighWindNotificationSentDate;
+    public Date lastWindIncreaseNotificationSentDate;
+
+
 
     public int getSpotID() {
         return mSpotID;
@@ -53,7 +60,11 @@ public abstract class PullData {
             if (md != null) {
                 md.spotName = mName;
                 md.spotID = mSpotID;
-                md.trend = Core.getTrend(mSpotID);
+
+
+                long minutes = 30;
+                Date startTime = new Date(md.datetime.getTime() - (minutes * AlarmModel.ONE_MINUTE_IN_MILLIS));
+                md.trend = Core.getTrend(mSpotID, startTime, md.datetime);
                 Core.sendData(md, mSpotID);
 
                 if (mWebcamUrl != "")
@@ -68,26 +79,7 @@ public abstract class PullData {
 
 
 
-    /*protected double getTrend() {
 
-        ArrayList<MeteoStationData> list = AlarmModel.getHistory(mSpotID);
-
-        double trend = 0;
-        if (list == null || list.size() == 0)
-            return 0;
-
-        int samples = 5;
-        if (samples > list.size())
-            samples = list.size();
-
-        double initialAverageSpeed = list.get(list.size() - samples).averagespeed;
-
-        for (int i = 1; i < samples; i++) {
-            trend += (list.get(list.size() - samples + i).averagespeed - initialAverageSpeed);
-        }
-        trend = Math.round(trend * 10) / 10;
-        return trend;
-    }*/
     /*protected double getAverage() {
 
         ArrayList<MeteoStationData> list = AlarmModel.getHistory(mSpotID);

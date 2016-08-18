@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
@@ -44,18 +45,12 @@ public class MeteoServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
 
-
         if (spotlist != null && spotlist.equals("true")) {
 
             RequestLog req = new RequestLog();
-            req.insert(authcode,"spotlist",0,"");
+            req.insert(authcode, "spotlist", 0, "");
 
-            LOGGER.info("spotlist");
             out.print("{\"spotlist\" : [");
-
-            //MeteoStationData md = new MeteoStationData();
-            //List<MeteoStationData> mdList = md.getLastMeteoStationData();
-            //Iterator<MeteoStationData> iterator = mdList.iterator();
 
             List<Spot> sl = Core.getSpotList();
             Iterator<Spot> iterator = sl.iterator();
@@ -74,6 +69,7 @@ public class MeteoServlet extends HttpServlet {
 
                 str += "{\"spotname\" : \"" + sp.name + "\",";
                 str += "\"sourceurl\" : " + "\"" + sp.sourceUrl + "\",";
+                str += "\"id\" : " + "\"" + sp.ID + "\",";
                 str += "\"webcamurl\" : " + "\"" + sp.webcamUrl + "\",";
 
 
@@ -88,16 +84,15 @@ public class MeteoServlet extends HttpServlet {
                 str += "\"id\" : " + meteoStationData.spotID + "}";
             }
 
-
             str += "] }";
-            response.setHeader("Length",""+str.length());
+            response.setHeader("Length", "" + str.length());
             out.print(str);
-            //out.println("] }");
+
 
         } else if (lastdata != null && lastdata.equals("true")) { // Last meteo data
 
             RequestLog req = new RequestLog();
-            req.insert(authcode,"lastdata",0,"");
+            req.insert(authcode, "lastdata", 0, "");
 
             ArrayList<MeteoStationData> mdList = new ArrayList<MeteoStationData>();
 
@@ -122,7 +117,7 @@ public class MeteoServlet extends HttpServlet {
                     }
                 }
             }
-           String str="{\"meteodata\" : [";
+            String str = "{\"meteodata\" : [";
 
             if (mdList != null) {
                 LOGGER.info("md=" + mdList.toString());
@@ -139,12 +134,12 @@ public class MeteoServlet extends HttpServlet {
 
                     str += jsonText;
                     if (i != mdList.size() - 1)
-                        str +=",";
+                        str += ",";
                 }
             }
             str += "] }";
             //response.setContentLength(str.length());
-            response.setHeader("Length",""+str.length());
+            response.setHeader("Length", "" + str.length());
             out.println(str);
 
 
@@ -153,23 +148,34 @@ public class MeteoServlet extends HttpServlet {
             LOGGER.info("history");
 
             RequestLog req = new RequestLog();
-            req.insert(authcode,"history",0,"");
+            req.insert(authcode, "history", 0, "");
+
 
             Date end = Core.getDate();
             Calendar cal = Calendar.getInstance();
             cal.setTime(end);
             cal.add(Calendar.HOUR_OF_DAY, -6); //minus number would decrement the hours
-            //Date start = cal.getTime();
-            //MeteoStationData md = new MeteoStationData();
-            //List<MeteoStationData> list = md.getHistory(Integer.valueOf(spot), start, end);
-            List<MeteoStationData> list = Core.getHistory(Integer.valueOf(spot),200);
+            Date start = cal.getTime();
+
+            String strStartDate = request.getParameter("start");
+            String strEndDate = request.getParameter("end");
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
+            try {
+                if (strStartDate != null)
+                    start = df.parse(strStartDate);
+                if (strEndDate != null)
+                    end = df.parse(strEndDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            List<MeteoStationData> list = Core.getHistory(Integer.valueOf(spot), start, end);
 
             LOGGER.info("md=" + list.toString());
 
 
-
             int length = 999;
-            response.setHeader("Length",""+length);
+            response.setHeader("Length", "" + length);
             //response.setContentLength(length);
             out.println(" ");
 
@@ -198,7 +204,7 @@ public class MeteoServlet extends HttpServlet {
         out.close();
 
         RequestLog rl = new RequestLog();
-        rl.insert(authcode,type,user,params);
+        rl.insert(authcode, type, user, params);
 
     }
 }
