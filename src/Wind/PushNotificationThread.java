@@ -13,25 +13,11 @@ public class PushNotificationThread extends Thread {
 
     private static final Logger LOGGER = Logger.getLogger(PushNotificationThread.class.getName());
 
-    int deviceId;
-    String type;
-    String title;
-    String description;
-    String value;
     Message notification;
     List<Device> devices;
 
-    /*public PushNotificationThread(String type, String title, String description, String value) {
-        super("str");
-
-        this.type = type;
-        this.title = title;
-        this.description = description;
-        this.value = value;
-    }*/
-
     public PushNotificationThread(int deviceId, Message notification) {
-        super("str");
+        super("PushNotificationThread");
 
         devices = new ArrayList<Device>();
 
@@ -52,18 +38,25 @@ public class PushNotificationThread extends Thread {
     }
     public void addDevice(int deviceId) {
 
+        LOGGER.info("addDevice deviceId" + deviceId);
+
         Device device = Core.getDevicesFromDeviceId(deviceId);
         devices.add(device);
     }
 
     public void run() {
 
-        LOGGER.info("PushNotificationThread type=" + type + "title=" + title + "value=" + value);
+        LOGGER.info("PushNotificationThread::run");
+
+        for (Device device : devices) {
+            LOGGER.info("deviceid=" + device.id + ", name=" + device.name + ", regId=" + device.regId);
+        }
+
         SendPushMessages sp = new SendPushMessages(notification);
         //SendPushMessages sp = new SendPushMessages(type, title, description, value);
         //List<Device> devices = Core.getDevicesFromDeviceId(deviceId);
         sp.send(devices);
-        LOGGER.info("PushNotificationThread type=" + type + "title=" + title + "value=" + value);
+
     }
 }
 

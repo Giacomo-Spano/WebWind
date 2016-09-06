@@ -40,52 +40,71 @@ public class NotificationServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
 
+        LOGGER.info("NotificationServlet::doPost");
+
         String title    = request.getParameter("title");
         String message = request.getParameter("message");
 
-        // --------------- send notification
+        LOGGER.info("title:"+title);
+        LOGGER.info("message:"+message);
 
-        Date localDate = Core.getDate();
-        double speed = 29.0;
-        double avspeed = 29.0;
-        int spotId = 0;
 
-        List<Device> devices = Core.getDevices();
-        sendNotification(devices,title,message);
 
         // Set response content type
         response.setContentType("text/html");
-
         // Actual logic goes here.
         PrintWriter out = null;
         try {
             out = response.getWriter();
+            out.println("<h1>" + "notification sent" + "</h1>");
+
+            /*SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            final String dateInString = df.format(Core.getDate());
+            out.println("Data = " + dateInString);
+            out.println("\n");
+
+            String envVar = System.getenv("OPENSHIFT_APP_DNS");
+            out.println("OPENSHIFT_APP_DNS = " + envVar);
+            out.println("DB user = " + Core.getUser());
+            out.println("DB password = " + Core.getPassword());
+            out.println("DB host = " + Core.getDbUrl());
+            out.println("Temp dir = " + Core.getTmpDir());
+            */
         } catch (IOException e) {
             e.printStackTrace();
+            LOGGER.info("IOException:"+e.toString());
         }
-        out.println("<h1>" + "notification sent" + "</h1>");
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        final String dateInString = df.format(Core.getDate());
-        out.println("Data = " + dateInString);
-        out.println("\n");
 
-        String envVar = System.getenv("OPENSHIFT_APP_DNS");
-        out.println("OPENSHIFT_APP_DNS = " + envVar);
-        out.println("DB user = " + Core.getUser());
-        out.println("DB password = " + Core.getPassword());
-        out.println("DB host = " + Core.getDbUrl());
-        out.println("Temp dir = " + Core.getTmpDir());
+        out.close();
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("text/plain");
+        //response.setContentLength(0);
+
+        // --------------- send notification
+        List<Device> devices = Core.getDevices();
+        sendNotification(devices,title,message);
+
 
 
     }
 
     public static void sendNotification(List<Device> devices, String title,String message) {
 
+        LOGGER.info("sendNotification: ");
+        for (Device device : devices ) {
+            LOGGER.info("device: ");
+            LOGGER.info("-id: " + device.id);
+            LOGGER.info("-name: " + device.name);
+            LOGGER.info("-regid: " + device.regId);
+        }
+
         Message notification = new Message.Builder()
                 .addData("title", title)
                 .addData("message", message)
                 .addData("notificationtype", AlarmModel.NotificationType_Info)
+                .addData("spotName", "spotName")
                 .build();
         Core.sendPushNotification(devices, notification);
     }

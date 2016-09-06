@@ -118,20 +118,6 @@ public class Windfinder extends PullData {
 
         meteoStationData.datetime = meteoStationData.sampledatetime;
 
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        try {
-            meteoStationData.datetime = formatter.parse(txt);
-
-            long difference = Core.getDate().getTime() - meteoStationData.sampledatetime.getTime();
-            if (difference/1000/60 >  60)
-                meteoStationData.offline = true;
-            else
-                meteoStationData.offline = false;
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
 
         return meteoStationData;
     }

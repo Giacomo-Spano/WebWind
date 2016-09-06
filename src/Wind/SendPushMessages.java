@@ -58,7 +58,9 @@ public class SendPushMessages {
 
     protected Sender newSender() {
 
-        String key = "AIzaSyDWlsBz7nlnFGUskZDsCFajEiUQk8A_vQs";//"AIzaSyCVaM1D21srrg8-0gzPC8e_4EpznChipW4";
+        //String key = "AIzaSyDWlsBz7nlnFGUskZDsCFajEiUQk8A_vQs";//"AIzaSyCVaM1D21srrg8-0gzPC8e_4EpznChipW4";
+        //String key = "AIzaSyAPStosUACk0fiEPh4UfhwjZLzeoSUMBrY";
+        String key = "AIzaSyDWlsBz7nlnFGUskZDsCFajEiUQk8A_vQs";
         return new Sender(key);
     }
 
@@ -90,7 +92,8 @@ public class SendPushMessages {
                 partialDevices.clear();
 
                 //Result result = sendSingleMessage(registrationId,message);
-                status = "Sent message to one device: ";
+                status = "Sent message to one device: " + registrationId;
+                LOGGER.info(status);
 
             } else {
                 // send a multicast message using JSON

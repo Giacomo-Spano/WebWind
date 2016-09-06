@@ -63,6 +63,8 @@ public class DebugServlet extends HttpServlet {
         out.println("DB host = " + Core.getDbUrl());
         out.println("Temp dir = " + Core.getTmpDir());
 
+        out.println("\nVERSION = " + Core.getVersion());
+
     }
 
     public void destroy() {

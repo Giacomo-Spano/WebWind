@@ -30,6 +30,9 @@ public class MeteoServlet extends HttpServlet {
         String lastdata = request.getParameter("lastdata");
         String spotlist = request.getParameter("requestspotlist");
         String history = request.getParameter("history");
+        String log = request.getParameter("log");
+        //String startDate = request.getParameter("start");
+        //String endDate = request.getParameter("end");
         String spot = request.getParameter("spot");
         String fullinfo = request.getParameter("fullinfo");
 
@@ -198,13 +201,101 @@ public class MeteoServlet extends HttpServlet {
             out.println(str);
 
 
+        } else if (log != null && log.equals("true") && spot != null) { // Historical data
+
+            LOGGER.info("log REQUEST");
+            String strStartDate = request.getParameter("start");
+            String strEndDate = request.getParameter("end");
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
+            Date start = null, end = null;
+            try {
+                if (strStartDate != null)
+                    start = df.parse(strStartDate);
+                if (strEndDate != null)
+                    end = df.parse(strEndDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+                out.println("error");
+                out.close();
+            }
+            if (start == null || end == null) {
+                out.println("error");
+                out.close();
+            }
+
+            List<MeteoStationData> list = Core.getHistory(Integer.valueOf(spot), start, end);
+            out.println(" ");
+
+            String str = "{";
+
+            String date = "";
+            String speed = "";
+            String avspeed = "";
+            String direction = "";
+            String trend = "";
+            String temperature = "";
+            int count = 0;
+
+            for (MeteoStationData element : list) {
+
+                if (count++ != 0) {
+                    date += ";";
+                    speed += ";";
+                    avspeed += ";";
+                    direction += ";";
+                    trend += ";";
+                    temperature += ";";
+                }
+
+                date += df.format(element.datetime);
+                speed += element.speed;
+                avspeed += element.averagespeed;
+                direction += element.directionangle;
+                if (element.trend == null) // TODO non so perchè in qualche caso è null
+                    element.trend = 0.0;
+                trend += element.trend;
+                temperature += element.temperature;
+            }
+            str += "\"date\" : \"";
+            str += date;
+            str += "\"";
+
+            str += ",";
+            str += "\"speed\" : \"";
+            str += speed;
+            str += "\"";
+
+            str += ",";
+            str += "\"avspeed\" : \"";
+            str += avspeed;
+            str += "\"";
+
+            str += ",";
+            str += "\"trend\" : \"";
+            str += trend;
+            str += "\"";
+
+            str += ",";
+            str += "\"direction\" : \"";
+            str += direction;
+            str += "\"";
+
+            str += ",";
+            str += "\"temperature\" : \"";
+            str += temperature;
+            str += "\"";
+
+            str += "}";
+
+            out.print(str);
+
         } else {
             out.println("no data");
         }
         out.close();
 
-        RequestLog rl = new RequestLog();
-        rl.insert(authcode, type, user, params);
+        //RequestLog rl = new RequestLog();
+        //rl.insert(authcode, type, user, params);
 
     }
 }

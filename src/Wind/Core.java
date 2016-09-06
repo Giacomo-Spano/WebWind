@@ -21,14 +21,15 @@ public class Core {
 
     private static final Logger LOGGER = Logger.getLogger(Core.class.getName());
 
-    public static String  APP_DNS_OPENSHIFT = "jbossews-giacomohome.rhcloud.com";
-    public static String  APP_DNS_OPENSHIFTTEST = "jbossewstest-giacomohome.rhcloud.com";
+    public static String APP_DNS_OPENSHIFT = "jbossews-giacomohome.rhcloud.com";
+    public static String APP_DNS_OPENSHIFTTEST = "jbossewstest-giacomohome.rhcloud.com";
 
 
     protected static String appDNS_envVar;
     protected static String mysqlDBHost_envVar;
     protected static String mysqlDBPort_envVar;
     protected static String tmpDir_envVar;
+    private static String version = "0.10";
 
     public static String getUser() {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
@@ -36,23 +37,29 @@ public class Core {
         else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
             return "adminw8ZVVu2";
         else
+            //return "adminzdVX5dl";// production
             return "root";
     }
+
     public static String getPassword() {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
             return "eEySMcJ6WCj4";
         else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
             return "MhbY-61ZlqU4";
         else
+            //return "eEySMcJ6WCj4"; //production
             return "giacomo";
     }
+
     public static String getDbUrl() {
-        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
+        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) { // production
             return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
-        } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
+        } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) { // test
             return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
         }
-            return "jdbc:mysql://127.0.0.1:3306/jbossews";
+        //test
+        return "jdbc:mysql://127.0.0.1:3306/jbossews";
+        //return "jdbc:mysql://127.0.0.1:3307/jbossews"; // production
     }
 
     public static String getTmpDir() {
@@ -65,7 +72,7 @@ public class Core {
     }
 
     private static AlarmModel alarmModel = new AlarmModel();
-    public  static WindDatastore windDatastore = new WindDatastore();
+    public static WindDatastore windDatastore = new WindDatastore();
 
 
     public static ArrayList<Spot> getSpotList() {
@@ -77,9 +84,7 @@ public class Core {
         appDNS_envVar = System.getenv("OPENSHIFT_APP_DNS");
         mysqlDBHost_envVar = System.getenv("OPENSHIFT_MYSQL_DB_HOST");
         mysqlDBPort_envVar = System.getenv("OPENSHIFT_MYSQL_DB_PORT");
-
         tmpDir_envVar = System.getenv("OPENSHIFT_TMP_DIR");
-
     }
 
     public static void sendPushNotification(int deviceId, Message notification) {
@@ -121,6 +126,8 @@ public class Core {
     }
 
     public static List<Device> getDevices() {
+
+        LOGGER.info("getDevices");
         Devices devices = new Devices();
         return devices.getDevices();
     }
@@ -166,7 +173,7 @@ public class Core {
     }
 
     public static double getTrend(int spotID, Date startDate, Date endDate) {
-        return alarmModel.getTrend(spotID,startDate,endDate);
+        return alarmModel.getTrend(spotID, startDate, endDate);
     }
 
     /*public static ArrayList<MeteoStationData> getLast() {
@@ -181,11 +188,15 @@ public class Core {
 
 
     public static List<MeteoStationData> getHistory(int spotID, int sampledata) {
-        return alarmModel.getHistory(spotID,sampledata);
+        return alarmModel.getHistory(spotID, sampledata);
     }
 
     public static List<MeteoStationData> getHistory(int spotID, Date start, Date end) {
-        return alarmModel.getHistory(spotID,start,end);
+        return alarmModel.getHistory(spotID, start, end);
+    }
+
+    public static String getVersion() {
+        return version;
     }
 
 
@@ -242,7 +253,7 @@ public class Core {
         alarmModel.getHistoricalMeteoData();
     }
 
-    public static Spot getSpotFromID(int id) {
+    public static Spot getSpotFromID(long id) {
 
         int index = alarmModel.getIndexFromID(id);
         if (index < 0) return null;
@@ -323,7 +334,7 @@ public class Core {
         //mdList.add(meteoData);
         int windId = meteoData.insert();
         alarmModel.Add(meteoData, spotID);
-        alarmModel.evaluate(windId,meteoData);
+        alarmModel.evaluate(windId, meteoData);
         //sendToWorksheet(meteoData);
     }
 

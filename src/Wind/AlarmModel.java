@@ -157,7 +157,7 @@ public class AlarmModel {
         return md;
     }
 
-    public int getIndexFromID(int spotID) {
+    public int getIndexFromID(long spotID) {
 
         for (int i = 0; i < mSpotDataList.size(); i++) {
             if (mSpotDataList.get(i).getSpotID() == spotID)
@@ -166,7 +166,7 @@ public class AlarmModel {
         return -1;
     }
 
-    public String getNameFromID(int spotID) {
+    public String getNameFromID(long spotID) {
 
         for (int i = 0; i < mSpotDataList.size(); i++) {
             if (mSpotDataList.get(i).getSpotID() == spotID)
@@ -192,7 +192,10 @@ public class AlarmModel {
 
     public List<MeteoStationData> getHistory(int spotID, Date startDate, Date endDate) {
 
-        int index = getIndexFromID(spotID);
+        MeteoStationData md = new MeteoStationData();
+        List<MeteoStationData> list = md.getHistory(spotID, startDate, endDate);
+
+        /*int index = getIndexFromID(spotID);
         if (index < 0) return null;
 
         int start = getIndexAtTime(spotID, startDate);
@@ -204,7 +207,7 @@ public class AlarmModel {
         List<MeteoStationData> list = new ArrayList<MeteoStationData>();
         for (int i = start; i <= end; i++) {
             list.add(meteoHistory.get(index).get(i));
-        }
+        }*/
         return list;
     }
 
@@ -285,6 +288,7 @@ public class AlarmModel {
                         .addData("message", md.spotName + " - Vento forte " + md.speed + "km/h (" + md.averagespeed + ")")
                         .addData("spotID", "" + md.spotID)
                         .addData("notificationtype", AlarmModel.NotificationType_Info)
+                        .addData("spotName", md.spotName)
                         .build();
 
                 List<Device> devices = Core.getDevices();
@@ -304,6 +308,7 @@ public class AlarmModel {
                         .addData("title", md.spotName)
                         .addData("message", md.spotName + " - Vento in forte aumento ")
                         .addData("spotID", "" + md.spotID)
+                        .addData("spotName", md.spotName)
                         .addData("notificationtype", AlarmModel.NotificationType_Info)
                         .build();
 
@@ -340,10 +345,12 @@ public class AlarmModel {
         al.insert("sendalarm", alarm.id, deviceId, speed, avspeed, spotId, 0, windid);
         WindDatastore.updateAlarmLastRingDate(alarm.deviceId, alarm.id, currentDate);
 
+
         Message notification = new Message.Builder()
                 .addData("title", "titolox")
                 .addData("alarmId", "" + alarm.id)
                 .addData("spotID", "" + alarm.spotID)
+                .addData("spotName", "" + Core.getSpotFromID(alarm.spotID).name)
                 .addData("startDate", "" + alarm.startDate)
                 .addData("startTime", "" + alarm.startTime)
                 .addData("lastRingTime", "" + alarm.lastRingTime)

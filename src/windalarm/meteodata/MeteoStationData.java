@@ -109,7 +109,7 @@ public class MeteoStationData {
             obj.put("speed", speed);
             obj.put("avspeed", averagespeed);
             obj.put("direction", direction);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
             if (datetime != null)
                 obj.put("datetime", dateFormat.format(datetime));
             if (sampledatetime != null)
@@ -139,7 +139,7 @@ public class MeteoStationData {
             obj.put("speed", speed);
             obj.put("avspeed", averagespeed);
             obj.put("direction", direction);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
             if (datetime != null) obj.put("datetime", dateFormat.format(datetime));
             obj.put("directionangle", directionangle);
             obj.put("temperature", temperature);
@@ -151,6 +151,7 @@ public class MeteoStationData {
         }
         return obj.toString();
     }
+
 
     public String fromJson(JSONObject obj) {
 

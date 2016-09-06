@@ -114,7 +114,7 @@ public class Devices {
 
     public Device getDeviceFromDeviceId(int deviceId) {
 
-        LOGGER.info(" getDeviceFromDeviceId");
+        LOGGER.info("getDeviceFromDeviceId: " + deviceId);
 
         Device device = null;
 
@@ -129,11 +129,10 @@ public class Devices {
             while (rs.next()) {
                 device = new Device();
                 device.id = rs.getInt("id");
-                //device.deviceId = rs.getString("deviceid");
                 device.regId = rs.getString("regid");
                 device.name = rs.getString("name");
                 device.date = rs.getDate("date");
-
+                LOGGER.info(" id=" + device.id + " regId=" + device.regId + " name=" + device.name);
             }
             rs.close();
             stmt.close();
@@ -141,10 +140,12 @@ public class Devices {
 
         } catch (SQLException se) {
             se.printStackTrace();
+            LOGGER.info("error=" + se.toString());
             return null;
 
         } catch (Exception e) {
             e.printStackTrace();
+            LOGGER.info("error=" + e.toString());
             return null;
         }
         return device;
