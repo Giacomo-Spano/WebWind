@@ -129,9 +129,11 @@ public class MeteoServlet extends HttpServlet {
 
                     MeteoStationData md = mdList.get(i);
                     Spot spotInfo = Core.getSpotFromID(md.spotID);
-                    md.spotName = spotInfo.webcamUrl;
+                    md.spotName = spotInfo.name;
                     md.source = spotInfo.sourceUrl;
                     md.webcamurl = spotInfo.webcamUrl;
+                    md.webcamurl2 = spotInfo.webcamUrl2;
+                    md.webcamurl3 = spotInfo.webcamUrl3;
                     String jsonText = mdList.get(i).toJson();
                     LOGGER.info("jsonText meteodata " + jsonText);
 

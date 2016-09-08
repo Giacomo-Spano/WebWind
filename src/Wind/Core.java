@@ -29,7 +29,7 @@ public class Core {
     protected static String mysqlDBHost_envVar;
     protected static String mysqlDBPort_envVar;
     protected static String tmpDir_envVar;
-    private static String version = "0.10";
+    private static String version = "0.11";
 
     public static String getUser() {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
@@ -168,18 +168,13 @@ public class Core {
 
     public static double getAverage(int spotID) {
 
-        return 0;
-        //return alarmModel.getAverage(spotID);
+        //return 0;
+        return alarmModel.getAverage(spotID);
     }
 
     public static double getTrend(int spotID, Date startDate, Date endDate) {
         return alarmModel.getTrend(spotID, startDate, endDate);
     }
-
-    /*public static ArrayList<MeteoStationData> getLast() {
-
-        return alarmModel.getLast();
-    }*/
 
     public static MeteoStationData getLastfromID(int id) {
 
@@ -187,9 +182,9 @@ public class Core {
     }
 
 
-    public static List<MeteoStationData> getHistory(int spotID, int sampledata) {
+    /*public static List<MeteoStationData> getHistory(int spotID, int sampledata) {
         return alarmModel.getHistory(spotID, sampledata);
-    }
+    }*/
 
     public static List<MeteoStationData> getHistory(int spotID, Date start, Date end) {
         return alarmModel.getHistory(spotID, start, end);

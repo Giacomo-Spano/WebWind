@@ -22,8 +22,12 @@ public abstract class PullData {
 
     protected int mSpotID;// = AlarmModel.Spot_Valmadrera;
     protected String mName;
-    protected String mWebcamUrl = "";
+    protected String mWebcamUrl = null;
+    protected String mWebcamUrl2 = null;
+    protected String mWebcamUrl3 = null;
     protected String mImageName = "";
+    protected String mImageName2 = "";
+    private String mImageName3  = "";
     protected String mSource = "";
     public Boolean offline = false;
     public Date lastHighWindNotificationSentDate;
@@ -37,8 +41,16 @@ public abstract class PullData {
     public String getName() {
         return mName;
     }
-    public String getWebcamUrl() {
-        return mWebcamUrl;
+    public String getWebcamUrl(int index) {
+        switch (index) {
+            case 1:
+                return mWebcamUrl;
+            case 2:
+                return mWebcamUrl2;
+            case 3:
+                return mWebcamUrl3;
+        }
+        return null;
     }
     public String getSourceUrl() {
         return mSource;
@@ -68,7 +80,11 @@ public abstract class PullData {
                 Core.sendData(md, mSpotID);
 
                 if (mWebcamUrl != "")
-                    Core.sendImage(mWebcamUrl/*"http://www.wcv.it/webcam05/currenth.jpg"*/, mImageName);
+                    Core.sendImage(mWebcamUrl, mImageName);
+                if (mWebcamUrl2 != "")
+                    Core.sendImage(mWebcamUrl2, mImageName2);
+                if (mWebcamUrl3 != "")
+                    Core.sendImage(mWebcamUrl3, mImageName3);
             }
 
         } catch (Exception e) {
@@ -76,9 +92,6 @@ public abstract class PullData {
         }
 
     }
-
-
-
 
     /*protected double getAverage() {
 
@@ -103,8 +116,6 @@ public abstract class PullData {
 
         try {
             URL jsonurl = new URL(url);
-
-            //LOGGER.info("jsonurl=" + jsonurl);
 
             HttpURLConnection connection = (HttpURLConnection) jsonurl.openConnection();
             connection.setDoOutput(false);

@@ -41,6 +41,8 @@ public class MeteoStationData {
     public String source = "source";
     public Integer spotID = -1;
     public String webcamurl = "";
+    public String webcamurl2 = null;
+    public String webcamurl3 = null;
 
    /*private static String[] directionSymbols = {
             "E", "ENE", "NE", "NEN",
@@ -122,7 +124,12 @@ public class MeteoStationData {
             obj.put("directionangle", directionangle);
             obj.put("trend", trend);
             obj.put("spotid", spotID);
-            obj.put("webcamurl", webcamurl);
+            if (webcamurl != null)
+                obj.put("webcamurl", webcamurl);
+            if (webcamurl2 != null)
+                obj.put("webcamurl2", webcamurl2);
+            if (webcamurl3 != null)
+                obj.put("webcamurl3", webcamurl3);
             obj.put("offline", offline);
 
         } catch (JSONException e) {
@@ -190,7 +197,7 @@ public class MeteoStationData {
             if (obj.has("directionangle"))
                 directionangle = obj.getDouble("directionangle");
             if (obj.has("trend"))
-                directionangle = obj.getDouble("trend");
+                trend = obj.getDouble("trend");
             if (obj.has("spotid"))
                 spotID = obj.getInt("spotid");
 
@@ -242,8 +249,8 @@ public class MeteoStationData {
             }
 
             String sql;
-            sql = "INSERT INTO wind (spotid, datetime, sampledatetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure)" +
-                    " VALUES (" + spotID + "," + strDatetime + "," + strSampleDatetime + "," + speed + "," + averagespeed + ",'" + direction + "'," + directionangle + "," + temperature + "," + humidity + "," + pressure + ") ";
+            sql = "INSERT INTO wind (spotid, datetime, sampledatetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure,trend)" +
+                    " VALUES (" + spotID + "," + strDatetime + "," + strSampleDatetime + "," + speed + "," + averagespeed + ",'" + direction + "'," + directionangle + "," + temperature + "," + humidity + "," + pressure + "," + trend + ") ";
 
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
@@ -308,6 +315,40 @@ public class MeteoStationData {
         return list;
     }
 
+    public List<MeteoStationData> getLastSamples(int spotId, long nSamples) {
+
+        LOGGER.info("getLastSamples");
+        List<MeteoStationData> list = new ArrayList<MeteoStationData>();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            String sql;
+            sql = "SELECT * FROM wind WHERE spotid=" + spotId
+                    + " ORDER BY datetime DESC LIMIT " + nSamples + ";";
+
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                MeteoStationData md = getMeteoStationDataFromResulset(rs);
+                list.add(md);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return list;
+    }
+
     private MeteoStationData getMeteoStationDataFromResulset(ResultSet rs) throws SQLException {
         MeteoStationData md = new MeteoStationData();
         md.id = rs.getInt("id");
@@ -321,6 +362,7 @@ public class MeteoStationData {
         md.temperature = rs.getDouble("temperature");
         md.humidity = rs.getDouble("humidity");
         md.pressure = rs.getDouble("pressure");
+        md.trend = rs.getDouble("trend");
         return md;
     }
 

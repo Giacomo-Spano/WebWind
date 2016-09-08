@@ -107,10 +107,16 @@ public class AlarmServlet extends HttpServlet {
 
         try {
 
-            String deviceId = request.getParameter("deviceId");
-            int id = Integer.valueOf(deviceId);
+            String strDeviceId = request.getParameter("deviceId");
+            long deviceId = Integer.valueOf(strDeviceId);
+            String strSpotId = request.getParameter("spotId");
+            long spotId;
+            if (strSpotId != null)
+                spotId = Integer.valueOf(strSpotId);
+            else
+                spotId = -1;
 
-            List<Alarm> alarms = WindDatastore.getAlarmsFromDeviceID(id);
+            List<Alarm> alarms = WindDatastore.getAlarmsFromDeviceID(deviceId,spotId);
             if (alarms == null) {
                 LOGGER.info("deviceId " + deviceId + " not found");
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);

@@ -90,7 +90,16 @@ public class AlarmModel {
         ArrayList<Spot> list = new ArrayList<Spot>();
         for (int i = 0; i < mSpotDataList.size(); i++) {
 
-            list.add(new Spot(mSpotDataList.get(i).getName(), mSpotDataList.get(i).getSpotID(), mSpotDataList.get(i).getSourceUrl(), mSpotDataList.get(i).getWebcamUrl()));
+            PullData pd = mSpotDataList.get(i);
+            String webcamurl = pd.getWebcamUrl(1);
+            String webcamurl2 = pd.getWebcamUrl(2);
+            String webcamurl3 = pd.getWebcamUrl(3);
+
+            String name = pd.getName();
+            int spotId = pd.getSpotID();
+            String source = pd.getSourceUrl();
+
+            list.add(new Spot(name, spotId, source, webcamurl, webcamurl2, webcamurl3));
         }
         return list;
     }
@@ -175,18 +184,21 @@ public class AlarmModel {
         return "";
     }
 
-    public List<MeteoStationData> getHistory(int spotID, int maxSampleData) {
+    public List<MeteoStationData> getLastSamples(int spotID, int maxSampleData) {
 
         int index = getIndexFromID(spotID);
         if (index < 0) return null;
 
-        List<MeteoStationData> list = new ArrayList<MeteoStationData>();
+        MeteoStationData md = new MeteoStationData();
+        List<MeteoStationData> list = md.getLastSamples(spotID,maxSampleData);
+
+        /*List<MeteoStationData> list = new ArrayList<MeteoStationData>();
         int count = meteoHistory.get(index).size() - maxSampleData;
         if (count < 0)
             count = 0;
         while (count++ < meteoHistory.get(index).size() - 1) {
             list.add(meteoHistory.get(index).get(count));
-        }
+        }*/
         return list;
     }
 
@@ -231,28 +243,7 @@ public class AlarmModel {
         return index;
     }
 
-    protected double getTrend(int spotID, Date startDate, Date endDate) {
-
-        List<MeteoStationData> list = getHistory(spotID, startDate, endDate);
-        if (list == null || list.size() == 0)
-            return 0;
-
-        MeteoStationData startMeteodata;
-        MeteoStationData endMeteodata;
-        endMeteodata = (MeteoStationData) list.get(list.size() - 1);
-        startMeteodata = (MeteoStationData) list.get(0);
-
-        double trend = 0.0;
-        long timeDifference = (endMeteodata.datetime.getTime() - startMeteodata.datetime.getTime()) / ONE_MINUTE_IN_MILLIS;
-        if (timeDifference == 0)
-            return 0;
-        trend = (endMeteodata.averagespeed - startMeteodata.averagespeed) / timeDifference;
-        trend = Math.round(trend * 100);
-        trend = 10 * trend;
-        return trend;
-    }
-
-    public PullData getSpotInfoFromId(int id) {
+        public PullData getSpotInfoFromId(int id) {
         for (int i = 0; i < mSpotDataList.size(); i++) {
             if (mSpotDataList.get(i).getSpotID() == id)
                 return mSpotDataList.get(i);
@@ -276,11 +267,13 @@ public class AlarmModel {
 
         PullData spotdata = getSpotInfoFromId(md.spotID);
 
-        if (md.averagespeed > 15.0 && md.spotID == 0) {
+        if (md.averagespeed > 18.0) {
 
             long differenceInMinutes = -1;
             if (spotdata.lastHighWindNotificationSentDate != null)
-                differenceInMinutes= TimeUnit.MILLISECONDS.toMinutes(Core.getDate().getTime() - spotdata.lastHighWindNotificationSentDate.getTime());
+                differenceInMinutes = TimeUnit.MILLISECONDS.toMinutes(Core.getDate().getTime() - spotdata.lastHighWindNotificationSentDate.getTime());
+            else
+                differenceInMinutes = -1;
             if (differenceInMinutes == -1 || differenceInMinutes > 30) {
 
                 Message notification = new Message.Builder()
@@ -292,12 +285,16 @@ public class AlarmModel {
                         .build();
 
                 List<Device> devices = Core.getDevices();
-                Core.sendPushNotification(devices, notification);
+                //Core.sendPushNotification(devices, notification);
+
+                for(Device device : devices) {
+                    Core.sendPushNotification(device.id, notification);
+                }
 
                 setLastHighWindNotificationDate(md.spotID,Core.getDate());
 
             }
-        } else if (md.trend > 150.0 && md.spotID == 0) {
+        } else if (md.trend > 150.0) {
 
             long differenceInMinutes = -1;
             if (spotdata.lastWindIncreaseNotificationSentDate != null)
@@ -306,15 +303,17 @@ public class AlarmModel {
 
                 Message notification = new Message.Builder()
                         .addData("title", md.spotName)
-                        .addData("message", md.spotName + " - Vento in forte aumento ")
+                        .addData("message", md.spotName + " - Vento in forte aumento (" + md.trend + ")")
                         .addData("spotID", "" + md.spotID)
                         .addData("spotName", md.spotName)
                         .addData("notificationtype", AlarmModel.NotificationType_Info)
                         .build();
 
                 List<Device> devices = Core.getDevices();
-                Core.sendPushNotification(devices, notification);
-
+                //Core.sendPushNotification(devices, notification);
+                for(Device device : devices) {
+                    Core.sendPushNotification(device.id, notification);
+                }
                 setLastIncreaseWindNotificationDate(md.spotID,Core.getDate());
             }
         }
@@ -390,31 +389,52 @@ public class AlarmModel {
 
     protected double getAverage(int spotID) {
 
-        int index = getIndexFromID(spotID);
-        if (index < 0) return 0;
-
-        List<MeteoStationData> list = getHistory(index, 5);
+        int samples = 5;
+        List<MeteoStationData> list = getLastSamples(spotID, samples);
+        if (list == null || list.size() == 0)
+            return 0;
 
         double average = 0;
-        int samples = 5;
-        if (samples > list.size())
-            samples = list.size();
-
-        for (int i = 0; i < samples; i++) {
-            average += list.get(list.size() - 1 - i).speed;
+        int count = 0;
+        for (MeteoStationData md : list) {
+            average += md.speed;
+            count++;
         }
-        average = average / samples;
-        average = Math.round(average * 10) / 10;
+        average = average / count;
+        average = Math.round(average * 10) / 10.0; // aarotondaad un solo decimale
         return average;
     }
 
+    protected double getTrend(int spotID, Date startDate, Date endDate) {
+
+        int samples = 5;
+        List<MeteoStationData> list = getLastSamples(spotID, samples);
+        if (list == null || list.size() == 0)
+            return 0;
+
+        MeteoStationData startMeteodata;
+        MeteoStationData endMeteodata;
+        endMeteodata = (MeteoStationData) list.get(samples - 1);
+        startMeteodata = (MeteoStationData) list.get(0);
+
+        double trend = 0.0;
+        long timeDifference = (endMeteodata.datetime.getTime() - startMeteodata.datetime.getTime()) / ONE_MINUTE_IN_MILLIS;
+        if (timeDifference == 0)
+            return 0;
+        trend = (endMeteodata.averagespeed - startMeteodata.averagespeed) / timeDifference;
+        trend = Math.round(trend * 100);
+        trend = 10 * trend;
+        return trend;
+    }
+
+    /*
     protected double getTrend(int spotID) {
 
         int index = getIndexFromID(spotID);
         if (index < 0) return 0;
 
         int samples = 5;
-        List<MeteoStationData> list = getHistory(index, samples);
+        List<MeteoStationData> list = getLastSamples(index, samples);
 
         double trend = 0;
         if (list == null || list.size() == 0)
@@ -431,7 +451,7 @@ public class AlarmModel {
         }
         trend = Math.round(trend * 10) / 10;
         return trend;
-    }
+    }*/
 
     private boolean callGET(String path, int spot) {
 

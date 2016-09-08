@@ -231,7 +231,7 @@ public class WindDatastore {
         return deletedItems;
     }
 
-    public static List<Alarm> getAlarmsFromDeviceID(int deviceId) {
+    public static List<Alarm> getAlarmsFromDeviceID(long deviceId,long spotId) {
 
         logger.info("deviceId=" + deviceId);
         List<Alarm> registeredAlarms = new ArrayList<Alarm>();
@@ -240,7 +240,11 @@ public class WindDatastore {
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
             Statement stmt = conn.createStatement();
             String sql;
-            sql = "SELECT * FROM alarms WHERE deviceid=" + deviceId + ";";
+            sql = "SELECT * FROM alarms WHERE deviceid=" + deviceId;
+            if (spotId != -1) {
+                sql += " AND spotid=" + spotId;
+            }
+            sql += ";";
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {

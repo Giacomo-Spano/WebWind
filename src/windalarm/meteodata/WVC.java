@@ -17,7 +17,9 @@ public class WVC extends PullData {
     public WVC() {
         super(AlarmModel.Spot_Valmadrera);
         mWebcamUrl = "http://www.wcv.it/webcam05/currenth.jpg";
+        mWebcamUrl2 = "http://www.wcv.it/webcam/currenth.jpg";
         mImageName = "spot-" + mSpotID + ".jpg";
+        mImageName2 = "spot-" + mSpotID + "-2.jpg";
         mName = "Valmadrera";
         mSource = "http://www.wcv.it";
     }

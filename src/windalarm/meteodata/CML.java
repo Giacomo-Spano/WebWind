@@ -135,6 +135,9 @@ public class CML extends PullData {
             LOGGER.severe(value + " not found " + keyword);
         str = value.substring(0,end);
         meteoStationData.speed = Double.valueOf(str);
+        // average speed
+        meteoStationData.averagespeed = Core.getAverage(mSpotID);
+
         value = value.substring(end+keyword.length());
 
         int i = 0;
