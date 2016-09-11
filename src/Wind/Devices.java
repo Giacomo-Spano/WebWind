@@ -14,67 +14,10 @@ public class Devices {
 
     private static final Logger LOGGER = Logger.getLogger(Devices.class.getName());
 
-
     public Devices() {
-
     }
 
-    /*public Device getFromId(int id) {
-        Iterator<Device> iterator = mDeviceList.iterator();
-        while (iterator.hasNext()) {
-            Device device = iterator.next();
-            if (device.id == id)
-                return device;
-        }
-        return null;
-    }*/
-
-    /*public void read() {
-
-        LOGGER.info(" read devices");
-
-        try {
-            // Register JDBC driver
-            Class.forName("com.mysql.jdbc.Driver");
-            // Open a connection
-            Connection conn = DriverManager.getConnection(Core.DB_URL, Core.USER, Core.PASS);
-            // Execute SQL query
-            Statement stmt = conn.createStatement();
-            String sql;
-            sql = "SELECT id, name, regid, date FROM devices";
-            ResultSet rs = stmt.executeQuery(sql);
-
-            // Extract data from result set
-            while (rs.next()) {
-
-
-                Device device = new Device();
-                device.id = rs.getInt("id");
-                device.regId = rs.getString("regid");
-                device.name = rs.getString("name");
-                device.date = rs.getDate("date");
-
-                mDeviceList.add(device);
-            }
-            // Clean-up environment
-            rs.close();
-            stmt.close();
-            conn.close();
-
-        } catch (SQLException se) {
-            //Handle errors for JDBC
-            se.printStackTrace();
-
-        } catch (Exception e) {
-            //Handle errors for Class.forName
-            e.printStackTrace();
-        d
-    }*/
-
-
-    public List<Device> getDevices(
-
-    ) {
+    public List<Device> getDevices() {
 
         LOGGER.info(" getDeviceFromDeviceId");
 

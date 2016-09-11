@@ -5,7 +5,6 @@ package windalarm.meteodata;
 import Wind.AlarmModel;
 import Wind.Core;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -17,39 +16,43 @@ public class Windfinder extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    protected String mSpotUrl;
+    //protected String mSpotUrl;
 
-    public Windfinder(int mSpotID) {
+    public Windfinder() {
+        super();
+    }
+    /*public Windfinder(long mSpotID) {
         super(mSpotID);
 
-        switch (mSpotID) {
-            case AlarmModel.Spot_Scarlino:
+        switch ((int) mSpotID) {
+            case (int) AlarmModel.Spot_Scarlino:
                 mSpotUrl = "marina_di_scarlino";
-                mWebcamUrl = "http://www.meteoindiretta.it/get_webcam.php?src=http%3A%2F%2Fwww.parallelo43.it%2Fwebcam%2Fmarinascarlino.jpg&w=630";
+                webcamUrl = "http://www.meteoindiretta.it/get_webcam.php?src=http%3A%2F%2Fwww.parallelo43.it%2Fwebcam%2Fmarinascarlino.jpg&w=630";
                 mImageName = "spot-" + mSpotID + ".jpg";
-                mName = "Marina di Scarlino (Toscana)";
+                name = "Marina di Scarlino (Toscana)";
                 break;
-            case AlarmModel.Spot_VassilikiPort:
+            case (int) AlarmModel.Spot_VassilikiPort:
                 mSpotUrl = "lefkada_port?fspot=vasiliki";
-                mWebcamUrl = "http://images.webcams.travel/preview/1323285421.jpg";
+                webcamUrl = "http://images.webcams.travel/preview/1323285421.jpg";
                 //mImageName = AlarmModel.getSpotName(AlarmModel.Spot_Vassiliki) + ".jpg";
                 mImageName = "spot-" + mSpotID + ".jpg";
-                mName = "Vassiliki Port - Lefkada (Grecia)";
+                name = "Vassiliki Port - Lefkada (Grecia)";
                 break;
-            case AlarmModel.Spot_Dakhla:
+            case (int) AlarmModel.Spot_Dakhla:
                 mSpotUrl = "dakhla";
-                mName = "Dakhla (Marocco)";
+                name = "Dakhla (Marocco)";
                 break;
         }
-        mSource = "www.windfinder.it";
-    }
+        sourceUrl = "www.windfinder.it";
+    }*/
 
 
     public MeteoStationData getMeteoData(/*String name, String spot*/ /*lake_como_colico*/) {
 
-        LOGGER.info("getMeteoData: spotName=" + mName);
+        LOGGER.info("getMeteoData: spotName=" + name);
 
-        String htmlResultString = getHTMLPage("https://uk.windfinder.com/forecast/" + mSpotUrl);
+        String htmlResultString = getHTMLPage(meteodataUrl);
+        //String htmlResultString = getHTMLPage("https://uk.windfinder.com/forecast/" + mSpotUrl);
         if (htmlResultString == null)
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();
@@ -76,7 +79,7 @@ public class Windfinder extends PullData {
         txt = txt.substring(0, end);
         meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(txt));// * 1.85200; // convert knots to km/h
 
-        meteoStationData.averagespeed = Core.getAverage(mSpotID);
+        meteoStationData.averagespeed = Core.getAverage(id);
 
         txt = htmlResultString;
         keyword = "<span class=\"current__wind__dir\">";
@@ -110,8 +113,8 @@ public class Windfinder extends PullData {
         txt = txt.substring(0, end);
         meteoStationData.temperature = Double.valueOf(txt);*/
 
-        /*meteoStationData.spotName = mName;
-        meteoStationData.spotID = mSpotID;*/
+        /*meteoStationData.spotName = name;
+        meteoStationData.spotID = id;*/
 
         //String date = meteoStationData.sampledatetime.toString().substring(0,10);
         //String time = meteoStationData.sampledatetime.toString().substring(11,16);

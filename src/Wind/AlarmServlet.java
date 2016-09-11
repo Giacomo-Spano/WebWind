@@ -66,8 +66,8 @@ public class AlarmServlet extends HttpServlet {
 
                 LOGGER.info("testing alarm");
                 Date localDate = Core.getDate();
-                double speed = 29.0;
-                double avspeed = 29.0;
+                double speed = 99.0;
+                double avspeed = 99.0;
                 int spotId = 0;
 
                 List<Alarm> list = WindDatastore.getAlarms();
@@ -80,8 +80,6 @@ public class AlarmServlet extends HttpServlet {
                         AlarmModel.sendAlarm(alarm.deviceId, alarm, speed, avspeed, localDate, spotId, 0);
                     }
                 }
-
-
             } else {
 
                 JSONObject json = new JSONObject(jsonData);
@@ -99,7 +97,6 @@ public class AlarmServlet extends HttpServlet {
 
 
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            //response.getWriter().write(e.toString());
         }
     }
 

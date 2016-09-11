@@ -75,7 +75,7 @@ public class Core {
     public static WindDatastore windDatastore = new WindDatastore();
 
 
-    public static ArrayList<Spot> getSpotList() {
+    public static ArrayList<PullData> getSpotList() {
         return alarmModel.getSpotList();
     }
 
@@ -166,17 +166,17 @@ public class Core {
 
     //-------------------------------------
 
-    public static double getAverage(int spotID) {
+    public static double getAverage(long spotID) {
 
         //return 0;
         return alarmModel.getAverage(spotID);
     }
 
-    public static double getTrend(int spotID, Date startDate, Date endDate) {
+    public static double getTrend(long spotID, Date startDate, Date endDate) {
         return alarmModel.getTrend(spotID, startDate, endDate);
     }
 
-    public static MeteoStationData getLastfromID(int id) {
+    public static MeteoStationData getLastfromID(long id) {
 
         return alarmModel.getLastfromID(id);
     }
@@ -197,7 +197,13 @@ public class Core {
 
     public void init() {
 
-        PullData d;
+        SpotList sl = new SpotList();
+        List<PullData> list = sl.getSpotList();
+        for (PullData spot : list) {
+            alarmModel.addSpotData(spot);
+        }
+
+        /*PullData d;
 
         d = new VassilikiWindguru();
         alarmModel.addSpotData(d);
@@ -211,7 +217,7 @@ public class Core {
         d = new Bombolak();
         alarmModel.addSpotData(d);
 
-        d = new WVC();
+        d = new WCV();
         alarmModel.addSpotData(d);
 
         d = new CML(AlarmModel.Spot_Abbadia);
@@ -243,9 +249,9 @@ public class Core {
         alarmModel.addSpotData(d);
 
         d = new Windfinder(AlarmModel.Spot_Dakhla);
-        alarmModel.addSpotData(d);
+        alarmModel.addSpotData(d);*/
 
-        alarmModel.getHistoricalMeteoData();
+        //alarmModel.getHistoricalMeteoData();
     }
 
     public static Spot getSpotFromID(long id) {
@@ -325,7 +331,7 @@ public class Core {
 
     }
 
-    public static void sendData(MeteoStationData meteoData, int spotID) {
+    public static void sendData(MeteoStationData meteoData, long spotID) {
         //mdList.add(meteoData);
         int windId = meteoData.insert();
         alarmModel.Add(meteoData, spotID);

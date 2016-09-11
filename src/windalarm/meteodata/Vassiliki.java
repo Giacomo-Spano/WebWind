@@ -15,16 +15,21 @@ public class Vassiliki extends PullData {
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     public Vassiliki() {
+        super();
+    }
+
+    /*public Vassiliki() {
         super(AlarmModel.Spot_Vassiliki);
         //mImageName = AlarmModel.getSpotName(AlarmModel.Spot_Vassiliki) + ".jpg";
-        mImageName = "spot-" + mSpotID + ".jpg";
-        mName = "Vassiliki (Grecia)";
-    }
+        mImageName = "spot-" + id + ".jpg";
+        name = "Vassiliki (Grecia)";
+    }*/
 
 
     public MeteoStationData getMeteoData() {
 
-        String htmlResultString = getHTMLPage("http://www.vasiliki-webcams-and-more.org/cam1/sequenz.php");
+        String htmlResultString = getHTMLPage(meteodataUrl);
+        //String htmlResultString = getHTMLPage("http://www.vasiliki-webcams-and-more.org/cam1/sequenz.php");
         if (htmlResultString == null)
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();
@@ -54,7 +59,7 @@ public class Vassiliki extends PullData {
         meteoStationData.speed = Double.valueOf(txt.trim());
         meteoStationData.speed = MeteoStationData.knotsToKMh(meteoStationData.speed);
 
-        meteoStationData.averagespeed = Core.getAverage(mSpotID);
+        meteoStationData.averagespeed = Core.getAverage(id);
 
         txt = htmlResultString;
         //<div id="gaugeWinddirValue">180�</div>
@@ -96,7 +101,7 @@ public class Vassiliki extends PullData {
         txt = txt.substring(start + keyword.length());
         end = txt.indexOf("\"");
         txt = txt.substring(0, end);
-        mWebcamUrl = "http://www.vasiliki-webcams-and-more.org/cam1/" + txt;
+        webcamUrl = "http://www.vasiliki-webcams-and-more.org/cam1/" + txt;
 
 
         String date = txt.substring(8, 10) + "/" + txt.substring(5, 7) + "/" + txt.substring(0, 4);
@@ -109,8 +114,8 @@ public class Vassiliki extends PullData {
             e.printStackTrace();
         }
 
-        /*meteoStationData.spotName = mName;
-        meteoStationData.spotID = mSpotID;*/
+        /*meteoStationData.spotName = name;
+        meteoStationData.spotID = id;*/
 
         return meteoStationData;
     }

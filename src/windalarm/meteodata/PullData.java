@@ -10,59 +10,49 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
  * Created by giacomo on 13/08/2015.
  */
-public abstract class PullData {
+public abstract class PullData extends Spot {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    protected int mSpotID;// = AlarmModel.Spot_Valmadrera;
-    protected String mName;
-    protected String mWebcamUrl = null;
-    protected String mWebcamUrl2 = null;
-    protected String mWebcamUrl3 = null;
+    //protected int id;// = AlarmModel.Spot_Valmadrera;
+    //protected String name;
+    //protected String webcamUrl = null;
+    //protected String webcamUrl2 = null;
+    //protected String webcamUrl3 = null;
     protected String mImageName = "";
     protected String mImageName2 = "";
     private String mImageName3  = "";
-    protected String mSource = "";
     public Boolean offline = false;
     public Date lastHighWindNotificationSentDate;
     public Date lastWindIncreaseNotificationSentDate;
 
 
 
-    public int getSpotID() {
-        return mSpotID;
-    }
-    public String getName() {
-        return mName;
-    }
-    public String getWebcamUrl(int index) {
-        switch (index) {
-            case 1:
-                return mWebcamUrl;
-            case 2:
-                return mWebcamUrl2;
-            case 3:
-                return mWebcamUrl3;
-        }
-        return null;
-    }
-    public String getSourceUrl() {
-        return mSource;
-    }
-
-
     abstract MeteoStationData getMeteoData();
 
-    public PullData(int spotID) {
-        this.mSpotID = spotID;
-        mName = "";//AlarmModel.getSpotName(spotID);
+    /*public PullData(long spotID) {
+        this.id = spotID;
+        name = "";//AlarmModel.getSpotName(spotID);
+    }*/
+
+    public PullData() {
+        mImageName = "spot-" + id + ".jpg";
+        mImageName2 = "spot-" + id + "-2.jpg";
     }
+
+    /*public PullData(long id, String name, String webcamUrl, String webcamUrl2, String webcamUrl3, String sourceUrl) {
+        this.id = id;
+        this.name = name;
+        webcamUrl = webcamUrl;
+        webcamUrl2 = webcamUrl2;
+        webcamUrl3 = webcamUrl3;
+        sourceUrl = sourceUrl;
+    }*/
 
 
     public void pull(){
@@ -70,32 +60,32 @@ public abstract class PullData {
         try {
             MeteoStationData md = getMeteoData();
             if (md != null) {
-                md.spotName = mName;
-                md.spotID = mSpotID;
+                md.spotName = name;
+                md.spotID = id;
 
 
                 long minutes = 30;
                 Date startTime = new Date(md.datetime.getTime() - (minutes * AlarmModel.ONE_MINUTE_IN_MILLIS));
-                md.trend = Core.getTrend(mSpotID, startTime, md.datetime);
-                Core.sendData(md, mSpotID);
+                md.trend = Core.getTrend(id, startTime, md.datetime);
+                Core.sendData(md, id);
 
-                if (mWebcamUrl != "")
-                    Core.sendImage(mWebcamUrl, mImageName);
-                if (mWebcamUrl2 != "")
-                    Core.sendImage(mWebcamUrl2, mImageName2);
-                if (mWebcamUrl3 != "")
-                    Core.sendImage(mWebcamUrl3, mImageName3);
+                if (webcamUrl != "")
+                    Core.sendImage(webcamUrl, mImageName);
+                if (webcamUrl2 != "")
+                    Core.sendImage(webcamUrl2, mImageName2);
+                if (webcamUrl3 != "")
+                    Core.sendImage(webcamUrl3, mImageName3);
             }
 
         } catch (Exception e) {
-            LOGGER.severe("cannot get data for spot " + mName + "("+mSpotID+")");
+            LOGGER.severe("cannot get data for spot " + name + "("+ id +")");
         }
 
     }
 
     /*protected double getAverage() {
 
-        ArrayList<MeteoStationData> list = AlarmModel.getHistory(mSpotID);
+        ArrayList<MeteoStationData> list = AlarmModel.getHistory(id);
 
         double average = 0;
         int samples = 5;
@@ -146,4 +136,6 @@ public abstract class PullData {
 
         return null;
     }
+
+
 }

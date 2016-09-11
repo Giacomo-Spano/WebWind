@@ -10,25 +10,35 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
-public class WVC extends PullData {
+public class WCV extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    public WVC() {
+    /*public WCV() {
         super(AlarmModel.Spot_Valmadrera);
-        mWebcamUrl = "http://www.wcv.it/webcam05/currenth.jpg";
-        mWebcamUrl2 = "http://www.wcv.it/webcam/currenth.jpg";
-        mImageName = "spot-" + mSpotID + ".jpg";
-        mImageName2 = "spot-" + mSpotID + "-2.jpg";
-        mName = "Valmadrera";
-        mSource = "http://www.wcv.it";
+        webcamUrl = "http://www.wcv.it/webcam05/currenth.jpg";
+        webcamUrl2 = "http://www.wcv.it/webcam/currenth.jpg";
+        mImageName = "spot-" + id + ".jpg";
+        mImageName2 = "spot-" + id + "-2.jpg";
+        name = "Valmadrera";
+        sourceUrl = "http://www.wcv.it";
+    }*/
+
+    public WCV() {
+        super();
     }
+
+    /*public WCV(long id, String name, String webcamUrl, String webcamUrl2, String webcamUrl3, String sourceUrl) {
+        super(id, name, webcamUrl, webcamUrl2, webcamUrl3, sourceUrl);
+
+    }*/
+
 
     public MeteoStationData getMeteoData() {
 
-        LOGGER.info("getMeteoData: spotName=" + mName);
+        LOGGER.info("getMeteoData: spotName=" + name);
 
-        String htmlResultString = getHTMLPage("http://www.wcv.it/news.php");
+        String htmlResultString = getHTMLPage(meteodataUrl/*"http://www.wcv.it/news.php"*/);
         if (htmlResultString == null)
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();

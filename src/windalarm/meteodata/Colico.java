@@ -14,17 +14,21 @@ public class Colico extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    public Colico() {
+    /*public Colico() {
         super(AlarmModel.Spot_Colico);
-        mWebcamUrl = "http://www.wcv.it/webcam02/currenth.jpg";
-        mImageName = "spot-" + mSpotID + ".jpg";
-        mName = "Colico";
-        mSource = "http://web.tiscali.it/meteocolico/";
+        webcamUrl = "http://www.wcv.it/webcam02/currenth.jpg";
+        mImageName = "spot-" + id + ".jpg";
+        name = "Colico";
+        sourceUrl = "http://web.tiscali.it/meteocolico/";
+    }*/
+    public Colico() {
+        super();
     }
 
     public MeteoStationData getMeteoData() {
 
-        String htmlResultString = getHTMLPage("http://web.tiscali.it/meteocolico/");
+        //String htmlResultString = getHTMLPage("http://web.tiscali.it/meteocolico/");
+        String htmlResultString = getHTMLPage(meteodataUrl);
         if (htmlResultString == null)
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();

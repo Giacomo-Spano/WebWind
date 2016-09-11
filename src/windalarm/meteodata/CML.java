@@ -6,7 +6,6 @@ package windalarm.meteodata;
 
 import Wind.AlarmModel;
 import Wind.Core;
-import sun.awt.image.ToolkitImage;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -16,8 +15,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
@@ -33,46 +30,50 @@ public class CML extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    public CML(int spotID) {
+    /*public CML(long spotID) {
         super(spotID);
 
-        switch (mSpotID) {
-            case AlarmModel.Spot_Abbadia:
+        switch ((int) id) {
+            case (int) AlarmModel.Spot_Abbadia:
                 mSpotUrl = Abbadia;
-                mWebcamUrl = "http://www.abbadiameteo.it/foscam/FI9805W_00626E4EA7A8/snap/webcam.php";
-                mName = "Abbadia Lariana (Lecco)";
+                webcamUrl = "http://www.abbadiameteo.it/foscam/FI9805W_00626E4EA7A8/snap/webcam.php";
+                name = "Abbadia Lariana (Lecco)";
                 break;
-            case AlarmModel.Spot_Gera:
+            case (int) AlarmModel.Spot_Gera:
                 mSpotUrl = Gera;
-                mWebcamUrl = "http://www.solemio.nl/solemio.jpg";
-                mName = "Gera Lario (Como)";
+                webcamUrl = "http://www.solemio.nl/solemio.jpg";
+                name = "Gera Lario (Como)";
                 break;
-            case AlarmModel.Spot_Dervio:
+            case (int) AlarmModel.Spot_Dervio:
                 mSpotUrl = Dervio;
-                mWebcamUrl = "http://www.wcv.it/webcam03/currenth.jpg";
-                mName = "Dervio (Lecco)";
+                webcamUrl = "http://www.wcv.it/webcam03/currenth.jpg";
+                name = "Dervio (Lecco)";
                 break;
-            case AlarmModel.Spot_Dongo:
+            case (int) AlarmModel.Spot_Dongo:
                 mSpotUrl = Dongo;
-                mWebcamUrl = "http://www.skiffsailing.it/webcam/video.jpg";
-                mName = "Dongo (Como)";
+                webcamUrl = "http://www.skiffsailing.it/webcam/video.jpg";
+                name = "Dongo (Como)";
                 break;
-            case AlarmModel.Spot_Gravedona:
+            case (int) AlarmModel.Spot_Gravedona:
                 mSpotUrl = Gravedona;
-                mWebcamUrl = "http://rete.centrometeolombardo.com/Como/gravedona/public/gravedona.jpg";
-                mName = "Gravedona (Como)";
+                webcamUrl = "http://rete.centrometeolombardo.com/Como/gravedona/public/gravedona.jpg";
+                name = "Gravedona (Como)";
                 break;
 
         }
 
-        mSource = "www.centrometeolombardo.com/";
-        mImageName = "spot-" + mSpotID + ".jpg";
+        sourceUrl = "www.centrometeolombardo.com/";
+        mImageName = "spot-" + id + ".jpg";
+    }*/
+
+    public CML() {
+        super();
     }
 
     @Override
     MeteoStationData getMeteoData() {
 
-        LOGGER.info("getMeteoData: spotName=" + mName);
+        LOGGER.info("getMeteoData: spotName=" + name);
 
         MeteoStationData meteoStationData = new MeteoStationData();
 
@@ -82,7 +83,7 @@ public class CML extends PullData {
         meteoStationData.datetime = meteoStationData.sampledatetime;
 
         MeteoStationData lastMd = new MeteoStationData();
-        lastMd = lastMd.getLastMeteoStationData(mSpotID);
+        lastMd = lastMd.getLastMeteoStationData(id);
 
         if (lastMd != null) {
             long minutes = (meteoStationData.sampledatetime.getTime() - lastMd.sampledatetime.getTime());
@@ -136,7 +137,7 @@ public class CML extends PullData {
         str = value.substring(0,end);
         meteoStationData.speed = Double.valueOf(str);
         // average speed
-        meteoStationData.averagespeed = Core.getAverage(mSpotID);
+        meteoStationData.averagespeed = Core.getAverage(id);
 
         value = value.substring(end+keyword.length());
 
@@ -171,7 +172,7 @@ public class CML extends PullData {
         meteoStationData.rainrate = Double.valueOf(str);
         value = value.substring(end+keyword.length());
 
-        meteoStationData.spotName = mName;
+        meteoStationData.spotName = name;
 
         LOGGER.info("meteoData=" + meteoStationData.toString());
 

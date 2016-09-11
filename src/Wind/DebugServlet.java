@@ -33,8 +33,8 @@ public class DebugServlet extends HttpServlet {
         // --------------- send notification
 
         Date localDate = Core.getDate();
-        double speed = 29.0;
-        double avspeed = 29.0;
+        double speed = 88.0;
+        double avspeed = 88.0;
         int spotId = 0;
 
         List<Alarm> list = WindDatastore.getAlarms();

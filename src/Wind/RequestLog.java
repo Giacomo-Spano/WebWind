@@ -16,7 +16,7 @@ public class RequestLog {
     public RequestLog() {
     }
 
-    public boolean insert(String authcode, String type, int user, String params) {
+    public boolean insert(String authcode, String type, String user, String params) {
 
         try {
             // Register JDBC driver
@@ -29,8 +29,8 @@ public class RequestLog {
             String strStartDate = "'" + df.format(date) + "'";
 
             String sql;
-            sql = "INSERT INTO alarmlog (authcode, type, date, user, params)" +
-                    " VALUES ('" + authcode + "','" + type + "'," + strStartDate + "," + user + ",'" + params + "') " ;
+            sql = "INSERT INTO request (authcode, type, date, user, params)" +
+                    " VALUES ('" + authcode + "','" + type + "'," + strStartDate + ",'" + user + "','" + params + "') " ;
 
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);

@@ -17,19 +17,22 @@ public class gvlnifollonica extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    public gvlnifollonica() {
+    /*public gvlnifollonica() {
         super(AlarmModel.Spot_Follonica);
-        mWebcamUrl = "http://www.gvlnifollonica.it/gvcam.jpg";
-        mImageName = "spot-" + mSpotID + ".jpg";
-        mName = "Follonica";
-        mSource = "http://www.gvlnifollonica.it";
+        webcamUrl = "http://www.gvlnifollonica.it/gvcam.jpg";
+        mImageName = "spot-" + id + ".jpg";
+        name = "Follonica";
+        sourceUrl = "http://www.gvlnifollonica.it";
+    }*/
+
+    public gvlnifollonica() {
+        super();
     }
 
     public MeteoStationData getMeteoData() {
 
-
-
-        String htmlResultString = getHTMLPage("http://www.gvlnifollonica.it/meteo/meteo.txt");
+        String htmlResultString = getHTMLPage(meteodataUrl);
+        //String htmlResultString = getHTMLPage("http://www.gvlnifollonica.it/meteo/meteo.txt");
         if (htmlResultString == null)
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();
@@ -95,7 +98,7 @@ public class gvlnifollonica extends PullData {
 
 
         /*meteoStationData.spotName = AlarmModel.getSpotName(AlarmModel.Spot_Follonica);
-        meteoStationData.spotID = mSpotID;*/
+        meteoStationData.spotID = id;*/
         //meteoStationData.source = "gvlnifollonica";
 
         return meteoStationData;

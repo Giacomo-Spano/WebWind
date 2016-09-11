@@ -53,7 +53,7 @@ public class QuartzListener implements ServletContextListener {
                     .withIdentity("SensorTriggerName", "Group")
                     .startNow()
                     .withSchedule(simpleSchedule()
-                            .withIntervalInSeconds(60)
+                            .withIntervalInSeconds(30)
                             .repeatForever())
                     .build();
             // Setup the Job and Trigger with Scheduler & schedule jobs

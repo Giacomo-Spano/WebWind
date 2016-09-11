@@ -6,7 +6,6 @@ import Wind.Core;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
@@ -14,17 +13,22 @@ public class VassilikiWindguru extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    public VassilikiWindguru() {
+    /*public VassilikiWindguru() {
         super(AlarmModel.Spot_VassilikiWindguru);
-        mWebcamUrl = "http://images.webcams.travel/preview/1323285421.jpg";
-        mImageName = "spot-" + mSpotID + ".jpg";
-        mName = "Vassiliki wguru";
-        mSource = "https://beta.windguru.cz/station/63";
+        webcamUrl = "http://images.webcams.travel/preview/1323285421.jpg";
+        mImageName = "spot-" + id + ".jpg";
+        name = "Vassiliki wguru";
+        sourceUrl = "https://beta.windguru.cz/station/63";
+    }*/
+
+    public VassilikiWindguru() {
+        super();
     }
 
     public MeteoStationData getMeteoData() {
 
-        String htmlResultString = getHTMLPage("https://beta.windguru.cz/station/63");
+        String htmlResultString = getHTMLPage(meteodataUrl);
+        //String htmlResultString = getHTMLPage("https://beta.windguru.cz/station/63");
         if (htmlResultString == null)
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();

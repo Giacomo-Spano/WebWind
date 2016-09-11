@@ -3,7 +3,6 @@ package windalarm.meteodata;
 //import com.google.appengine.labs.repackaged.com.google.common.collect.Lists;
 
 import Wind.Core;
-import Wind.Device;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,7 +23,7 @@ public class MeteoStationData {
 
     private static final Logger LOGGER = Logger.getLogger(MeteoStationData.class.getName());
 
-    int id;
+    public long id;
     public boolean offline;
     public Double speed;
     public Double averagespeed = -1.0;
@@ -39,17 +38,10 @@ public class MeteoStationData {
     public java.util.Date sampledatetime;
     public String spotName = "name";
     public String source = "source";
-    public Integer spotID = -1;
+    public long spotID = -1;
     public String webcamurl = "";
     public String webcamurl2 = null;
     public String webcamurl3 = null;
-
-   /*private static String[] directionSymbols = {
-            "E", "ENE", "NE", "NEN",
-            "N", "NNO", "NO", "NOO",
-            "O", "OSO", "SO", "SOS",
-            "S", "SSE", "SE", "SEE"};
-    */
     private ArrayList<List<String>> symbolList = new ArrayList<List<String>>();
 
     public MeteoStationData() {
@@ -87,10 +79,7 @@ public class MeteoStationData {
         symbolList.add(symbols);
         symbols = asList("ESE", "SEE"); // 15
         symbolList.add(symbols);
-
-
     }
-
 
     public double getAngleFromDirectionSymbol(String symbol) {
 
@@ -108,6 +97,7 @@ public class MeteoStationData {
 
         JSONObject obj = new JSONObject();
         try {
+            obj.put("windid", id);
             obj.put("speed", speed);
             obj.put("avspeed", averagespeed);
             obj.put("direction", direction);
@@ -163,6 +153,8 @@ public class MeteoStationData {
     public String fromJson(JSONObject obj) {
 
         try {
+            if (obj.has("id"))
+                spotID = obj.getInt("id");
             if (obj.has("speed"))
                 speed = obj.getDouble("speed");
             if (obj.has("avspeed"))
@@ -192,7 +184,6 @@ public class MeteoStationData {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-
             }
             if (obj.has("directionangle"))
                 directionangle = obj.getDouble("directionangle");
@@ -200,7 +191,6 @@ public class MeteoStationData {
                 trend = obj.getDouble("trend");
             if (obj.has("spotid"))
                 spotID = obj.getInt("spotid");
-
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -275,9 +265,8 @@ public class MeteoStationData {
         }
     }
 
-    public List<MeteoStationData> getHistory(int spotId, Date startDate, Date endDate) {
+    public List<MeteoStationData> getHistory(Long spotId, Date startDate, Date endDate) {
 
-        LOGGER.info("getHistory");
         List<MeteoStationData> list = new ArrayList<MeteoStationData>();
 
         try {
@@ -292,9 +281,7 @@ public class MeteoStationData {
             String sql;
             sql = "SELECT * FROM wind WHERE spotid=" + spotId
                     + " AND datetime BETWEEN " + strStartDate + " and " + strEndDate + ";";
-            LOGGER.info("START" + Core.getDate().toString());
             ResultSet rs = stmt.executeQuery(sql);
-            LOGGER.info("END" + Core.getDate().toString());
             while (rs.next()) {
                 MeteoStationData md = getMeteoStationDataFromResulset(rs);
 
@@ -315,9 +302,8 @@ public class MeteoStationData {
         return list;
     }
 
-    public List<MeteoStationData> getLastSamples(int spotId, long nSamples) {
+    public List<MeteoStationData> getLastSamples(long spotId, long nSamples) {
 
-        LOGGER.info("getLastSamples");
         List<MeteoStationData> list = new ArrayList<MeteoStationData>();
 
         try {
@@ -351,7 +337,7 @@ public class MeteoStationData {
 
     private MeteoStationData getMeteoStationDataFromResulset(ResultSet rs) throws SQLException {
         MeteoStationData md = new MeteoStationData();
-        md.id = rs.getInt("id");
+        md.id = rs.getLong("id");
         md.datetime = rs.getTimestamp("datetime");
         md.spotID = rs.getInt("spotid");
         md.sampledatetime = rs.getTimestamp("sampledatetime");
@@ -366,7 +352,7 @@ public class MeteoStationData {
         return md;
     }
 
-    public MeteoStationData getLastMeteoStationData(int spotId) {
+    public MeteoStationData getLastMeteoStationData(long spotId) {
 
         MeteoStationData md = null;
 
@@ -396,54 +382,4 @@ public class MeteoStationData {
         }
         return md;
     }
-
-    public List<MeteoStationData> getLastMeteoStationData() {
-
-        List<MeteoStationData> list = new ArrayList<MeteoStationData>();
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
-            Statement stmt = conn.createStatement();
-
-            ArrayList<Spot> sl = Core.getSpotList();
-            Iterator<Spot> iterator = sl.iterator();
-            while (iterator.hasNext()) {
-                int spotId = iterator.next().ID;
-                String sql;
-                sql = "SELECT id, spotid, datetime, sampledatetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure FROM wind WHERE spotid=" + spotId + " ORDER BY sampledatetime DESC LIMIT 1 ;";
-                ResultSet rs = stmt.executeQuery(sql);
-                if (rs.next()) {
-                    MeteoStationData md = null;
-                    md = getMeteoStationDataFromResulset(rs);
-                    list.add(md);
-                }
-                rs.close();
-            }
-
-            /*String sql;
-            sql = "SELECT id, spotid, datetime, MAX(sampledatetime) AS sampledatetime, speed, averagespeed, direction, directionangle, temperature, humidity, pressure FROM wind GROUP BY spotid ;";
-            ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                MeteoStationData md = null;
-                md = getMeteoStationDataFromResulset(rs);
-                list.add(md);
-            }
-            rs.close();
-            */
-            stmt.close();
-            conn.close();
-
-        } catch (SQLException se) {
-            se.printStackTrace();
-            return null;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-        return list;
-    }
-
-
 }

@@ -14,17 +14,22 @@ public class Bombolak extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    public Bombolak() {
+    /*public Bombolak() {
         super(AlarmModel.Spot_Sorico);
-        mWebcamUrl = "http://bomboklat.it/wdmeteo/webcam.php";
-        mImageName = "spot-" + mSpotID + ".jpg";
-        mName = "Sorico (Lago di como)";
-        mSource = "http://bomboklat.it";
+        webcamUrl = "http://bomboklat.it/wdmeteo/webcam.php";
+        mImageName = "spot-" + id + ".jpg";
+        name = "Sorico (Lago di como)";
+        sourceUrl = "http://bomboklat.it";
+    }*/
+
+    public Bombolak() {
+        super();
     }
 
     public MeteoStationData getMeteoData() {
 
-        String htmlResultString = getHTMLPage("http://bomboklat.it/wdmeteo/meteo.php");
+        //String htmlResultString = getHTMLPage("http://bomboklat.it/wdmeteo/meteo.php");
+        String htmlResultString = getHTMLPage(meteodataUrl);
         if (htmlResultString == null)
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();
@@ -101,7 +106,7 @@ public class Bombolak extends PullData {
         meteoStationData.rainrate = -1.0;
 
         // average speed
-        meteoStationData.averagespeed = Core.getAverage(mSpotID);
+        meteoStationData.averagespeed = Core.getAverage(id);
 
         // date
         txt = htmlResultString;

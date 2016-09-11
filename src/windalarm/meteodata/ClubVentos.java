@@ -6,25 +6,28 @@ import Wind.Core;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.logging.Logger;
 
 public class ClubVentos extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    public ClubVentos() {
+    /*public ClubVentos() {
         super(AlarmModel.Spot_Jeri);
-        mWebcamUrl = "";
-        mImageName = "spot-" + mSpotID + ".jpg";
-        mName = "Jericoacoara (Brasile)";
-        mSource = "http://www.clubventos.com";
+        webcamUrl = "";
+        mImageName = "spot-" + id + ".jpg";
+        name = "Jericoacoara (Brasile)";
+        sourceUrl = "http://www.clubventos.com";
+    }*/
+
+    public ClubVentos() {
+        super();
     }
 
     public MeteoStationData getMeteoData() {
 
-        String htmlResultString = getHTMLPage("http://www.clubventos.com/wind.php");
+        //String htmlResultString = getHTMLPage("http://www.clubventos.com/wind.php");
+        String htmlResultString = getHTMLPage(meteodataUrl);
         if (htmlResultString == null)
             return null;
         MeteoStationData meteoStationData = new MeteoStationData();

@@ -1,26 +1,86 @@
 package windalarm.meteodata;
 
-import java.util.Date;
-
 /**
  * Created by giacomo on 13/09/2015.
  */
 public class Spot {
-    public String name;
-    public int ID;
-    public String sourceUrl;
-    public String webcamUrl;
-    public String webcamUrl2;
-    public String webcamUrl3;
-    public Boolean offline = false;
+    protected String name;
+    protected long id;
+    protected String webcamUrl;
+    protected String webcamUrl2;
+    protected String webcamUrl3;
+    private String sourceUrl = "";
+    protected String meteodataUrl = "";
+    protected Boolean offline = false;
 
+    public Spot() {
+    }
 
-    public Spot(String name, int ID,String sourceUrl, String webcamUrl, String webcamUrl2, String webcamUrl3) {
+    public Spot(String name, int id,String sourceUrl, String webcamUrl, String webcamUrl2, String webcamUrl3) {
         this.name = name;
-        this.ID = ID;
+        this.id = id;
         this.sourceUrl = sourceUrl;
         this.webcamUrl = webcamUrl;
         this.webcamUrl2 = webcamUrl2;
         this.webcamUrl3 = webcamUrl3;
+    }
+
+    public long getSpotId() {
+        return id;
+    }
+
+    public void setSpotId(long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getWebcamUrl(int index) {
+        switch (index) {
+            case 1:
+                return webcamUrl;
+            case 2:
+                return webcamUrl2;
+            case 3:
+                return webcamUrl3;
+        }
+        return null;
+    }
+
+    public void setWebcamUrl(int index, String webcamUrl) {
+        switch (index) {
+            case 1:
+                this.webcamUrl = webcamUrl;
+            case 2:
+                this.webcamUrl2 = webcamUrl;
+            case 3:
+                this.webcamUrl3 = webcamUrl;
+        }
+    }
+
+    public String getSourceUrl() {
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl) {
+        this.sourceUrl = sourceUrl;
+    }
+
+    public boolean getOffline() {
+        return offline;
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
+    }
+
+    public void setMeteodataUrl(String meteodataUrl) {
+        this.meteodataUrl = meteodataUrl;
     }
 }

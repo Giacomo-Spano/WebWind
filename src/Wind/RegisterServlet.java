@@ -15,7 +15,7 @@
  */
 package Wind;
 
-import windalarm.meteodata.MeteoStationData;
+import windalarm.meteodata.PullData;
 import windalarm.meteodata.Spot;
 
 import javax.servlet.ServletException;
@@ -23,10 +23,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -118,18 +116,18 @@ public class RegisterServlet extends BaseServlet {
                 out = resp.getWriter();
                 out.println("{\"deviceid\" : " + deviceId + ", \"userid\" : " + userid + ", \"spotlist\" : [");  // todo eliminare il tag spotlist
 
-                ArrayList<Spot> spotlist = Core.getSpotList();
-                Iterator<Spot> iterator = spotlist.iterator();
+                ArrayList<PullData> spotlist = Core.getSpotList();
+                Iterator<PullData> iterator = spotlist.iterator();
                 String str = "";
                 int count = 0;
                 while (iterator.hasNext()) {
                     Spot spot = iterator.next();
                     if (count++ != 0)
                         str += ",";
-                    str += "{\"spotname\" : \"" + spot.name + "\",";
-                    str += "\"id\" : " + "\"" + spot.ID + "\",";
-                    str += "\"sourceurl\" : " + "\"" + spot.sourceUrl + "\",";
-                    str += "\"webcamurl\" : " + "\"" + spot.webcamUrl + "\"}";
+                    str += "{\"spotname\" : \"" + spot.getName()+ "\",";
+                    str += "\"id\" : " + "\"" + spot.getSpotId() + "\",";
+                    str += "\"sourceurl\" : " + "\"" + spot.getSourceUrl() + "\",";
+                    str += "\"webcamurl\" : " + "\"" + spot.getWebcamUrl(1) + "\"}";
                 }
                 str += "] }";
                 out.println(str);

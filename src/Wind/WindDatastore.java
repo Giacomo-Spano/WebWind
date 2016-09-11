@@ -401,9 +401,6 @@ public class WindDatastore {
 
                 }
                 AlarmModel.sendAlarm(alarm.deviceId,alarm,speed,avspeed,currentDate,spotId,windid);
-                //updateAlarmLastRingDate(alarm.deviceId,alarm.id,currentDate);
-
-
 
                 logger.info("ALARM ACTIVE: alarm.deviceId=" + alarm.deviceId +",alarm.speed=" + alarm.speed+",alarm.avspeed=" + alarm.avspeed+",alarm.direction=" + alarm.direction
                     +",alarm.id=" + alarm.id+",alarm.startTime=" + alarm.startTime.toString()+",alarm.endTime=" + alarm.endTime.toString()+",alarm.startDate=" + alarm.startDate.toString()
