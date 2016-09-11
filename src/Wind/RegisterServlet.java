@@ -27,15 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-/**
- * DebugServlet that registers a device, whose registration id is identified by
- * {@link #PARAMETER_REG_ID}.
- * <p/>
- * <p/>
- * The client app should call this servlet everytime it receives a
- * {@code com.google.android.c2dm.intent.REGISTRATION C2DM} intent without an
- * error or {@code unregistered} extra.
- */
 public class RegisterServlet extends BaseServlet {
 
     private static final Logger LOGGER = Logger.getLogger(PushNotificationThread.class.getName());
@@ -111,30 +102,16 @@ public class RegisterServlet extends BaseServlet {
             int deviceId = Core.addDevice(device);
 
             resp.setContentType("application/json");
-            PrintWriter out = null;
+            PrintWriter out;
             try {
                 out = resp.getWriter();
-                out.println("{\"deviceid\" : " + deviceId + ", \"userid\" : " + userid + ", \"spotlist\" : [");  // todo eliminare il tag spotlist
-
-                ArrayList<PullData> spotlist = Core.getSpotList();
-                Iterator<PullData> iterator = spotlist.iterator();
-                String str = "";
-                int count = 0;
-                while (iterator.hasNext()) {
-                    Spot spot = iterator.next();
-                    if (count++ != 0)
-                        str += ",";
-                    str += "{\"spotname\" : \"" + spot.getName()+ "\",";
-                    str += "\"id\" : " + "\"" + spot.getSpotId() + "\",";
-                    str += "\"sourceurl\" : " + "\"" + spot.getSourceUrl() + "\",";
-                    str += "\"webcamurl\" : " + "\"" + spot.getWebcamUrl(1) + "\"}";
-                }
-                str += "] }";
-                out.println(str);
+                String str = "{\"deviceid\" : " + deviceId + ", \"userid\" : " + userid + " }";
+                out.print(str);
+                out.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            out.close();
+
 
             setSuccess(resp);
         }

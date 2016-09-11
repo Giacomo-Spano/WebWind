@@ -132,6 +132,51 @@ public class Devices {
         return device;
     }
 
+    public List<Device> getDevicesWithFavorites(long spotid) {
+
+        // ritorna la lista di tutti i devices che sono associati ad utenti che abbiano
+        // tra i favoriti lo spotId passato
+
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            String sql;
+            sql = "SELECT favorites.spotid, users.personid, devices.personid, devices.id, devices.regid, devices.name, devices.date " +
+                    "FROM users " +
+                    "INNER JOIN favorites ON users.personid = favorites.personid " +
+                    "INNER JOIN devices ON devices.personid = favorites.personid " +
+                    "WHERE favorites.spotid = " + spotid + ";";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            List<Device> devices = new ArrayList<Device>();
+            while (rs.next()) {
+                Device device = new Device();
+                device.id = rs.getInt("id");
+                device.regId = rs.getString("regid");
+                device.name = rs.getString("name");
+                device.date = rs.getDate("date");
+                device.personId = rs.getString("personid");
+                devices.add(device);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+            return devices;
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     public int insert(Device device) {
 
         int lastid;

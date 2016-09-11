@@ -1,7 +1,8 @@
-package Wind;
+package Wind.servlet;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import Wind.Core;
+import Wind.Favorites;
+import Wind.RequestLog;
 import windalarm.meteodata.MeteoStationData;
 import windalarm.meteodata.PullData;
 import windalarm.meteodata.Spot;
@@ -27,35 +28,27 @@ public class MeteoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 
-        String favoritelist = request.getParameter("favorites");
+        String spotIdstr = request.getParameter("spotid");
+        long spotid = Long.valueOf(spotIdstr);
         String userid = request.getParameter("userid");
-        String deletekey = request.getParameter("delete");
+        String deletekey = request.getParameter("remove");
 
-        LOGGER.info("doPost: favorites=" + favoritelist + "userid=" + userid);
+        LOGGER.info("doPost: postfavorite spotid=" + spotid + "userid=" + userid);
 
         if (deletekey != null && deletekey.equals("true")) {
 
-            String[] list = favoritelist.split(",");
             Favorites favorites = new Favorites();
-            for (String f : list) {
-                long spotid = Integer.valueOf(f);
-                favorites.delete(userid, spotid);
-            }
+            favorites.delete(userid, spotid);
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("text/plain");
 
         } else {
 
-            String[] list = favoritelist.split(",");
             Favorites favorites = new Favorites();
-
-            for (String f : list) {
-                long spotid = Long.valueOf(f);
-                favorites.insert(userid, spotid);
-            }
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType("text/plain");
+            favorites.insert(userid, spotid);
         }
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("text/plain");
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -64,97 +57,35 @@ public class MeteoServlet extends HttpServlet {
         String spotlist = request.getParameter("requestspotlist");
         String history = request.getParameter("history");
         String log = request.getParameter("log");
-        //String startDate = request.getParameter("start");
-        //String endDate = request.getParameter("end");
         String spot = request.getParameter("spot");
         String fullinfo = request.getParameter("fullinfo");
-
-        String user = request.getHeader("user");
-
-        String type = "";
-        //int user = 1;
-        String params = "params";
-
-        LOGGER.info("lastdata " + lastdata);
+        String userid = request.getParameter("userid");
 
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-
         if (spotlist != null && spotlist.equals("true")) {
 
             RequestLog req = new RequestLog();
-            req.insert("authcode", "spotlist", user, "");
+            req.insert("authcode", "spotlist", userid, "");
 
-            //out.print("{\"spotlist\" : [");
             boolean fullInfoRequest = false;
             if (fullinfo != null && fullinfo.equals("true"))
                 fullInfoRequest = true;
 
-            String str = getSpotListJson(fullInfoRequest);
-
-            //response.setHeader("Length", "" + str.length());
+            String str = getSpotListJson(fullInfoRequest, userid);
             out.print(str);
-
 
         } else if (lastdata != null && lastdata.equals("true")) { // Last meteo data
 
             RequestLog req = new RequestLog();
-            req.insert("authcode", "lastdata", user, "");
-
+            req.insert("authcode", "lastdata", userid, "");
 
             String str = getLastData(spot);
-            //response.setContentLength(str.length());
-            response.setHeader("Length", "" + str.length());
+            //response.setHeader("Length", "" + str.length());
             out.println(str);
 
-
-        } /*else if (history != null && history.equals("true") && spot != null) { // Historical data
-
-            RequestLog req = new RequestLog();
-            req.insert("authcode", "history", user, "");
-
-            Date end = Core.getDate();
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(end);
-            cal.add(Calendar.HOUR_OF_DAY, -6); //minus number would decrement the hours
-            Date start = cal.getTime();
-
-            String strStartDate = request.getParameter("start");
-            String strEndDate = request.getParameter("end");
-
-            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
-            try {
-                if (strStartDate != null)
-                    start = df.parse(strStartDate);
-                if (strEndDate != null)
-                    end = df.parse(strEndDate);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            List<MeteoStationData> list = Core.getHistory(Integer.valueOf(spot), start, end);
-
-            String str = "{\"meteodata\" : [";
-
-            for (int i = 0; i < list.size(); i++) {
-                //String jsonText = list.get(i).toJson();
-                String jsonText = list.get(i).toSpeedHistoryJson();
-                LOGGER.info("jsonText history" + jsonText);
-
-                str += jsonText;
-                if (i != list.size() - 1)
-                    str += ",";
-
-                //out.print(str);
-                //str = "";
-            }
-
-            str += "] }";
-            out.println(str);
-
-
-        } */ else if (log != null && log.equals("true") && spot != null) { // Historical data
+        } else if (log != null && log.equals("true") && spot != null) { // Historical data
 
             LOGGER.info("log REQUEST");
             String strStartDate = request.getParameter("start");
@@ -178,7 +109,6 @@ public class MeteoServlet extends HttpServlet {
             }
 
             String str = getLogJson(spot, start, end);
-
             out.print(str);
 
         } else {
@@ -307,42 +237,55 @@ public class MeteoServlet extends HttpServlet {
         return str;
     }
 
-    private String getSpotListJson(boolean fullInfoRequest) {
+    private String getSpotListJson(boolean fullInfoRequest, String userid) {
         String str = "{\"spotlist\" : [";
 
         List<PullData> sl = Core.getSpotList();
-        Iterator<PullData> iterator = sl.iterator();
-
 
         int count = 0;
-        while (iterator.hasNext()) {
-
-            Spot sp = iterator.next();
-            MeteoStationData meteoStationData = Core.getLastfromID(sp.getSpotId());
-            if (meteoStationData == null)
-                continue;
+        for (Spot spot : sl) {
 
             if (count++ != 0)
                 str += ",";
 
-            str += "{\"spotname\" : \"" + sp.getName() + "\",";
-            str += "\"sourceurl\" : " + "\"" + sp.getSourceUrl() + "\",";
-            str += "\"id\" : " + "\"" + sp.getSpotId() + "\",";
-            str += "\"webcamurl\" : " + "\"" + sp.getWebcamUrl(1) + "\",";
-
+            str += "{\"spotname\" : \"" + spot.getName() + "\",";
+            str += "\"sourceurl\" : " + "\"" + spot.getSourceUrl() + "\",";
+            str += "\"id\" : " + "\"" + spot.getSpotId() + "\",";
+            str += "\"webcamurl\" : " + "\"" + spot.getWebcamUrl(1) + "\",";
+            str += "\"webcamurl2\" : " + "\"" + spot.getWebcamUrl(2) + "\",";
+            str += "\"webcamurl3\" : " + "\"" + spot.getWebcamUrl(3) + "\"";
 
             if (fullInfoRequest) {
-                SimpleDateFormat df = new SimpleDateFormat("DD/MM/YYY HH:mm:ss");
-                str += "\"speed\" : " + meteoStationData.speed + ",";
-                str += "\"avspeed\" : " + meteoStationData.averagespeed + ",";
-                str += "\"direction\" : " + "\"" + meteoStationData.direction + "\",";
-                str += "\"directionangle\" : " + meteoStationData.directionangle + ",";
-                str += "\"datetime\" : " + "\"" + meteoStationData.sampledatetime + "\",";
+                MeteoStationData meteoStationData = Core.getLastfromID(spot.getSpotId());
+                if (meteoStationData != null) {
+                    str += ",";
+                    SimpleDateFormat df = new SimpleDateFormat("DD/MM/YYY HH:mm:ss");
+                    str += "\"speed\" : " + meteoStationData.speed + ",";
+                    str += "\"avspeed\" : " + meteoStationData.averagespeed + ",";
+                    str += "\"direction\" : " + "\"" + meteoStationData.direction + "\",";
+                    str += "\"directionangle\" : " + meteoStationData.directionangle + ",";
+                    str += "\"datetime\" : " + "\"" + meteoStationData.sampledatetime + "\"";
+                }
             }
-            str += "\"id\" : " + meteoStationData.spotID + "}";
+            str += "}";
         }
+        str += "] ";
 
-        str += "] }";
+        Favorites f = new Favorites();
+        List<Long> favorites = f.getFavorites(userid);
+
+        str += ", \"favorites\" : \"";
+        if (favorites != null) {
+            count = 0;
+            for (Long spot : favorites) {
+                if (count++ != 0)
+                    str += ",";
+                str += spot;
+            }
+        }
+        str += "\" ";
+
+        str += " }";
         return str;
     }
 }

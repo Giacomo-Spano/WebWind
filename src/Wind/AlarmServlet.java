@@ -31,7 +31,7 @@ public class AlarmServlet extends HttpServlet {
 
         String jsonData = request.getParameter("json");
         //String regId = request.getParameter("regId");
-        String deletekey = request.getParameter("delete");
+        String deletekey = request.getParameter("deleteAll");
         String ringkey = request.getParameter("ring");
         String snoozekey = request.getParameter("snooze");
         //String strDeviceId = request.getParameter("deviceId");
@@ -48,7 +48,7 @@ public class AlarmServlet extends HttpServlet {
         try {
             if (deletekey != null) {
 
-                LOGGER.info("delete alarm  id=" + alarmid);
+                LOGGER.info("deleteAll alarm  id=" + alarmid);
                 WindDatastore.deleteAlarm(alarmid);
 
             } else if (ringkey != null) {

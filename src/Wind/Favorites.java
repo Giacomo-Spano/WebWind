@@ -21,7 +21,7 @@ public class Favorites {
     public Favorites() {
     }
 
-    public List<Long> getFavorites(long userid) {
+    public List<Long> getFavorites(String userid) {
 
         List<Long> list = new ArrayList<Long>();
 
@@ -31,7 +31,7 @@ public class Favorites {
             Statement stmt = conn.createStatement();
 
             String sql;
-            sql = "SELECT * FROM favorites WHERE userid=" + userid + ";";
+            sql = "SELECT * FROM favorites WHERE personid='" + userid + "';";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 long spotid = rs.getLong("spotid");
@@ -98,7 +98,9 @@ public class Favorites {
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
 
             String sql;
-            sql = "DELETE FROM favorites WHERE personid='" + personid + "' AND spotid=" + spotid + ";";
+            sql = "DELETE FROM favorites WHERE personid='" + personid + "'";
+            if (spotid != -1)
+                sql += " AND spotid=" + spotid + ";";
             Statement stmt = conn.createStatement();
             deletedItems = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.close();

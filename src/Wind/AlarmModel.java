@@ -287,43 +287,57 @@ public class AlarmModel {
                 differenceInMinutes = -1;
             if (differenceInMinutes == -1 || differenceInMinutes > 30) {
 
+                SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:m");
                 Message notification = new Message.Builder()
                         .addData("title", md.spotName)
-                        .addData("message", md.spotName + " - Vento forte " + md.speed + "km/h (" + md.averagespeed + ")")
+                        .addData("message", df.format(md.datetime) + " " + md.spotName + " - Vento forte " + md.speed + "km/h " +
+                                md.direction + "(" + md.averagespeed + "km/h) -" + md.id)
                         .addData("spotID", "" + md.spotID)
                         .addData("notificationtype", AlarmModel.NotificationType_Info)
                         .addData("spotName", md.spotName)
                         .build();
 
-                List<Device> devices = Core.getDevices();
-                //Core.sendPushNotification(devices, notification);
+                //List<Device> devices = Core.getDevices();
+                Devices d = new Devices();
+                List<Device> devices = d.getDevicesWithFavorites(md.spotID);
 
+
+                //Core.sendPushNotification(devices, notification);
                 for(Device device : devices) {
                     Core.sendPushNotification(device.id, notification);
+                    AlarmLog al = new AlarmLog();
+                    al.insert("sendhighwind", 0, device.id, md.speed, md.averagespeed, md.spotID, 0, md.id);
+
                 }
 
                 setLastHighWindNotificationDate(md.spotID,Core.getDate());
 
             }
-        } else if (md.trend > 150.0) {
+        } else if (md.trend > 300.0) {
 
             long differenceInMinutes = -1;
             if (spotdata.lastWindIncreaseNotificationSentDate != null)
                 differenceInMinutes= TimeUnit.MILLISECONDS.toMinutes(Core.getDate().getTime() - spotdata.lastWindIncreaseNotificationSentDate.getTime());
             if (differenceInMinutes == -1 || differenceInMinutes > 30) {
 
+                SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:m");
                 Message notification = new Message.Builder()
                         .addData("title", md.spotName)
-                        .addData("message", md.spotName + " - Vento in forte aumento (" + md.trend + ")")
+                        .addData("message", df.format(md.datetime) + " " + md.spotName + " - Vento in forte aumento (" + md.trend + ") -" + md.id)
                         .addData("spotID", "" + md.spotID)
                         .addData("spotName", md.spotName)
                         .addData("notificationtype", AlarmModel.NotificationType_Info)
                         .build();
 
-                List<Device> devices = Core.getDevices();
+                //List<Device> devices = Core.getDevices();
+                Devices d = new Devices();
+                List<Device> devices = d.getDevicesWithFavorites(md.spotID);
+
                 //Core.sendPushNotification(devices, notification);
                 for(Device device : devices) {
                     Core.sendPushNotification(device.id, notification);
+                    AlarmLog al = new AlarmLog();
+                    al.insert("sendtrend", 0, device.id, md.trend, 0.0, md.spotID, 0, md.id);
                 }
                 setLastIncreaseWindNotificationDate(md.spotID,Core.getDate());
             }

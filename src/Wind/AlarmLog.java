@@ -21,7 +21,7 @@ public class AlarmLog {
         return insert(command, alarmid, deviceid, 0.0, 0.0,-1,snoozeminute,windid);
     }
 
-    public boolean insert(String command, long alarmid, int deviceid, Double speed, Double avspeed, long spotId, int snoozeminute, int windid) {
+    public boolean insert(String command, long alarmid, int deviceid, Double speed, Double avspeed, long spotId, int snoozeminute, long windid) {
 
         try {
             // Register JDBC driver

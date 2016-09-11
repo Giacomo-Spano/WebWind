@@ -31,7 +31,7 @@
 
     <servlet>
         <servlet-name>MeteoServlet</servlet-name>
-        <servlet-class>Wind.MeteoServlet</servlet-class>
+        <servlet-class>Wind.servlet.MeteoServlet</servlet-class>
 
     </servlet>
 
