@@ -31,7 +31,7 @@ public class AlarmServlet extends HttpServlet {
 
         String jsonData = request.getParameter("json");
         //String regId = request.getParameter("regId");
-        String deletekey = request.getParameter("deleteAll");
+        String deletekey = request.getParameter("delete");
         String ringkey = request.getParameter("ring");
         String snoozekey = request.getParameter("snooze");
         //String strDeviceId = request.getParameter("deviceId");

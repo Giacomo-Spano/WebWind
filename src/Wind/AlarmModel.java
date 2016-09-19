@@ -147,7 +147,7 @@ public class AlarmModel {
         LOGGER.info("<---evaluate ALARMS");
     }
 
-    public MeteoStationData getLastfromID(long id) {
+    /*public MeteoStationData getLastfromID(long id) {
 
         int index = getIndexFromID(id);
         if (index < 0 || index >= meteoHistory.size()) return null;
@@ -162,9 +162,9 @@ public class AlarmModel {
             md.offline = true;
 
         return md;
-    }
+    }*/
 
-    public MeteoStationData getLastfromIDNewversione(int id) {
+    public MeteoStationData getLastfromID(long id) {
 
         MeteoStationData md = new MeteoStationData();
         List<MeteoStationData> list = md.getLastSamples(id,1);
@@ -434,7 +434,7 @@ public class AlarmModel {
 
         int samples = 5;
         List<MeteoStationData> list = getLastSamples(spotID, samples);
-        if (list == null || list.size() == 0)
+        if (list == null || list.size() == 0 || list.size() < samples)
             return 0;
 
         MeteoStationData startMeteodata;

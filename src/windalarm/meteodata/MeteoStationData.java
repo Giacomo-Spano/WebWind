@@ -83,6 +83,10 @@ public class MeteoStationData {
 
     public double getAngleFromDirectionSymbol(String symbol) {
 
+        if (symbol == null || symbol.equals("")) {
+            return -1.0;
+        }
+
         for (int i = 0; i < symbolList.size(); i++) {
             for (int k = 0; k < symbolList.get(i).size(); k++) {
                 if (symbolList.get(i).get(k).equals(symbol))
@@ -233,7 +237,9 @@ public class MeteoStationData {
 
             // controlla se esiste già un record con la stessa data e ora
             MeteoStationData lastMd = getLastMeteoStationData(spotID);
-            if (lastMd != null && datetime.equals(lastMd.datetime)) {
+            if (lastMd != null && datetime.compareTo(lastMd.datetime) == 0
+                    && lastMd.speed.compareTo(speed) == 0
+                    /*&& lastMd.averagespeed == averagespeed*/) { //non controllare avspeeed perchè è calcolata
                 LOGGER.info("duplicate datetime: skip insert ");
                 return 0;
             }

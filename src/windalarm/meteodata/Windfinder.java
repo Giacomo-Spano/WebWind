@@ -5,8 +5,11 @@ package windalarm.meteodata;
 import Wind.AlarmModel;
 import Wind.Core;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
@@ -52,45 +55,98 @@ public class Windfinder extends PullData {
         LOGGER.info("getMeteoData: spotName=" + name);
 
         String htmlResultString = getHTMLPage(meteodataUrl);
-        //String htmlResultString = getHTMLPage("https://uk.windfinder.com/forecast/" + mSpotUrl);
         if (htmlResultString == null)
             return null;
+
+
         MeteoStationData meteoStationData = new MeteoStationData();
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
-        Calendar cal = Calendar.getInstance();
-        //Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Rome"));
-        //cal.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
+        // sample date time
         meteoStationData.sampledatetime = Core.getDate();
-        LOGGER.info("time in rome=" + meteoStationData.sampledatetime);
-        LOGGER.info("hour in rome=" + cal.get(Calendar.HOUR_OF_DAY));
-        //DateTimeZone timeZone = DateTimeZone.forID( "Europe/Rome" );
-        //meteoStationData.sampledatetime = dateFormat.setTimeZone(timeZone);
 
-        //<span id="current-windspeed">1</span>
+        //speed
+        String speed = findBetweenKeywords(htmlResultString, "<span class=\"current__wind__speed\">", "<span class=\"current__wind__unit\">kts</span>");
+        if (speed != null)
+            meteoStationData.speed = Double.valueOf(speed);
 
-
-        String txt = htmlResultString;
-        String keyword = "<span class=\"current__wind__speed\">";
-        int start = txt.indexOf(keyword);
-        txt = txt.substring(start + keyword.length());
-        int end = txt.indexOf("<span class=\"current__wind__unit\">kts</span>");
-        txt = txt.substring(0, end);
-        meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(txt));// * 1.85200; // convert knots to km/h
-
+        //average speed
         meteoStationData.averagespeed = Core.getAverage(id);
 
-        txt = htmlResultString;
-        keyword = "<span class=\"current__wind__dir\">";
-        start = txt.indexOf(keyword);
-        if (start == -1) {
-            meteoStationData.direction = "";
-            meteoStationData.directionangle = -1.0;
+        // direction
+        String direction = findBetweenKeywords(htmlResultString, "<span class=\"current__wind__dir\">", "</span>");
+        meteoStationData.direction = getDirection(direction);
+        meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
+
+        //datetime
+        String time = findBetweenKeywords(htmlResultString, "Report from local weather station at ", "local time.");
+        String date = findBetweenKeywords(htmlResultString, "<div class=\"weathertable__header\">", "</div>");
+        meteoStationData.datetime = getDate(date, time);
+
+        // temperature
+        String temperature = findBetweenKeywords(htmlResultString, "<span class=\"current__temp__value\">", "<span class=\"current__temp__unit\">");
+        meteoStationData.temperature = Double.valueOf(temperature);;
+
+        //pressure
+        meteoStationData.pressure = null;
+
+        // humidity
+        meteoStationData.humidity = null;
+
+        // rainrate
+        meteoStationData.rainrate = null;
+
+        return meteoStationData;
+    }
+
+    private String findBetweenKeywords(String txt, String startKeyword, String endKeyword) {
+
+        int start = txt.indexOf(startKeyword);
+        if (start == -1)
+            return null;
+        txt = txt.substring(start + startKeyword.length());
+        int end = txt.indexOf(endKeyword);
+        if (end == -1)
+            return null;
+        txt = txt.substring(0, end);
+        txt = txt.trim();
+        if (txt.equals(""))
+            return null;
+
+        return txt;
+    }
+
+    private Date getDate(String date, String time) {
+
+
+
+        String dayofweek = date.substring(0,3);
+        int idx = date.indexOf(",")+1;
+        String month = date.substring(idx,idx+4).trim();
+        String day = date.substring(idx+5).trim();
+        Date yd = Core.getDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(yd);
+        int year = cal.get(Calendar.YEAR);
+        //int month = cal.get(Calendar.MONTH);
+        //int day = cal.get(Calendar.DAY_OF_MONTH);
+
+        String fulldate = day + "-" + month + "-" + year + " " + time;
+
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mm", Locale.ENGLISH);
+
+        try {
+            Date d = df.parse(fulldate);
+            return d;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String getDirection (String direction ) {
+        String txt = direction;
+        if (txt == null) {
+            return "";
         } else {
-            txt = txt.substring(start + keyword.length());
-            end = txt.indexOf("</span>");
-            txt = txt.substring(0, end);
             txt = txt.replaceAll(" ", "");
             txt = txt.replaceAll("-", "");
             txt = txt.trim();
@@ -99,29 +155,7 @@ public class Windfinder extends PullData {
             txt = txt.replaceAll("SOUTH", "S");
             txt = txt.replaceAll("EAST", "E");
             txt = txt.replaceAll("WEST", "O");
-            meteoStationData.direction = txt;
-            meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
+            return txt;
         }
-
-        meteoStationData.temperature = null;
-
-        /*txt = htmlResultString;
-        keyword = "spotmeta__notification";
-        start = txt.indexOf(keyword);
-        txt = txt.substring(start + keyword.length());
-        end = txt.indexOf("ora locale.");
-        txt = txt.substring(0, end);
-        meteoStationData.temperature = Double.valueOf(txt);*/
-
-        /*meteoStationData.spotName = name;
-        meteoStationData.spotID = id;*/
-
-        //String date = meteoStationData.sampledatetime.toString().substring(0,10);
-        //String time = meteoStationData.sampledatetime.toString().substring(11,16);
-
-        meteoStationData.datetime = meteoStationData.sampledatetime;
-
-
-        return meteoStationData;
     }
 }
