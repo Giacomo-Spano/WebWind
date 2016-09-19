@@ -181,13 +181,18 @@ public class Core {
         return alarmModel.getLastfromID(id);
     }
 
+    public static List<MeteoStationData> getLastFavorites(String personid) {
+
+        return alarmModel.getLastFavorites(personid);
+    }
+
 
     /*public static List<MeteoStationData> getHistory(int spotID, int sampledata) {
         return alarmModel.getHistory(spotID, sampledata);
     }*/
 
-    public static List<MeteoStationData> getHistory(int spotID, Date start, Date end) {
-        return alarmModel.getHistory(spotID, start, end);
+    public static List<MeteoStationData> getHistory(int spotID, Date start, Date end, long windId) {
+        return alarmModel.getHistory(spotID, start, end, windId);
     }
 
     public static String getVersion() {
