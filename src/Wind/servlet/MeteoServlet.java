@@ -7,11 +7,16 @@ import windalarm.meteodata.MeteoStationData;
 import windalarm.meteodata.PullData;
 import windalarm.meteodata.Spot;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageOutputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -61,6 +66,17 @@ public class MeteoServlet extends HttpServlet {
         String spot = request.getParameter("spot");
         String fullinfo = request.getParameter("fullinfo");
         String userid = request.getParameter("userid");
+        String webcamimage = request.getParameter("webcamimage");
+        String windid = request.getParameter("lastwindid");
+
+        if (webcamimage != null && webcamimage.equals("1")) { // webcamimage
+
+            RequestLog req = new RequestLog();
+            req.insert("authcode", "webcamimage" + webcamimage, userid, "");
+
+            getWebcamImage(response,webcamimage);
+            return;
+        }
 
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
@@ -91,7 +107,10 @@ public class MeteoServlet extends HttpServlet {
             RequestLog req = new RequestLog();
             req.insert("authcode", "lastdata", userid, "");
 
-            String str = getFavoritesLastData(userid);
+            long lastWindId = 0l;
+            if (windid != null)
+                lastWindId = Long.valueOf(windid);
+            String str = getFavoritesLastData(userid,lastWindId);
             out.println(str);
 
         } else if (log != null && log.equals("true") && spot != null) { // Historical data
@@ -101,10 +120,9 @@ public class MeteoServlet extends HttpServlet {
             String strEndDate = request.getParameter("end");
             SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
             String strLastWindId = request.getParameter("lastwindid");
-            long lastWindId = -1;
+            long lastWindId = 0l;
             if (strLastWindId != null)
                 lastWindId = Long.valueOf(strLastWindId);
-
 
             Date start = null, end = null;
             try {
@@ -133,6 +151,23 @@ public class MeteoServlet extends HttpServlet {
         //RequestLog rl = new RequestLog();
         //rl.insert(authcode, type, user, params);
 
+    }
+
+    private void getWebcamImage(HttpServletResponse response, String webcamimage) {
+
+        response.setContentType("image/jpeg");
+
+        String pathToWeb = Core.getDataDir() + "/" + "webcam.jpeg";
+        File f = new File(pathToWeb);
+        BufferedImage bi = null;
+        try {
+            bi = ImageIO.read(f);
+            OutputStream out = response.getOutputStream();
+            ImageIO.write(bi, "jpg", out);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private String getLogJson(String spot, Date start, Date end, long lastWindId) {
@@ -259,13 +294,12 @@ public class MeteoServlet extends HttpServlet {
         return str;
     }
 
-    private String getFavoritesLastData(String personid) {
+    private String getFavoritesLastData(String personid, long lastWindId) {
 
         if (personid == null) return null;
 
         List<MeteoStationData> list;
         list = Core.getLastFavorites(personid);
-
 
         String str = "{\"meteodata\" : [";
 

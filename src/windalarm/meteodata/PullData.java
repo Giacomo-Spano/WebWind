@@ -3,9 +3,10 @@ package windalarm.meteodata;
 import Wind.AlarmModel;
 import Wind.Core;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,44 +19,17 @@ import java.util.logging.Logger;
 public abstract class PullData extends Spot {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-
-    //protected int id;// = AlarmModel.Spot_Valmadrera;
-    //protected String name;
-    //protected String webcamUrl = null;
-    //protected String webcamUrl2 = null;
-    //protected String webcamUrl3 = null;
-    protected String mImageName = "";
-    protected String mImageName2 = "";
-    private String mImageName3  = "";
     public Boolean offline = false;
     public Date lastHighWindNotificationSentDate;
     public Date lastWindIncreaseNotificationSentDate;
 
-
-
     abstract MeteoStationData getMeteoData();
 
-    /*public PullData(long spotID) {
-        this.id = spotID;
-        name = "";//AlarmModel.getSpotName(spotID);
-    }*/
-
     public PullData() {
-        mImageName = "spot-" + id + ".jpg";
-        mImageName2 = "spot-" + id + "-2.jpg";
+
     }
 
-    /*public PullData(long id, String name, String webcamUrl, String webcamUrl2, String webcamUrl3, String sourceUrl) {
-        this.id = id;
-        this.name = name;
-        webcamUrl = webcamUrl;
-        webcamUrl2 = webcamUrl2;
-        webcamUrl3 = webcamUrl3;
-        sourceUrl = sourceUrl;
-    }*/
-
-
-    public void pull(){
+    public void pull() {
 
         try {
             MeteoStationData md = getMeteoData();
@@ -63,42 +37,26 @@ public abstract class PullData extends Spot {
                 md.spotName = name;
                 md.spotID = id;
 
-
                 long minutes = 30;
                 Date startTime = new Date(md.datetime.getTime() - (minutes * AlarmModel.ONE_MINUTE_IN_MILLIS));
                 md.trend = Core.getTrend(id, startTime, md.datetime);
                 Core.sendData(md, id);
 
-                if (webcamUrl != "")
-                    Core.sendImage(webcamUrl, mImageName);
-                if (webcamUrl2 != "")
-                    Core.sendImage(webcamUrl2, mImageName2);
-                if (webcamUrl3 != "")
-                    Core.sendImage(webcamUrl3, mImageName3);
+                if (webcamUrl != "") {
+                    getWebcamImage(webcamUrl,"" + id + "webcam");
+                }
+                if (webcamUrl2 != "") {
+                    getWebcamImage(webcamUrl2,"" + id + "webcam2");
+                }
+                if (webcamUrl3 != "") {
+                    getWebcamImage(webcamUrl3,"" + id + "webcam3");
+                }
             }
 
         } catch (Exception e) {
-            LOGGER.severe("cannot get data for spot " + name + "("+ id +")");
+            LOGGER.severe("cannot get data for spot " + name + "(" + id + ")");
         }
-
     }
-
-    /*protected double getAverage() {
-
-        ArrayList<MeteoStationData> list = AlarmModel.getHistory(id);
-
-        double average = 0;
-        int samples = 5;
-        if (samples > list.size())
-            samples = list.size();
-
-        for (int i = 0; i < samples; i++) {
-            average += list.get(list.size() - 1 - i).speed;
-        }
-        average = average / samples;
-        average = Math.round(average * 10) / 10;
-        return average;
-    }*/
 
     public String getHTMLPage(String url) {
 
@@ -137,5 +95,29 @@ public abstract class PullData extends Spot {
         return null;
     }
 
+    public static void getWebcamImage(String imagepath, String imageName) {
 
+        try {
+            BufferedImage bufferedImage;
+
+            URL imageUrl = new URL(imagepath);
+            System.setProperty("java.io.tmpdir", Core.getTmpDir());
+            bufferedImage = ImageIO.read(imageUrl);
+
+            // create a blank, RGB, same width and height, and a white background
+            BufferedImage newBufferedImage = new BufferedImage(bufferedImage.getWidth(),
+                    bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+            newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0, Color.WHITE, null);
+
+            String path = Core.getDataDir() + "/" + imageName + ".jpeg";
+            ImageIO.write(newBufferedImage, "jpg", new File(path));
+
+        } catch (MalformedURLException ex) {
+            LOGGER.severe("Debug - MalformedURLException error: " + ex.toString());
+            return;
+        } catch (IOException ioe) {
+            LOGGER.severe("Debug - IOException error: " + ioe.toString());
+            return;
+        }
+    }
 }

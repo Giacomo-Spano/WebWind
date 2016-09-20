@@ -137,6 +137,7 @@ public class Windfinder extends PullData {
             Date d = df.parse(fulldate);
             return d;
         } catch (ParseException e) {
+            LOGGER.info("unparsable data: spotName=" + name);
             e.printStackTrace();
         }
         return null;

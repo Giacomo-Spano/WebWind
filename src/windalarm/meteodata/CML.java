@@ -30,41 +30,6 @@ public class CML extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    /*public CML(long spotID) {
-        super(spotID);
-
-        switch ((int) id) {
-            case (int) AlarmModel.Spot_Abbadia:
-                mSpotUrl = Abbadia;
-                webcamUrl = "http://www.abbadiameteo.it/foscam/FI9805W_00626E4EA7A8/snap/webcam.php";
-                name = "Abbadia Lariana (Lecco)";
-                break;
-            case (int) AlarmModel.Spot_Gera:
-                mSpotUrl = Gera;
-                webcamUrl = "http://www.solemio.nl/solemio.jpg";
-                name = "Gera Lario (Como)";
-                break;
-            case (int) AlarmModel.Spot_Dervio:
-                mSpotUrl = Dervio;
-                webcamUrl = "http://www.wcv.it/webcam03/currenth.jpg";
-                name = "Dervio (Lecco)";
-                break;
-            case (int) AlarmModel.Spot_Dongo:
-                mSpotUrl = Dongo;
-                webcamUrl = "http://www.skiffsailing.it/webcam/video.jpg";
-                name = "Dongo (Como)";
-                break;
-            case (int) AlarmModel.Spot_Gravedona:
-                mSpotUrl = Gravedona;
-                webcamUrl = "http://rete.centrometeolombardo.com/Como/gravedona/public/gravedona.jpg";
-                name = "Gravedona (Como)";
-                break;
-
-        }
-
-        sourceUrl = "www.centrometeolombardo.com/";
-        mImageName = "spot-" + id + ".jpg";
-    }*/
 
     public CML() {
         super();

@@ -22,20 +22,23 @@ public class Core {
     private static final Logger LOGGER = Logger.getLogger(Core.class.getName());
 
     public static String APP_DNS_OPENSHIFT = "jbossews-giacomohome.rhcloud.com";
-    public static String APP_DNS_OPENSHIFTTEST = "jbossewstest-giacomohome.rhcloud.com";
+    public static String APP_DNS_OPENSHIFTTEST = "jbossewsbeta-giacomohome.rhcloud.com";
+    //public static String APP_DNS_OPENSHIFTTEST = "jbossewstest-giacomohome.rhcloud.com";
 
 
     protected static String appDNS_envVar;
     protected static String mysqlDBHost_envVar;
     protected static String mysqlDBPort_envVar;
     protected static String tmpDir_envVar;
+    protected static String dataDir_envVar;
     private static String version = "0.11";
 
     public static String getUser() {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
             return "adminzdVX5dl";
         else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
-            return "adminw8ZVVu2";
+            return "adminBPJK7ZI";
+            //return "adminw8ZVVu2";
         else
             //return "adminzdVX5dl";// production
             return "root";
@@ -45,7 +48,8 @@ public class Core {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
             return "eEySMcJ6WCj4";
         else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
-            return "MhbY-61ZlqU4";
+            return "rNKj36gGgXKF";
+            //return "MhbY-61ZlqU4";
         else
             //return "eEySMcJ6WCj4"; //production
             return "giacomo";
@@ -56,6 +60,7 @@ public class Core {
             return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
         } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) { // test
             return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
+            //return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
         }
         //test
         return "jdbc:mysql://127.0.0.1:3306/jbossews";
@@ -67,6 +72,15 @@ public class Core {
             return tmpDir_envVar;
         } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
             return tmpDir_envVar;
+        } else
+            return "c:\\scratch";
+    }
+
+    public static String getDataDir() {
+        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
+            return dataDir_envVar;
+        } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
+            return dataDir_envVar;
         } else
             return "c:\\scratch";
     }
@@ -85,6 +99,7 @@ public class Core {
         mysqlDBHost_envVar = System.getenv("OPENSHIFT_MYSQL_DB_HOST");
         mysqlDBPort_envVar = System.getenv("OPENSHIFT_MYSQL_DB_PORT");
         tmpDir_envVar = System.getenv("OPENSHIFT_TMP_DIR");
+        dataDir_envVar = System.getenv("OPENSHIFT_DATA_DIR");
     }
 
     public static void sendPushNotification(int deviceId, Message notification) {
@@ -186,11 +201,6 @@ public class Core {
         return alarmModel.getLastFavorites(personid);
     }
 
-
-    /*public static List<MeteoStationData> getHistory(int spotID, int sampledata) {
-        return alarmModel.getHistory(spotID, sampledata);
-    }*/
-
     public static List<MeteoStationData> getHistory(int spotID, Date start, Date end, long windId) {
         return alarmModel.getHistory(spotID, start, end, windId);
     }
@@ -207,56 +217,6 @@ public class Core {
         for (PullData spot : list) {
             alarmModel.addSpotData(spot);
         }
-
-        /*PullData d;
-
-        d = new VassilikiWindguru();
-        alarmModel.addSpotData(d);
-
-        d = new ClubVentos();
-        alarmModel.addSpotData(d);
-
-        d = new Colico();
-        alarmModel.addSpotData(d);
-
-        d = new Bombolak();
-        alarmModel.addSpotData(d);
-
-        d = new WCV();
-        alarmModel.addSpotData(d);
-
-        d = new CML(AlarmModel.Spot_Abbadia);
-        alarmModel.addSpotData(d);
-
-        d = new CML(AlarmModel.Spot_Dervio);
-        alarmModel.addSpotData(d);
-
-        d = new CML(AlarmModel.Spot_Dongo);
-        alarmModel.addSpotData(d);
-
-        d = new CML(AlarmModel.Spot_Gravedona);
-        alarmModel.addSpotData(d);
-
-        d = new CML(AlarmModel.Spot_Gera);
-        alarmModel.addSpotData(d);
-
-
-        d = new Windfinder(AlarmModel.Spot_VassilikiPort);
-        alarmModel.addSpotData(d);
-
-        d = new gvlnifollonica();
-        alarmModel.addSpotData(d);
-
-        //d = new Vassiliki();
-        //alarmModel.addSpotData(d);
-
-        d = new Windfinder(AlarmModel.Spot_Scarlino);
-        alarmModel.addSpotData(d);
-
-        d = new Windfinder(AlarmModel.Spot_Dakhla);
-        alarmModel.addSpotData(d);*/
-
-        //alarmModel.getHistoricalMeteoData();
     }
 
     public static Spot getSpotFromID(long id) {
@@ -265,7 +225,6 @@ public class Core {
         if (index < 0) return null;
         return alarmModel.getSpotList().get(index);
     }
-
 
     private static final String CONTENT_TYPE = "text/html; charset=windows-1252";
 
@@ -298,42 +257,6 @@ public class Core {
         } catch (Exception e) {
             LOGGER.severe("cannot get data for meteo valmadrera");
         }
-
-
-        /*CML cml = new CML();
-        try {
-            LOGGER.info("DEBUG - getMeteoData");
-            MeteoStationData mdAbbadia = cml.getMeteoData("Abbadia", CML.Abbadia);
-            LOGGER.info("DEBUG - sendData");
-            sendData(mdAbbadia, AlarmModel.Spot_Abbadia);
-
-        } catch (Exception e) {
-            LOGGER.severe("cannot get data for abbadia" + e.toString());
-        }*/
-        /*try {
-            MeteoStationData mdAbbadia = cml.getMeteoData(AlarmModel.getSpotName(AlarmModel.Spot_Gera), CML.Gera);
-            sendData(mdAbbadia, AlarmModel.Spot_Gera);
-
-        } catch (Exception e) {
-            LOGGER.severe("cannot get data for gera" + e.toString());
-        }
-        try {
-            MeteoStationData mdAbbadia = cml.getMeteoData(AlarmModel.getSpotName(AlarmModel.Spot_Dongo), CML.Dongo);
-            sendData(mdAbbadia, AlarmModel.Spot_Dongo);
-
-        } catch (Exception e) {
-            LOGGER.severe("cannot get data for dongo" + e.toString());
-        }
-        try {
-            MeteoStationData mdAbbadia = cml.getMeteoData(AlarmModel.getSpotName(AlarmModel.Spot_Dervio), CML.Dervio);
-            sendData(mdAbbadia, AlarmModel.Spot_Dervio);
-
-        } catch (Exception e) {
-            LOGGER.severe("cannot get data for dervio" + e.toString());
-        }*/
-
-        //alarmModel.evaluate();
-
     }
 
     public static void sendData(MeteoStationData meteoData, long spotID) {

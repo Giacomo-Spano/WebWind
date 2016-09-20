@@ -14,24 +14,9 @@ public class WCV extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    /*public WCV() {
-        super(AlarmModel.Spot_Valmadrera);
-        webcamUrl = "http://www.wcv.it/webcam05/currenth.jpg";
-        webcamUrl2 = "http://www.wcv.it/webcam/currenth.jpg";
-        mImageName = "spot-" + id + ".jpg";
-        mImageName2 = "spot-" + id + "-2.jpg";
-        name = "Valmadrera";
-        sourceUrl = "http://www.wcv.it";
-    }*/
-
     public WCV() {
         super();
     }
-
-    /*public WCV(long id, String name, String webcamUrl, String webcamUrl2, String webcamUrl3, String sourceUrl) {
-        super(id, name, webcamUrl, webcamUrl2, webcamUrl3, sourceUrl);
-
-    }*/
 
 
     public MeteoStationData getMeteoData() {
