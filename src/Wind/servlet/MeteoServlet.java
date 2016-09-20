@@ -54,6 +54,7 @@ public class MeteoServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         String lastdata = request.getParameter("lastdata");
+        String favoriteslastdata = request.getParameter("favoriteslastdata");
         String spotlist = request.getParameter("requestspotlist");
         String history = request.getParameter("history");
         String log = request.getParameter("log");
@@ -85,12 +86,25 @@ public class MeteoServlet extends HttpServlet {
             //response.setHeader("Length", "" + str.length());
             out.println(str);
 
+        } else if (favoriteslastdata != null && favoriteslastdata.equals("true") && userid != null) { // Last meteo data
+
+            RequestLog req = new RequestLog();
+            req.insert("authcode", "lastdata", userid, "");
+
+            String str = getFavoritesLastData(userid);
+            out.println(str);
+
         } else if (log != null && log.equals("true") && spot != null) { // Historical data
 
             LOGGER.info("log REQUEST");
             String strStartDate = request.getParameter("start");
             String strEndDate = request.getParameter("end");
             SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
+            String strLastWindId = request.getParameter("lastwindid");
+            long lastWindId = -1;
+            if (strLastWindId != null)
+                lastWindId = Long.valueOf(strLastWindId);
+
 
             Date start = null, end = null;
             try {
@@ -108,7 +122,7 @@ public class MeteoServlet extends HttpServlet {
                 out.close();
             }
 
-            String str = getLogJson(spot, start, end);
+            String str = getLogJson(spot, start, end, lastWindId);
             out.print(str);
 
         } else {
@@ -121,8 +135,8 @@ public class MeteoServlet extends HttpServlet {
 
     }
 
-    private String getLogJson(String spot, Date start, Date end) {
-        List<MeteoStationData> list = Core.getHistory(Integer.valueOf(spot), start, end);
+    private String getLogJson(String spot, Date start, Date end, long lastWindId) {
+        List<MeteoStationData> list = Core.getHistory(Integer.valueOf(spot), start, end, lastWindId);
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
 
         String str = "\n{";
@@ -133,6 +147,7 @@ public class MeteoServlet extends HttpServlet {
         String direction = "";
         String trend = "";
         String temperature = "";
+        String id = "";
         int count = 0;
 
         for (MeteoStationData element : list) {
@@ -144,6 +159,7 @@ public class MeteoServlet extends HttpServlet {
                 direction += ";";
                 trend += ";";
                 temperature += ";";
+                id += ";";
             }
 
             date += df.format(element.datetime);
@@ -154,6 +170,7 @@ public class MeteoServlet extends HttpServlet {
                 element.trend = 0.0;
             trend += element.trend;
             temperature += element.temperature;
+            id += element.id;
         }
         str += "\"date\" : \"";
         str += date;
@@ -182,6 +199,11 @@ public class MeteoServlet extends HttpServlet {
         str += ",";
         str += "\"temperature\" : \"";
         str += temperature;
+        str += "\"";
+
+        str += ",";
+        str += "\"id\" : \"";
+        str += id;
         str += "\"";
 
         str += "}";
@@ -232,6 +254,28 @@ public class MeteoServlet extends HttpServlet {
                 if (i != mdList.size() - 1)
                     str += ",";
             }
+        }
+        str += "] }";
+        return str;
+    }
+
+    private String getFavoritesLastData(String personid) {
+
+        if (personid == null) return null;
+
+        List<MeteoStationData> list;
+        list = Core.getLastFavorites(personid);
+
+
+        String str = "{\"meteodata\" : [";
+
+        int count = 0;
+        for (MeteoStationData md : list) {
+
+            if (count++ != 0)
+                str += ",";
+            String jsonText = md.toJson();
+            str += jsonText;
         }
         str += "] }";
         return str;

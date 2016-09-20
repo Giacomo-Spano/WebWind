@@ -124,6 +124,9 @@ public class MeteoStationData {
                 obj.put("webcamurl2", webcamurl2);
             if (webcamurl3 != null)
                 obj.put("webcamurl3", webcamurl3);
+            if (source != null)
+                obj.put("source", source);
+
             obj.put("offline", offline);
 
         } catch (JSONException e) {
@@ -271,7 +274,7 @@ public class MeteoStationData {
         }
     }
 
-    public List<MeteoStationData> getHistory(Long spotId, Date startDate, Date endDate) {
+    public List<MeteoStationData> getHistory(Long spotId, Date startDate, Date endDate, Long lastWindId) {
 
         List<MeteoStationData> list = new ArrayList<MeteoStationData>();
 
@@ -286,11 +289,56 @@ public class MeteoStationData {
 
             String sql;
             sql = "SELECT * FROM wind WHERE spotid=" + spotId
-                    + " AND datetime BETWEEN " + strStartDate + " and " + strEndDate + ";";
+                    + " AND datetime BETWEEN " + strStartDate + " and " + strEndDate;
+            if ((long) lastWindId != -1)
+                sql += " AND id > " + lastWindId;
+            sql +=  " ;";
+
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 MeteoStationData md = getMeteoStationDataFromResulset(rs);
 
+                list.add(md);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return list;
+    }
+    public List<MeteoStationData> getLastFavorites(String personId) {
+
+        List<MeteoStationData> list = new ArrayList<MeteoStationData>();
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            String sql;
+            /* SELECT * FROM
+            (SELECT id,max(datetime) as datetime,spotid,sampledatetime, speed, averagespeed, direction, directionangle,temperature, humidity, pressure, trend FROM wind GROUP BY spotid  )
+            as lastdata
+            INNER JOIN spot ON lastdata.spotid = spot.id
+            INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '108838484294421848556' ;
+            */
+            sql = "SELECT * FROM\n" +
+                    "            (SELECT id,max(datetime) as datetime,spotid,sampledatetime, speed, averagespeed, direction, directionangle,temperature, humidity, pressure, trend FROM wind GROUP BY spotid  )\n" +
+                    "            as lastdata\n" +
+                    "            INNER JOIN spot ON lastdata.spotid = spot.id\n" +
+                    "            INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '" + personId + "' ;";
+
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                MeteoStationData md = getMeteoStationDataFromResulset(rs);
                 list.add(md);
             }
             rs.close();
@@ -355,7 +403,31 @@ public class MeteoStationData {
         md.humidity = rs.getDouble("humidity");
         md.pressure = rs.getDouble("pressure");
         md.trend = rs.getDouble("trend");
+
+        // queste colonne ci sono solo quando la query è in join con tabella spot e favorites
+        if (hasColumn(rs,"name"))
+            md.spotName = rs.getString("name");
+        if (hasColumn(rs,"sourceurl"))
+            md.source = rs.getString("sourceurl");
+        if (hasColumn(rs,"webcamurl"))
+            md.webcamurl = rs.getString("webcamurl");
+        if (hasColumn(rs,"webcamurl2"))
+            md.webcamurl2 = rs.getString("webcamurl2");
+        if (hasColumn(rs,"webcamurl3"))
+            md.webcamurl3 = rs.getString("webcamurl3");
+
         return md;
+    }
+
+    public static boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columns = rsmd.getColumnCount();
+        for (int x = 1; x <= columns; x++) {
+            if (columnName.equals(rsmd.getColumnName(x))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public MeteoStationData getLastMeteoStationData(long spotId) {

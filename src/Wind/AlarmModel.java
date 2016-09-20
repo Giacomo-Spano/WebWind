@@ -94,7 +94,7 @@ public class AlarmModel {
         cal.add(Calendar.HOUR_OF_DAY, -6); //minus number would decrement the hours
         Date start = cal.getTime();
         MeteoStationData md = new MeteoStationData();
-        List<MeteoStationData> list = md.getHistory(Long.valueOf(spot.getSpotId()), start, end);
+        List<MeteoStationData> list = md.getHistory(Long.valueOf(spot.getSpotId()), start, end,-1L);
         meteoHistory.add(list);
     }
 
@@ -147,7 +147,7 @@ public class AlarmModel {
         LOGGER.info("<---evaluate ALARMS");
     }
 
-    /*public MeteoStationData getLastfromID(long id) {
+    public MeteoStationData getLastfromID(long id) {
 
         int index = getIndexFromID(id);
         if (index < 0 || index >= meteoHistory.size()) return null;
@@ -162,12 +162,18 @@ public class AlarmModel {
             md.offline = true;
 
         return md;
-    }*/
+    }
 
-    public MeteoStationData getLastfromID(long id) {
+    public List<MeteoStationData> getLastFavorites(String personId) {
+        MeteoStationData md = new MeteoStationData();
+        List<MeteoStationData> list = md.getLastFavorites(personId);
+        return list;
+    }
+
+    public MeteoStationData getLastfromIDNewversione(int id) {
 
         MeteoStationData md = new MeteoStationData();
-        List<MeteoStationData> list = md.getLastSamples(id,1);
+        List<MeteoStationData> list = md.getLastSamples(id, 1);
 
         /*int index = getIndexFromID(id);
         if (index < 0 || index >= meteoHistory.size()) return null;
@@ -201,7 +207,7 @@ public class AlarmModel {
         //if (index < 0) return null;
 
         MeteoStationData md = new MeteoStationData();
-        List<MeteoStationData> list = md.getLastSamples(spotID,maxSampleData);
+        List<MeteoStationData> list = md.getLastSamples(spotID, maxSampleData);
 
         /*List<MeteoStationData> list = new ArrayList<MeteoStationData>();
         int count = meteoHistory.get(index).size() - maxSampleData;
@@ -213,10 +219,10 @@ public class AlarmModel {
         return list;
     }
 
-    public List<MeteoStationData> getHistory(long spotID, Date startDate, Date endDate) {
+    public List<MeteoStationData> getHistory(long spotID, Date startDate, Date endDate, long lastWindId) {
 
         MeteoStationData md = new MeteoStationData();
-        List<MeteoStationData> list = md.getHistory(spotID, startDate, endDate);
+        List<MeteoStationData> list = md.getHistory(spotID, startDate, endDate, lastWindId);
 
         /*int index = getIndexFromID(spotID);
         if (index < 0) return null;
@@ -254,19 +260,21 @@ public class AlarmModel {
         return index;
     }
 
-        public PullData getSpotInfoFromId(long id) {
+    public PullData getSpotInfoFromId(long id) {
         for (int i = 0; i < mSpotDataList.size(); i++) {
             if (mSpotDataList.get(i).getSpotId() == id)
                 return mSpotDataList.get(i);
         }
         return null;
     }
+
     public void setLastHighWindNotificationDate(long id, Date date) {
         for (int i = 0; i < mSpotDataList.size(); i++) {
             if (mSpotDataList.get(i).getSpotId() == id)
                 mSpotDataList.get(i).lastHighWindNotificationSentDate = date;
         }
     }
+
     public void setLastIncreaseWindNotificationDate(long id, Date date) {
         for (int i = 0; i < mSpotDataList.size(); i++) {
             if (mSpotDataList.get(i).getSpotId() == id)
@@ -303,21 +311,21 @@ public class AlarmModel {
 
 
                 //Core.sendPushNotification(devices, notification);
-                for(Device device : devices) {
+                for (Device device : devices) {
                     Core.sendPushNotification(device.id, notification);
                     AlarmLog al = new AlarmLog();
                     al.insert("sendhighwind", 0, device.id, md.speed, md.averagespeed, md.spotID, 0, md.id);
 
                 }
 
-                setLastHighWindNotificationDate(md.spotID,Core.getDate());
+                setLastHighWindNotificationDate(md.spotID, Core.getDate());
 
             }
         } else if (md.trend > 300.0) {
 
             long differenceInMinutes = -1;
             if (spotdata.lastWindIncreaseNotificationSentDate != null)
-                differenceInMinutes= TimeUnit.MILLISECONDS.toMinutes(Core.getDate().getTime() - spotdata.lastWindIncreaseNotificationSentDate.getTime());
+                differenceInMinutes = TimeUnit.MILLISECONDS.toMinutes(Core.getDate().getTime() - spotdata.lastWindIncreaseNotificationSentDate.getTime());
             if (differenceInMinutes == -1 || differenceInMinutes > 30) {
 
                 SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:m");
@@ -334,12 +342,12 @@ public class AlarmModel {
                 List<Device> devices = d.getDevicesWithFavorites(md.spotID);
 
                 //Core.sendPushNotification(devices, notification);
-                for(Device device : devices) {
+                for (Device device : devices) {
                     Core.sendPushNotification(device.id, notification);
                     AlarmLog al = new AlarmLog();
                     al.insert("sendtrend", 0, device.id, md.trend, 0.0, md.spotID, 0, md.id);
                 }
-                setLastIncreaseWindNotificationDate(md.spotID,Core.getDate());
+                setLastIncreaseWindNotificationDate(md.spotID, Core.getDate());
             }
         }
     }
@@ -434,7 +442,7 @@ public class AlarmModel {
 
         int samples = 5;
         List<MeteoStationData> list = getLastSamples(spotID, samples);
-        if (list == null || list.size() == 0 || list.size() < samples)
+        if (list == null || list.size() == 0)
             return 0;
 
         MeteoStationData startMeteodata;
