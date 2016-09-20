@@ -203,19 +203,9 @@ public class AlarmModel {
 
     public List<MeteoStationData> getLastSamples(long spotID, int maxSampleData) {
 
-        //int index = getIndexFromID(spotID);
-        //if (index < 0) return null;
-
         MeteoStationData md = new MeteoStationData();
         List<MeteoStationData> list = md.getLastSamples(spotID, maxSampleData);
 
-        /*List<MeteoStationData> list = new ArrayList<MeteoStationData>();
-        int count = meteoHistory.get(index).size() - maxSampleData;
-        if (count < 0)
-            count = 0;
-        while (count++ < meteoHistory.get(index).size() - 1) {
-            list.add(meteoHistory.get(index).get(count));
-        }*/
         return list;
     }
 
@@ -224,40 +214,7 @@ public class AlarmModel {
         MeteoStationData md = new MeteoStationData();
         List<MeteoStationData> list = md.getHistory(spotID, startDate, endDate, lastWindId);
 
-        /*int index = getIndexFromID(spotID);
-        if (index < 0) return null;
-
-        int start = getIndexAtTime(spotID, startDate);
-        if (start == -1) return null;
-
-        int end = getIndexAtTime(spotID, endDate);
-        if (end == -1) return null;
-
-        List<MeteoStationData> list = new ArrayList<MeteoStationData>();
-        for (int i = start; i <= end; i++) {
-            list.add(meteoHistory.get(index).get(i));
-        }*/
         return list;
-    }
-
-    protected int getIndexAtTime(int spotID, Date date) {
-
-        int spotIndex = getIndexFromID(spotID);
-        if (spotIndex < 0) return -1;
-
-        List<MeteoStationData> list = meteoHistory.get(spotIndex);
-        ListIterator iterator = list.listIterator(list.size());
-
-        if (list == null || list.size() == 0)
-            return -1;
-
-        int index = list.size() - 1;
-        while (iterator.hasPrevious() && list.get(index).datetime.getTime() > date.getTime()) {
-            index--;
-            if (index == 0)
-                break;
-        }
-        return index;
     }
 
     public PullData getSpotInfoFromId(long id) {
