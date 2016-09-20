@@ -22,6 +22,6 @@
     <orderEntry type="library" name="org.json-20120521" level="project" />
     <orderEntry type="library" name="quartz-jobs-2.2.2" level="project" />
     <orderEntry type="library" name="gcm-server" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Tomcat 8.0.36" level="application_server_libraries" />
+    <orderEntry type="library" scope="PROVIDED" name="Tomcat 9.0.0.M1" level="application_server_libraries" />
   </component>
 </module>
