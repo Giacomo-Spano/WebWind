@@ -37,7 +37,7 @@ public class Core {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
             return "adminzdVX5dl";
         else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
-            return "adminBPJK7ZI";
+            return "adminjNm7VUk";
             //return "adminw8ZVVu2";
         else
             //return "adminzdVX5dl";// production
@@ -48,7 +48,7 @@ public class Core {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
             return "eEySMcJ6WCj4";
         else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
-            return "rNKj36gGgXKF";
+            return "xX1MAIXQLLHq";
             //return "MhbY-61ZlqU4";
         else
             //return "eEySMcJ6WCj4"; //production

@@ -324,17 +324,21 @@ public class MeteoStationData {
             Statement stmt = conn.createStatement();
 
             String sql;
-            /* SELECT * FROM
-            (SELECT id,max(datetime) as datetime,spotid,sampledatetime, speed, averagespeed, direction, directionangle,temperature, humidity, pressure, trend FROM wind GROUP BY spotid  )
-            as lastdata
-            INNER JOIN spot ON lastdata.spotid = spot.id
-            INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '108838484294421848556' ;
+            /*  SELECT * FROM
+                (SELECT max(id) as maxid,spotid
+                FROM wind GROUP BY spotid ORDER by id) as lastdata
+                INNER JOIN wind ON wind.id = lastdata.maxid
+                INNER JOIN spot ON lastdata.spotid = spot.id
+                INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '112171344340940317913';
             */
             sql = "SELECT * FROM\n" +
-                    "            (SELECT id,max(datetime) as datetime,spotid,sampledatetime, speed, averagespeed, direction, directionangle,temperature, humidity, pressure, trend FROM wind GROUP BY spotid  )\n" +
-                    "            as lastdata\n" +
-                    "            INNER JOIN spot ON lastdata.spotid = spot.id\n" +
-                    "            INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '" + personId + "' ;";
+                    "(SELECT max(id) as maxid,spotid\n" +
+                    "FROM wind GROUP BY spotid ORDER by id) as lastdata\n" +
+                    "INNER JOIN wind ON wind.id = lastdata.maxid\n" +
+                    "INNER JOIN spot ON lastdata.spotid = spot.id\n" +
+                    "INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '" + personId + "' ;";
+
+
 
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
