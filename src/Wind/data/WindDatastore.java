@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package Wind;
+package Wind.data;
 
+
+import Wind.AlarmModel;
+import Wind.Core;
 
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -430,123 +432,35 @@ public class WindDatastore {
         return f.format(d1).compareTo(f.format(d2)) < 0;
     }
 
-    /*public static void saveNotification(String regId, NotificationSettings notificationSettings) {
+    public static void purgeDB() {
 
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Key deviceKey = KeyFactory.createKey(notificationName, "regId" + regId);
-        Entity device;
-
+        List<Alarm> alarms = new ArrayList<Alarm>();
         try {
-            device = datastore.get(deviceKey);
-        } catch (EntityNotFoundException e) {
-            device = new Entity(deviceKey);
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+            String sql;
+            sql = "INSERT INTO wind_backup (UserName,Password)\n" +
+                    "SELECT UserName,Password FROM Table1 WHERE UserName='X' AND Password='X'";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                Alarm alarm = getAlarmFromResultSet(rs);
+                alarms.add(alarm);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
         }
+        return ;
+    }
 
-        device.setProperty("regId", regId);
-        device.setProperty("windIncrease", notificationSettings.windIncrease);
-        device.setProperty("windChangeDirection", notificationSettings.windChangeDirection);
-
-        logger.info("device=" + device);
-
-        datastore.put(device);
-    }*/
-
-    /*public static List<NotificationSettings> getNotificationSettingsFromRegId(String regId) {
-
-        logger.info("regId=" + regId);
-
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
-        Query.Filter regIdFilter = new Query.FilterPredicate("regId", Query.FilterOperator.EQUAL, regId);
-        Query query = new Query(notificationName)
-                .setFilter(regIdFilter);
-
-        PreparedQuery pq = datastore.prepare(query);
-        List<NotificationSettings> registeredAlarms = new ArrayList<NotificationSettings>();
-        for (Entity result : pq.asIterable()) {
-
-            NotificationSettings alarm = getNotificationSettings(result);
-            registeredAlarms.add(alarm);
-        }
-        return registeredAlarms;
-    }*/
-
-    /*private static NotificationSettings getNotificationSettings(Entity entityAlarm) {
-        NotificationSettings notificationSettings = new NotificationSettings();
-
-
-        //notificationSettings.regId = (String) entityAlarm.getProperty("regId");
-        notificationSettings.windIncrease = (Boolean) entityAlarm.getProperty("windIncrease");
-        notificationSettings.windChangeDirection = (Boolean) entityAlarm.getProperty("windChangeDirection");
-
-        return notificationSettings;
-    }*/
-
-    /*public static List<Alarm> getActiveNotifications(Double speed, Double avspeed, LocalTime currentTime, Date currentDate) {
-
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
-        Query.Filter speedFilter = new Query.FilterPredicate("speed", Query.FilterOperator.LESS_THAN_OR_EQUAL, speed);
-
-        Query query = new Query(alarmName)
-                .setFilter(speedFilter);
-
-        // Use PreparedQuery interface to retrieve results
-        PreparedQuery pq = datastore.prepare(query);
-
-        List<Alarm> registeredAlarms = new ArrayList<Alarm>();
-        for (Entity result : pq.asIterable()) {
-
-            Alarm alarm = getAlarmFromResultSet(result);
-
-            logger.info("alarm.regId=" + alarm.regId);
-            logger.info("alarm.speed=" + alarm.speed);
-            logger.info("alarm.avspeed=" + alarm.avspeed);
-            logger.info("alarm.direction=" + alarm.direction);
-            logger.info("alarm.id=" + alarm.id);
-            logger.info("alarm.startTime=" + alarm.startTime.toString());
-            logger.info("alarm.endTime=" + alarm.endTime.toString());
-            logger.info("alarm.startDate=" + alarm.startDate.toString());
-            logger.info("alarm.endDate=" + alarm.endDate.toString());
-            logger.info("alarm.lastringtime=" + alarm.lastRingDate.toString());
-
-            if (alarm.avspeed >= avspeed) {
-                logger.info("speed to low");
-                continue;
-            }
-            if (alarm.startTime.compareTo(currentTime) > 0) {
-                logger.info("startTime too late");
-                continue;
-            }
-            if (alarm.endTime.compareTo(currentTime) < 0) {
-                logger.info("endTime too early");
-                continue;
-            }
-            if (alarm.startDate.compareTo(currentDate) > 0) {
-                logger.info("startDate too late");
-                continue;
-            }
-            if (alarm.endDate.compareTo(currentDate) < 0) {
-                logger.info("endDate to early");
-                continue;
-            }
-            logger.info("currentDate=" + currentDate.toString());
-            logger.info("alarm.lastRingDate=" + alarm.lastRingDate.toString());
-
-            if (alarm.lastRingDate.equals(currentDate)) {
-                logger.info("già suonato oggi");
-                continue;
-            }
-            registeredAlarms.add(alarm);
-        }
-
-        //List<Entity> alarms = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(5));
-
-        logger.info("alarms size=" + registeredAlarms.size());
-
-
-        logger.info("registeredAlarms=" + registeredAlarms);
-        return registeredAlarms;
-    }*/
 
 }

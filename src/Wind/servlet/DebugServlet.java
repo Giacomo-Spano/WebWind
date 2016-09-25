@@ -1,4 +1,9 @@
-package Wind;
+package Wind.servlet;
+
+import Wind.data.Alarm;
+import Wind.AlarmModel;
+import Wind.Core;
+import Wind.data.WindDatastore;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

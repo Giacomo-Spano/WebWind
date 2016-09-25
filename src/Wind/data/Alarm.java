@@ -1,4 +1,4 @@
-package Wind;
+package Wind.data;
 
 /*import com.google.appengine.repackaged.org.joda.time.LocalTime;
 import com.google.appengine.repackaged.org.joda.time.format.DateTimeFormatter;

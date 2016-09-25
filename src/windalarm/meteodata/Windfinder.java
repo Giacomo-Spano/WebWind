@@ -97,22 +97,7 @@ public class Windfinder extends PullData {
         return meteoStationData;
     }
 
-    private String findBetweenKeywords(String txt, String startKeyword, String endKeyword) {
 
-        int start = txt.indexOf(startKeyword);
-        if (start == -1)
-            return null;
-        txt = txt.substring(start + startKeyword.length());
-        int end = txt.indexOf(endKeyword);
-        if (end == -1)
-            return null;
-        txt = txt.substring(0, end);
-        txt = txt.trim();
-        if (txt.equals(""))
-            return null;
-
-        return txt;
-    }
 
     private Date getDate(String date, String time) {
 

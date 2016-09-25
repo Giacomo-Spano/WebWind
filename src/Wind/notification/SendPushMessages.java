@@ -1,5 +1,7 @@
-package Wind;
+package Wind.notification;
 
+import Wind.data.Device;
+import Wind.data.Devices;
 import com.google.android.gcm.server.*;
 
 import java.io.IOException;

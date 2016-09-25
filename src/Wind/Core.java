@@ -1,5 +1,7 @@
 package Wind;
 
+import Wind.data.*;
+import Wind.notification.PushNotificationThread;
 import com.google.android.gcm.server.Message;
 import windalarm.meteodata.*;
 
@@ -505,5 +507,10 @@ public class Core {
             result = false;
         }
         return result;
+    }
+
+    public void dbMaintenance() {
+
+
     }
 }

@@ -1,4 +1,4 @@
-package Wind;
+package Wind.data;
 
 import java.util.Date;
 import java.util.logging.Logger;
@@ -12,10 +12,8 @@ public class Device {
     public String regId;
     public Date date;
     public String personId;
-    //public String deviceId;
 
     public Device() {
-
 
     }
 }

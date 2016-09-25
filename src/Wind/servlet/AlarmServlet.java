@@ -1,8 +1,12 @@
-package Wind;
+package Wind.servlet;
 
 
 //import com.google.appengine.repackaged.org.joda.time.LocalTime;
 
+import Wind.*;
+import Wind.data.Alarm;
+import Wind.data.AlarmLog;
+import Wind.data.WindDatastore;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;

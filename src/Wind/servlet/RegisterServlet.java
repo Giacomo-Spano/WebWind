@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package Wind;
+package Wind.servlet;
 
-import windalarm.meteodata.PullData;
-import windalarm.meteodata.Spot;
+import Wind.Core;
+import Wind.data.Device;
+import Wind.data.Devices;
+import Wind.notification.PushNotificationThread;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Logger;
 
-public class RegisterServlet extends BaseServlet {
+public class RegisterServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(PushNotificationThread.class.getName());
 
@@ -96,7 +97,7 @@ public class RegisterServlet extends BaseServlet {
             Device device = new Device();
             device.regId = regId;
             device.id = 0;
-            device.name = getParameter(req, "name");
+            device.name = personId + "-" + getParameter(req, "name");
             device.date = Core.getDate();
             device.personId = personId;
             int deviceId = Core.addDevice(device);
@@ -116,5 +117,38 @@ public class RegisterServlet extends BaseServlet {
             setSuccess(resp);
         }
     }
+
+    protected String getParameter(HttpServletRequest req, String parameter,
+                                  String defaultValue) {
+        String value = req.getParameter(parameter);
+        if (isEmptyOrNull(value)) {
+            value = defaultValue;
+        }
+        return value.trim();
+    }
+
+    protected String getParameter(HttpServletRequest req, String parameter)
+            throws ServletException {
+        String value = req.getParameter(parameter);
+        if (isEmptyOrNull(value)) {
+            return null;
+        }
+        return value.trim();
+    }
+
+    protected void setSuccess(HttpServletResponse resp) {
+        setSuccess(resp, 0);
+    }
+
+    protected void setSuccess(HttpServletResponse resp, int size) {
+        resp.setStatus(HttpServletResponse.SC_OK);
+        resp.setContentType("text/plain");
+        resp.setContentLength(size);
+    }
+
+    protected boolean isEmptyOrNull(String value) {
+        return value == null || value.trim().length() == 0;
+    }
+
 
 }

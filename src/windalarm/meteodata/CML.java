@@ -20,16 +20,7 @@ import java.util.logging.Logger;
 
 public class CML extends PullData {
 
-    public static final String Dervio = "Lecco/dervio";
-    public static final String Gera = "Como/geralario";
-    public static final String Abbadia = "Lecco/abbadia";
-    public static final String Dongo = "Como/dongo";
-    public static final String Gravedona = "Como/gravedona";
-
-    protected String mSpotUrl;
-
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-
 
     public CML() {
         super();
@@ -60,10 +51,10 @@ public class CML extends PullData {
             }
         }
 
-        String address = "http://rete.centrometeolombardo.com/@spot@/immagini/v.png";
-        address = address.replace("@spot@", mSpotUrl);
+        //String address = "http://rete.centrometeolombardo.com/@spot@/immagini/v.png";
+        //address = address.replace("@spot@", mSpotUrl);
         String value = "";
-        value = getTextFromImage(address);
+        value = getTextFromImage(/*address*/meteodataUrl);
         LOGGER.info("value=" + value);
 
         char character = 176;// �

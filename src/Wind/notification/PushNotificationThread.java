@@ -1,5 +1,7 @@
-package Wind;
+package Wind.notification;
 
+import Wind.Core;
+import Wind.data.Device;
 import com.google.android.gcm.server.Message;
 
 import java.util.ArrayList;

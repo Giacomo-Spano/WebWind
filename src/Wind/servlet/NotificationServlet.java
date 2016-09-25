@@ -1,5 +1,8 @@
-package Wind;
+package Wind.servlet;
 
+import Wind.AlarmModel;
+import Wind.Core;
+import Wind.data.Device;
 import com.google.android.gcm.server.Message;
 
 import javax.servlet.ServletException;
@@ -8,8 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 

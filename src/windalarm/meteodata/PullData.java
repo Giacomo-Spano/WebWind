@@ -120,4 +120,44 @@ public abstract class PullData extends Spot {
             return;
         }
     }
+
+    protected String findBetweenKeywords(String txt, String startKeyword, String endKeyword) {
+
+        int start = txt.indexOf(startKeyword);
+        if (start == -1)
+            return null;
+        txt = txt.substring(start + startKeyword.length());
+        int end = txt.indexOf(endKeyword);
+        if (end == -1)
+            return null;
+        txt = txt.substring(0, end);
+        txt = txt.trim();
+        if (txt.equals(""))
+            return null;
+
+        return txt;
+    }
+
+    protected String leftOfKeywords(String txt, String endKeyword) {
+
+        int end = txt.indexOf(endKeyword);
+        if (end == -1)
+            return null;
+        txt = txt.substring(0, end);
+        txt = txt.trim();
+        if (txt.equals(""))
+            return null;
+
+        return txt;
+    }
+
+    protected String rightOfKeywords(String txt, String startKeyword) {
+
+        int start = txt.indexOf(startKeyword);
+        if (start == -1)
+            return null;
+        txt = txt.substring(start + startKeyword.length());
+
+        return txt;
+    }
 }

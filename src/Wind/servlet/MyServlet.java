@@ -1,4 +1,4 @@
-package Wind;
+package Wind.servlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

@@ -60,20 +60,20 @@ public class QuartzListener implements ServletContextListener {
             scheduler.scheduleJob(sensorJob, sensorTrigger);
 
             // Setup the Job class and the Job group
-            JobDetail programJob = newJob(ActuatorQuartzJob.class).withIdentity(
-                    "CronProgramQuartzJob", "Group")
+            JobDetail dbJob = newJob(DBQuartzJob.class).withIdentity(
+                    "DBQuartzJob", "Group")
                     .usingJobData(jobDataMap)
                     .build();
             // Trigger the job to run now, and then every 40 seconds
             Trigger trigger = newTrigger()
-                    .withIdentity("ProgramTriggerName", "Group")
+                    .withIdentity("DBTriggerName", "Group")
                     .startNow()
                     .withSchedule(simpleSchedule()
                             .withIntervalInSeconds(60)
                             .repeatForever())
                     .build();
             // Setup the Job and Trigger with Scheduler & schedule jobs
-            //scheduler.scheduleJob(programJob, trigger);
+            scheduler.scheduleJob(dbJob, trigger);
 
             //Build a trigger for a specific moment in time, with no repeats:
             /*SimpleTrigger trigger = (SimpleTrigger) newTrigger()

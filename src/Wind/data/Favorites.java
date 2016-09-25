@@ -1,12 +1,8 @@
-package Wind;
+package Wind.data;
 
-import sun.rmi.runtime.Log;
-import windalarm.meteodata.PullData;
-import windalarm.meteodata.Spot;
+import Wind.Core;
 
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;

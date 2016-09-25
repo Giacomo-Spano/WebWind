@@ -1,4 +1,6 @@
-package Wind;
+package Wind.data;
+
+import Wind.Core;
 
 import java.sql.*;
 import java.text.DateFormat;
@@ -191,18 +193,12 @@ public class Devices {
             date = "'" + df.format((device.date)) + "'";
 
             String sql;
-            sql = "DELETE FROM devices WHERE personid=" + "'" + device.personId + "' AND name=" + "'" + device.name + "';";
+
+            sql = "INSERT INTO devices (regid, date, name, personid, lastupdate)" +
+                    " VALUES (" + "\"" + device.regId + "\"," + date + ",\"" + device.name + "\",\"" + device.personId + "\"," + date + ") " +
+                    "ON DUPLICATE KEY UPDATE lastupdate=" + date + ", personid=\"" + device.personId + "\";";
+
             Statement stmt = conn.createStatement();
-            int res = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
-
-            /*sql = "INSERT INTO devices (id, regid, date, name, personid)" +
-                    " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\",\"" + device.personId + "\") " +
-                    "ON DUPLICATE KEY UPDATE date=" + date + ", name=\"" + device.name + "\", personid=\"" + device.personId + "\";";
-*/
-            sql = "INSERT INTO devices (id, regid, date, name, personid)" +
-                    " VALUES (" + device.id + ",\"" + device.regId + "\"," + date + ",\"" + device.name + "\",\"" + device.personId + "\") ;";
-
-            //Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) {

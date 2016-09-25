@@ -1,11 +1,10 @@
-package Wind;
+package Wind.data;
 
+import Wind.Core;
 import windalarm.meteodata.PullData;
 import windalarm.meteodata.Spot;
 
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,7 +31,7 @@ public class SpotList {
             Statement stmt = conn.createStatement();
 
             String sql;
-            sql = "SELECT * FROM spot;";
+            sql = "SELECT * FROM spot WHERE enabled=1;";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 PullData spot = getSpotFromResultSet(rs);

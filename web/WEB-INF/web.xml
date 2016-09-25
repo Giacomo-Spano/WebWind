@@ -11,7 +11,7 @@
 
     <servlet>
         <servlet-name>MyServlet</servlet-name>
-        <servlet-class>Wind.MyServlet</servlet-class>
+        <servlet-class>Wind.servlet.MyServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
@@ -22,7 +22,7 @@
 
     <servlet>
         <servlet-name>RegisterServlet</servlet-name>
-        <servlet-class>Wind.RegisterServlet</servlet-class>
+        <servlet-class>Wind.servlet.RegisterServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>RegisterServlet</servlet-name>
@@ -42,7 +42,7 @@
 
     <servlet>
         <servlet-name>AlarmServlet</servlet-name>
-        <servlet-class>Wind.AlarmServlet</servlet-class>
+        <servlet-class>Wind.servlet.AlarmServlet</servlet-class>
 
     </servlet>
 
@@ -53,7 +53,7 @@
 
     <servlet>
         <servlet-name>DebugServlet</servlet-name>
-        <servlet-class>Wind.DebugServlet</servlet-class>
+        <servlet-class>Wind.servlet.DebugServlet</servlet-class>
 
     </servlet>
 
@@ -64,7 +64,7 @@
 
     <servlet>
         <servlet-name>NotificationServlet</servlet-name>
-        <servlet-class>Wind.NotificationServlet</servlet-class>
+        <servlet-class>Wind.servlet.NotificationServlet</servlet-class>
 
     </servlet>
 

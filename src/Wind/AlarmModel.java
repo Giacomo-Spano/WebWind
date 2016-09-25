@@ -1,5 +1,6 @@
 package Wind;
 
+import Wind.data.*;
 import com.google.android.gcm.server.Message;
 /*import com.google.appengine.repackaged.org.joda.time.DateTime;
 import com.google.appengine.repackaged.org.joda.time.DateTimeZone;
@@ -31,31 +32,11 @@ public class AlarmModel {
 
     public static final String NotificationType_Alarm = "Alarm";
     public static final String NotificationType_Info = "info";
-
     public static final long ONE_MINUTE_IN_MILLIS = 60000;//millisecs
-
     private static final Logger LOGGER = Logger.getLogger(AlarmModel.class.getName());
-
-    /*public static final long Spot_Valmadrera = 0l;
-    public static final long Spot_VassilikiPort = 1l;
-    public static final long Spot_Follonica = 2l;
-    public static final long Spot_Scarlino = 3l;
-    public static final long Spot_Abbadia = 4l;
-    public static final long Spot_Gera = 5;
-    public static final long Spot_Dongo = 6;
-    public static final long Spot_Dervio = 7;
-    public static final long Spot_Vassiliki = 8;
-    public static final long Spot_Dakhla = 9;
-    public static final long Spot_Talamone = 10;
-    public static final long Spot_Jeri = 11;
-    public static final long Spot_Colico = 12;
-    public static final long Spot_Sorico = 13;
-    public static final long Spot_Gravedona = 14;
-    public static final long Spot_VassilikiWindguru = 15;*/
 
     private ArrayList<PullData> mSpotDataList = new ArrayList<PullData>();
     private ArrayList<List<MeteoStationData>> meteoHistory;// = new ArrayList<ArrayList<MeteoStationData>>();
-
     public AlarmModel() {
         meteoHistory = new ArrayList<List<MeteoStationData>>();
     }
@@ -69,25 +50,13 @@ public class AlarmModel {
         return "";
     }
 
-    /*public void addSpotData(PullData pd) {
-
-        mSpotDataList.add(pd);
-
-        Date end = Core.getDate();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(end);
-        cal.add(Calendar.HOUR_OF_DAY, -6); //minus number would decrement the hours
-        Date start = cal.getTime();
-        MeteoStationData md = new MeteoStationData();
-        List<MeteoStationData> list = md.getHistory(Integer.valueOf(pd.getSpotId()), start, end);
-        meteoHistory.add(list);
-    }*/
-
     public void addSpotData(PullData spot) {
 
         mSpotDataList.add(spot);
 
         // inizializza i dati storici
+
+        // TODO Questa roba non serve più credo, ora legge tutto da db
         Date end = Core.getDate();
         Calendar cal = Calendar.getInstance();
         cal.setTime(end);
@@ -120,9 +89,7 @@ public class AlarmModel {
         if (meteoHistory.get(index).size() > 1000)
             meteoHistory.get(index).remove(0);
 
-
         return true;
-
     }
 
     public void evaluate(int windid, MeteoStationData md) {
@@ -134,16 +101,6 @@ public class AlarmModel {
         evaluateAlarms(md.speed, md.averagespeed, localDate, md.spotID, windid);
         evaluateNotifications(md);
 
-
-        /*for (int spot = 0; spot < meteoHistory.size(); spot++) {
-            // fa un loop su tutti gli spot per trovare gli allarmi attivi
-            int len = meteoHistory.get(spot).size();
-            if (len < 1)
-                continue;
-            MeteoStationData md = meteoHistory.get(spot).get(len - 1);
-            evaluateAlarms(md.speed, md.averagespeed, localDate, md.spotID,windid);
-            //evaluateNotifications(md);
-        }*/
         LOGGER.info("<---evaluate ALARMS");
     }
 
@@ -168,28 +125,6 @@ public class AlarmModel {
         MeteoStationData md = new MeteoStationData();
         List<MeteoStationData> list = md.getLastFavorites(personId);
         return list;
-    }
-
-    public MeteoStationData getLastfromIDNewversione(int id) {
-
-        MeteoStationData md = new MeteoStationData();
-        List<MeteoStationData> list = md.getLastSamples(id, 1);
-
-        /*int index = getIndexFromID(id);
-        if (index < 0 || index >= meteoHistory.size()) return null;
-
-        int len = meteoHistory.get(index).size();
-        if (len == 0) return null;*/
-
-        if (list == null || list.size() == 0)
-            return null;
-        md = (MeteoStationData) list.get(0);
-
-        Spot spot = Core.getSpotFromID(id);
-        if (spot.getOffline())
-            md.offline = true;
-
-        return md;
     }
 
     public int getIndexFromID(long spotID) {
@@ -315,13 +250,6 @@ public class AlarmModel {
         List<Alarm> list = WindDatastore.sendActiveAlarm(speed, avspeed, localDate, spotId, windid);
 
         LOGGER.info("list.size=" + list.size());
-
-        /*for (int i = 0; i < list.size(); i++) {
-            int deviceId = list.get(i).deviceId;
-            Alarm alarm = list.get(i);
-            LOGGER.info("i=" + i);
-            sendAlarm(deviceId, alarm, speed, avspeed,localDate, spotId);
-        }*/
     }
 
     public static void sendAlarm(int deviceId, Alarm alarm, Double speed, Double avspeed, Date currentDate, long spotId, int windid) {
@@ -333,7 +261,6 @@ public class AlarmModel {
         AlarmLog al = new AlarmLog();
         al.insert("sendalarm", alarm.id, deviceId, speed, avspeed, spotId, 0, windid);
         WindDatastore.updateAlarmLastRingDate(alarm.deviceId, alarm.id, currentDate);
-
 
         Message notification = new Message.Builder()
                 .addData("title", "titolox")
@@ -357,9 +284,7 @@ public class AlarmModel {
         Core.sendPushNotification(deviceId, notification);
     }
 
-
     public boolean getHistoricalMeteoData() {// inizializza historical meteo data
-
 
         String htmlResultString = "";
         MeteoStationData meteoStationData = new MeteoStationData();
@@ -399,7 +324,7 @@ public class AlarmModel {
 
         int samples = 5;
         List<MeteoStationData> list = getLastSamples(spotID, samples);
-        if (list == null || list.size() == 0)
+        if (list == null || list.size() < samples)
             return 0;
 
         MeteoStationData startMeteodata;
@@ -416,32 +341,6 @@ public class AlarmModel {
         trend = 10 * trend;
         return trend;
     }
-
-    /*
-    protected double getTrend(int spotID) {
-
-        int index = getIndexFromID(spotID);
-        if (index < 0) return 0;
-
-        int samples = 5;
-        List<MeteoStationData> list = getLastSamples(index, samples);
-
-        double trend = 0;
-        if (list == null || list.size() == 0)
-            return 0;
-
-
-        if (samples > list.size())
-            samples = list.size();
-
-        double initialAverageSpeed = list.get(list.size() - samples).averagespeed;
-
-        for (int i = 1; i < samples; i++) {
-            trend += (list.get(list.size() - samples + i).averagespeed - initialAverageSpeed);
-        }
-        trend = Math.round(trend * 10) / 10;
-        return trend;
-    }*/
 
     private boolean callGET(String path, int spot) {
 
@@ -504,6 +403,4 @@ public class AlarmModel {
         }
         return true;
     }
-
-
 }

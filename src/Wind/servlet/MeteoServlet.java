@@ -1,14 +1,13 @@
 package Wind.servlet;
 
 import Wind.Core;
-import Wind.Favorites;
-import Wind.RequestLog;
+import Wind.data.Favorites;
+import Wind.data.RequestLog;
 import windalarm.meteodata.MeteoStationData;
 import windalarm.meteodata.PullData;
 import windalarm.meteodata.Spot;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageOutputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
