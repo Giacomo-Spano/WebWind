@@ -34,7 +34,7 @@ public class WindguruForecast extends PullData {
         meteoStationData.sampledatetime = Core.getDate();
 
 
-        String str = rightOfKeywords(htmlResultString, "<div id=\"tabid_0_content_div\">");
+        String str = findBetweenKeywords(htmlResultString, "var wg_fcst_tab_data_1 = ", ";");
 
         //speed
         String speed = findBetweenKeywords(htmlResultString, "id=\"vWindCurrent\" >", "Kts</span>");
