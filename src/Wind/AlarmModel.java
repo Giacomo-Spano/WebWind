@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import windalarm.meteodata.MeteoStationData;
 import windalarm.meteodata.PullData;
 import windalarm.meteodata.Spot;
+import windalarm.meteodata.WindguruForecast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -73,6 +74,9 @@ public class AlarmModel {
     }
 
     public void pullData() {
+
+        WindguruForecast wf = new WindguruForecast();
+        wf.getMeteoData();
 
         for (PullData spot : mSpotDataList) {
             spot.pull();
