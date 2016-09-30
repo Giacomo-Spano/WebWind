@@ -73,4 +73,15 @@
         <url-pattern>/notification</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>ForecastServlet</servlet-name>
+        <servlet-class>Wind.servlet.ForecastServlet</servlet-class>
+
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ForecastServlet</servlet-name>
+        <url-pattern>/forecast</url-pattern>
+    </servlet-mapping>
+
 </web-app>

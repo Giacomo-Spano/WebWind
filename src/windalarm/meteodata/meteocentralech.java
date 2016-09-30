@@ -25,12 +25,12 @@ public class meteocentralech {
     public static final String ZURIGO = "svizzera/meteo-zurigo/details/N-3518042";
     public static final String VALMADRERA = "italia/meteo-valmadrera/details/N-200564";
 
-    public ArrayList<Forecast> getMeteoData(String path) {
+    public ArrayList<CHMeteoForecast> getMeteoData(String path) {
 
         String htmlResultString = "";
         MeteoStationData meteoStationData = new MeteoStationData();
 
-        ArrayList<Forecast> fList = new ArrayList<Forecast>();
+        ArrayList<CHMeteoForecast> fList = new ArrayList<CHMeteoForecast>();
 
         String address = "http://www.meteocentrale.ch/it/europa/@path@/";
         //                                        italia/meteo-valmadrera/details/N-200564/
@@ -67,9 +67,9 @@ public class meteocentralech {
                 String txt1 = htmlResultString;
                 String keyword1 = "";
 
-                for (int k = 0; k < Forecast.NDAYS; k++) {
+                for (int k = 0; k < CHMeteoForecast.NDAYS; k++) {
 
-                    Forecast f = new Forecast();
+                    CHMeteoForecast f = new CHMeteoForecast();
 
                     keyword1 = "<table cellspacing=\"0\" cellpadding=\"0\" width=\"100%\" class=\"detail-table\" id=\"detail-table-\">" + k;
                     int start = txt1.indexOf(keyword1);
@@ -77,7 +77,7 @@ public class meteocentralech {
 
                     String keyword2 = "";
 
-                    for (int i = 0; i < Forecast.NRANGES; i++) {
+                    for (int i = 0; i < CHMeteoForecast.NRANGES; i++) {
 
                         f.date[i] = dateFormat.format(cal.getTime());
 
@@ -88,7 +88,7 @@ public class meteocentralech {
                         String txt2 = txt1.substring(0, txt1.indexOf(keyword2));
                         f.time[i] = txt2;
                     }
-                    for (int i = 0; i < Forecast.NRANGES; i++) {
+                    for (int i = 0; i < CHMeteoForecast.NRANGES; i++) {
 
                         keyword2 = "<td title=\"Temperatura\">";
                         start = txt1.indexOf(keyword2);
@@ -97,7 +97,7 @@ public class meteocentralech {
                         String txt2 = txt1.substring(0, txt1.indexOf(keyword2) - 2);
                         f.temperature[i] = Double.valueOf(txt2.trim());
                     }
-                    for (int i = 0; i < Forecast.NRANGES; i++) {
+                    for (int i = 0; i < CHMeteoForecast.NRANGES; i++) {
 
                         keyword2 = "<td title=\"Raffiche\">";
                         start = txt1.indexOf(keyword2);
@@ -106,7 +106,7 @@ public class meteocentralech {
                         String txt2 = txt1.substring(0, txt1.indexOf(keyword2));
                         f.windmax[i] = Double.valueOf(txt2.trim());
                     }
-                    for (int i = 0; i < Forecast.NRANGES; i++) {
+                    for (int i = 0; i < CHMeteoForecast.NRANGES; i++) {
 
                         keyword2 = "<div class=\"mm_detail_";
                         start = txt1.indexOf(keyword2);
@@ -115,7 +115,7 @@ public class meteocentralech {
                         String txt2 = txt1.substring(0, txt1.indexOf(keyword2));
                         f.direction[i] = txt2;
                     }
-                    for (int i = 0; i < Forecast.NRANGES; i++) {
+                    for (int i = 0; i < CHMeteoForecast.NRANGES; i++) {
 
                         keyword2 = "<td title=\"Vento medio\">";
                         start = txt1.indexOf(keyword2);
@@ -124,7 +124,7 @@ public class meteocentralech {
                         String txt2 = txt1.substring(0, txt1.indexOf(keyword2));
                         f.wind[i] = Double.valueOf(txt2.trim());
                     }
-                    for (int i = 0; i < Forecast.NRANGES; i++) {
+                    for (int i = 0; i < CHMeteoForecast.NRANGES; i++) {
 
                         keyword2 = " relativa\">";
                         start = txt1.indexOf(keyword2);
@@ -133,7 +133,7 @@ public class meteocentralech {
                         String txt2 = txt1.substring(0, txt1.indexOf(keyword2));
                         f.humidity[i] = Double.valueOf(txt2.trim());
                     }
-                    for (int i = 0; i < Forecast.NRANGES; i++) {
+                    for (int i = 0; i < CHMeteoForecast.NRANGES; i++) {
 
                         keyword2 = "<td title=\"Pressione atmosferica\">";
                         start = txt1.indexOf(keyword2);

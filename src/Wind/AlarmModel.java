@@ -10,10 +10,7 @@ import com.google.appengine.repackaged.org.joda.time.format.DateTimeFormatterBui
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import windalarm.meteodata.MeteoStationData;
-import windalarm.meteodata.PullData;
-import windalarm.meteodata.Spot;
-import windalarm.meteodata.WindguruForecast;
+import windalarm.meteodata.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -61,7 +58,7 @@ public class AlarmModel {
         Date end = Core.getDate();
         Calendar cal = Calendar.getInstance();
         cal.setTime(end);
-        cal.add(Calendar.HOUR_OF_DAY, -6); //minus number would decrement the hours
+        cal.add(Calendar.HOUR_OF_DAY, -6); //minus number would decrement the datetimes
         Date start = cal.getTime();
         MeteoStationData md = new MeteoStationData();
         List<MeteoStationData> list = md.getHistory(Long.valueOf(spot.getSpotId()), start, end,-1L);
@@ -75,12 +72,24 @@ public class AlarmModel {
 
     public void pullData() {
 
-        WindguruForecast wf = new WindguruForecast();
-        wf.getMeteoData();
 
         for (PullData spot : mSpotDataList) {
             spot.pull();
         }
+    }
+
+    public void pullForecastData() {
+
+        OpenWeatherForecast owf = new OpenWeatherForecast(2,524901);
+        owf.getMeteoForecastData();
+
+
+        WindguruForecast wf = new WindguruForecast(1,49162); // porto pollo
+        wf.getForecastData();
+
+        wf = new WindguruForecast(2,49011); // puntone
+        wf.getForecastData();
+
     }
 
     public boolean Add(MeteoStationData md, long spotID) {
@@ -407,4 +416,6 @@ public class AlarmModel {
         }
         return true;
     }
+
+
 }

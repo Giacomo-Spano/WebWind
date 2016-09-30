@@ -15,15 +15,15 @@ import java.util.Locale;
 import java.util.logging.Logger;
 
 
-public class WindguruForecast extends PullData {
+public class OpenWeatherForecast extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    private int windguruid = -1;
+    private int openweathermapid = -1;
     private long spotId = -1;
 
-    public WindguruForecast(int spotid, int windguruid) {
-        this.windguruid = windguruid;
+    public OpenWeatherForecast(int spotid, int openweathermapid) {
+        this.openweathermapid = openweathermapid;
         this.spotId = spotid;
     }
 
@@ -32,38 +32,33 @@ public class WindguruForecast extends PullData {
         return null;
     }
 
-    public WindguruForecast() {
+    public OpenWeatherForecast() {
         super();
     }
 
-    public WindForecast getForecastData() {
+    public MeteoForecast getMeteoForecastData() {
 
         LOGGER.info("getMeteoData: spotName=" + name);
 
+        String APIKEY = "98d03ba3e2cdbfec512ed401f221b528";
+        String url = "http://api.openweathermap.org/data/2.5/forecast?units=metric&mode=json";
+        url += "&id=" + openweathermapid;
+        url += "&appid="+APIKEY;
 
-
-        //String htmlResultString = getHTMLPage("http://www.windguru.cz/it/index.php?sc=49162"/*meteodataUrl*/);
-        String htmlResultString = getHTMLPage("http://www.windguru.cz/it/index.php?sc=" + windguruid/*meteodataUrl*/);
+        String htmlResultString = getHTMLPage(url);
         if (htmlResultString == null)
             return null;
 
-
-        // sample date time
-        //forecastData.sampledatetime = Core.getDate();
-
-
-        String str = findBetweenKeywords(htmlResultString, "var wg_fcst_tab_data_1 = ", ";");
-
         JSONObject jobj = null;
         try {
-            jobj = new JSONObject(str);
-            WindForecast forecastData = new WindForecast(spotId,windguruid);
-            forecastData.fromJson(jobj);
+            jobj = new JSONObject(htmlResultString);
+            MeteoForecast f = new MeteoForecast(spotId,openweathermapid);
+            //f.fromJson(jobj);
 
-            WindForecastDataSource f = new WindForecastDataSource();
-            f.insert(forecastData);
+            //WindForecastDataSource f = new WindForecastDataSource();
+            //f.insert(forecastData);
 
-            return forecastData;
+            return f;
         } catch (JSONException e) {
             e.printStackTrace();
         }

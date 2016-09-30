@@ -1,7 +1,5 @@
 package windalarm.meteodata;
 
-//import com.google.appengine.repackaged.org.joda.time.DateTimeZone;
-
 import Wind.AlarmModel;
 import Wind.Core;
 
@@ -13,42 +11,13 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
-
 public class Windfinder extends PullData {
 
-
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-
-    //protected String mSpotUrl;
 
     public Windfinder() {
         super();
     }
-    /*public Windfinder(long mSpotID) {
-        super(mSpotID);
-
-        switch ((int) mSpotID) {
-            case (int) AlarmModel.Spot_Scarlino:
-                mSpotUrl = "marina_di_scarlino";
-                webcamUrl = "http://www.meteoindiretta.it/get_webcam.php?src=http%3A%2F%2Fwww.parallelo43.it%2Fwebcam%2Fmarinascarlino.jpg&w=630";
-                mImageName = "spot-" + mSpotID + ".jpg";
-                name = "Marina di Scarlino (Toscana)";
-                break;
-            case (int) AlarmModel.Spot_VassilikiPort:
-                mSpotUrl = "lefkada_port?fspot=vasiliki";
-                webcamUrl = "http://images.webcams.travel/preview/1323285421.jpg";
-                //mImageName = AlarmModel.getSpotName(AlarmModel.Spot_Vassiliki) + ".jpg";
-                mImageName = "spot-" + mSpotID + ".jpg";
-                name = "Vassiliki Port - Lefkada (Grecia)";
-                break;
-            case (int) AlarmModel.Spot_Dakhla:
-                mSpotUrl = "dakhla";
-                name = "Dakhla (Marocco)";
-                break;
-        }
-        sourceUrl = "www.windfinder.it";
-    }*/
-
 
     public MeteoStationData getMeteoData(/*String name, String spot*/ /*lake_como_colico*/) {
 
@@ -97,11 +66,7 @@ public class Windfinder extends PullData {
         return meteoStationData;
     }
 
-
-
     private Date getDate(String date, String time) {
-
-
 
         String dayofweek = date.substring(0,3);
         int idx = date.indexOf(",")+1;

@@ -1,6 +1,5 @@
 package windalarm.meteodata;
 
-
 import Wind.AlarmModel;
 import Wind.Core;
 
@@ -14,21 +13,12 @@ public class Bombolak extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    /*public Bombolak() {
-        super(AlarmModel.Spot_Sorico);
-        webcamUrl = "http://bomboklat.it/wdmeteo/webcam.php";
-        mImageName = "spot-" + id + ".jpg";
-        name = "Sorico (Lago di como)";
-        sourceUrl = "http://bomboklat.it";
-    }*/
-
     public Bombolak() {
         super();
     }
 
     public MeteoStationData getMeteoData() {
 
-        //String htmlResultString = getHTMLPage("http://bomboklat.it/wdmeteo/meteo.php");
         String htmlResultString = getHTMLPage(meteodataUrl);
         if (htmlResultString == null)
             return null;
@@ -39,67 +29,33 @@ public class Bombolak extends PullData {
         Calendar cal = Calendar.getInstance();
         meteoStationData.sampledatetime = Core.getDate();
 
-        // speed
-        String txt = htmlResultString;
-        String keyword = "<span class='windspd'>";
-        int start = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + keyword.length());
-
-        keyword = " kts";
-        int end = txt.indexOf(keyword);
-        txt = txt.substring(0, end);
+        // speed & direction
+        String txt = findBetweenKeywords(htmlResultString,"<span class='windspd'>","</span");
 
         String[] split = txt.split(" ");
-
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(split[1].trim()));// * 1.85200; // convert knots to km/h
 
         meteoStationData.direction = split[0].trim();
         meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
 
+        String keyword = " kts";
+        if (split[1].indexOf(keyword) != -1) {
+            txt = leftOfKeywords(split[1],keyword).trim();
+            meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(txt));// * 1.85200; // convert knots to km/h
+        } else {
+            meteoStationData.speed = 0.0;
+        }
+
         // temperature
-        txt = htmlResultString;
-        keyword = "Temperatura:";
-        start = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + keyword.length());
-        keyword = "<td class='meteotextbig'>";
-        start = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + keyword.length());
-        keyword = "&deg;C";
-        end = txt.indexOf(keyword);
-        if (end == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(0, end).trim();
+        txt = findBetweenKeywords(htmlResultString,"Temperatura:","&deg;C");
+        txt = rightOfKeywords(txt,"<td class='meteotextbig'>");
         meteoStationData.temperature = Double.valueOf(txt.trim());
 
         // pressure
         meteoStationData.pressure = -1.0;
 
         // humidity
-        txt = htmlResultString;
-        txt = htmlResultString;
-        keyword = "Umidit";
-        start = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + keyword.length());
-        keyword = "<td class='meteotextbig'>";
-        start = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + keyword.length());
-        keyword = "%";
-        end = txt.indexOf(keyword);
-        if (end == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(0, end);
+        txt = findBetweenKeywords(htmlResultString,"Umidit","%");
+        txt = rightOfKeywords(txt,"<td class='meteotextbig'>");
         meteoStationData.humidity = Double.valueOf(txt.trim());
 
         // rain rate
@@ -109,24 +65,10 @@ public class Bombolak extends PullData {
         meteoStationData.averagespeed = Core.getAverage(id);
 
         // date
-        txt = htmlResultString;
-        keyword = "Ultimo aggiornamento:";
-        start = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        keyword = "class='meteotextyellow'>";
-        start = txt.indexOf(keyword, start);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + keyword.length());
-        keyword = "</span>";
-        end = txt.indexOf(keyword);
-        if (end == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(0, end);
+        txt = findBetweenKeywords(htmlResultString,"Ultimo aggiornamento:","</span>");
+        txt = rightOfKeywords(txt,"class='meteotextyellow'>");
         txt = txt.trim();
         txt = txt.replace("\t","");
-
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         try {
             meteoStationData.datetime = formatter.parse(txt);

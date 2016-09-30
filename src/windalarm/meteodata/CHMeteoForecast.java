@@ -3,7 +3,7 @@ package windalarm.meteodata;
 /**
  * Created by giacomo on 19/07/2015.
  */
-public class Forecast {
+public class CHMeteoForecast {
 
     public static int NDAYS = 5;
     public static int NRANGES = 7;

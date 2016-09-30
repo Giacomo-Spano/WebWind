@@ -41,20 +41,24 @@ public abstract class PullData extends Spot {
                 Date startTime = new Date(md.datetime.getTime() - (minutes * AlarmModel.ONE_MINUTE_IN_MILLIS));
                 md.trend = Core.getTrend(id, startTime, md.datetime);
                 Core.sendData(md, id);
-
-                if (webcamUrl != "") {
-                    getWebcamImage(webcamUrl,"" + id + "webcam");
-                }
-                if (webcamUrl2 != "") {
-                    getWebcamImage(webcamUrl2,"" + id + "webcam2");
-                }
-                if (webcamUrl3 != "") {
-                    getWebcamImage(webcamUrl3,"" + id + "webcam3");
-                }
             }
-
         } catch (Exception e) {
             LOGGER.severe("cannot get data for spot " + name + "(" + id + ")");
+        }
+
+        try {
+
+            if (webcamUrl != "") {
+                getWebcamImage(webcamUrl, "" + id + "webcam");
+            }
+            if (webcamUrl2 != "") {
+                getWebcamImage(webcamUrl2, "" + id + "webcam2");
+            }
+            if (webcamUrl3 != "") {
+                getWebcamImage(webcamUrl3, "" + id + "webcam3");
+            }
+        } catch (Exception e) {
+            LOGGER.severe("cannot get webcam for spot " + name + "(" + id + ")");
         }
     }
 

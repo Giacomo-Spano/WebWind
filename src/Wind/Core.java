@@ -161,7 +161,7 @@ public class Core {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT) || appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
-            cal.add(Calendar.HOUR_OF_DAY, 6); //minus number would decrement the hours
+            cal.add(Calendar.HOUR_OF_DAY, 6); //minus number would decrement the datetimes
             Date tzdate = cal.getTime();
             dateInString = df.format(tzdate);
         } else {
@@ -240,25 +240,32 @@ public class Core {
 
         try {
             meteocentralech m = new meteocentralech();
-            ArrayList<Forecast> list = m.getMeteoData(meteocentralech.LUGANO);
+            ArrayList<CHMeteoForecast> list = m.getMeteoData(meteocentralech.LUGANO);
             sendForecastToWorksheet(list, dateFormat.format(cal.getTime()), "Lugano");
         } catch (Exception e) {
             LOGGER.severe("cannot get data for meteo svizzera lugano");
         }
         try {
             meteocentralech m = new meteocentralech();
-            ArrayList<Forecast> list = m.getMeteoData(meteocentralech.ZURIGO);
+            ArrayList<CHMeteoForecast> list = m.getMeteoData(meteocentralech.ZURIGO);
             sendForecastToWorksheet(list, dateFormat.format(cal.getTime()), "Zurigo");
         } catch (Exception e) {
             LOGGER.severe("cannot get data for meteo zurigo");
         }
         try {
             meteocentralech m = new meteocentralech();
-            ArrayList<Forecast> list = m.getMeteoData(meteocentralech.VALMADRERA);
+            ArrayList<CHMeteoForecast> list = m.getMeteoData(meteocentralech.VALMADRERA);
             sendForecastToWorksheet(list, dateFormat.format(cal.getTime()), "Valmadrera");
         } catch (Exception e) {
             LOGGER.severe("cannot get data for meteo valmadrera");
         }
+    }
+
+
+    public void pullForecastData() {
+
+        alarmModel.pullForecastData();
+
     }
 
     public static void sendData(MeteoStationData meteoData, long spotID) {
@@ -352,7 +359,7 @@ public class Core {
     }
 
     //private static
-    public boolean sendForecastToWorksheet(ArrayList<Forecast> list, String sampledate, String spotname) {
+    public boolean sendForecastToWorksheet(ArrayList<CHMeteoForecast> list, String sampledate, String spotname) {
 
        /* boolean result;
 
