@@ -13,6 +13,10 @@ public class Spot {
     protected String meteodataUrl = "";
     protected Boolean offline = false;
 
+    protected String openweathermapId;
+    protected String windguruId;
+    protected String windfinderId;
+
     public Spot() {
     }
 
@@ -82,5 +86,21 @@ public class Spot {
 
     public void setMeteodataUrl(String meteodataUrl) {
         this.meteodataUrl = meteodataUrl;
+    }
+
+    public void setWindguruId(String windguruId) {
+        this.windguruId = windguruId;
+    }
+
+    public void setWindfinderId(String windfinderId) {
+        this.windfinderId = windfinderId;
+    }
+
+    public void setOpenweathermapId(String openweathermapId) {
+        this.openweathermapId = openweathermapId;
+    }
+
+    public String getOpenweathermapid() {
+        return openweathermapId;
     }
 }

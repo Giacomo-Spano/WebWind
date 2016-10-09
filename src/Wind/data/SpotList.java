@@ -71,6 +71,9 @@ public class SpotList {
             spot.setWebcamUrl(1,rs.getString("webcamurl"));
             spot.setWebcamUrl(2,rs.getString("webcamurl2"));
             spot.setWebcamUrl(3,rs.getString("webcamurl3"));
+            spot.setWindguruId(rs.getString("windguruid"));
+            spot.setWindfinderId(rs.getString("windfinderid"));
+            spot.setOpenweathermapId(rs.getString("openweathermapid"));
 
             return spot;
 

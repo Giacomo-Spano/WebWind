@@ -2,8 +2,7 @@ package windalarm.meteodata;
 
 //import com.google.appengine.repackaged.org.joda.time.DateTimeZone;
 
-import Wind.Core;
-import Wind.data.WindForecastDataSource;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,7 +10,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 import java.util.logging.Logger;
 
 
@@ -19,11 +17,12 @@ public class WindguruForecast extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    private int windguruid = -1;
+    private String source = FORECAST_WINDGURU;
+    private String sourceId = null;
     private long spotId = -1;
 
-    public WindguruForecast(int spotid, int windguruid) {
-        this.windguruid = windguruid;
+    public WindguruForecast(int spotid, String sourceId) {
+        this.sourceId = sourceId;
         this.spotId = spotid;
     }
 
@@ -40,84 +39,104 @@ public class WindguruForecast extends PullData {
 
         LOGGER.info("getMeteoData: spotName=" + name);
 
-
-
-        //String htmlResultString = getHTMLPage("http://www.windguru.cz/it/index.php?sc=49162"/*meteodataUrl*/);
-        String htmlResultString = getHTMLPage("http://www.windguru.cz/it/index.php?sc=" + windguruid/*meteodataUrl*/);
+        String htmlResultString = getHTMLPage("http://www.windguru.cz/it/index.php?sc=" + sourceId/*meteodataUrl*/);
         if (htmlResultString == null)
             return null;
-
-
-        // sample date time
-        //forecastData.sampledatetime = Core.getDate();
-
 
         String str = findBetweenKeywords(htmlResultString, "var wg_fcst_tab_data_1 = ", ";");
 
         JSONObject jobj = null;
         try {
             jobj = new JSONObject(str);
-            WindForecast forecastData = new WindForecast(spotId,windguruid);
-            forecastData.fromJson(jobj);
-
-            WindForecastDataSource f = new WindForecastDataSource();
-            f.insert(forecastData);
-
-            return forecastData;
+            WindForecast f = fromJson(jobj);
+            f.source = source;
+            f.sourceId =sourceId;
+            f.spotId = spotId;
+            return f;
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-
         return null;
-
     }
 
+    public WindForecast fromJson(JSONObject obj) {
 
-
-    private Date getDate(String date, String time) {
-
-
-
-        String dayofweek = date.substring(0,3);
-        int idx = date.indexOf(",")+1;
-        String month = date.substring(idx,idx+4).trim();
-        String day = date.substring(idx+5).trim();
-        Date yd = Core.getDate();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(yd);
-        int year = cal.get(Calendar.YEAR);
-        //int month = cal.get(Calendar.MONTH);
-        //int day = cal.get(Calendar.DAY_OF_MONTH);
-
-        String fulldate = day + "-" + month + "-" + year + " " + time;
-
-        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mm", Locale.ENGLISH);
-
+        WindForecast wf = new WindForecast();
         try {
-            Date d = df.parse(fulldate);
-            return d;
+            if (obj.has("id_spot"))
+                sourceId = "" + obj.getInt("id_spot");
+            else
+                return null;
+
+            if (obj.has("spot"))
+                wf.sourceSpotName = obj.getString("spot");
+
+            if (obj.has("utc_offset")) {
+                int utc_offset = obj.getInt("utc_offset");
+
+
+                if (obj.has("fcst")) {
+                    JSONObject fcst = obj.getJSONObject("fcst");
+                    if (fcst.has("3")) {
+                        JSONObject json = fcst.getJSONObject("3");
+
+                        Date initDate;
+                        if (json.has("initdate")) {
+                            String s = json.getString("initdate");
+                            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            initDate = df.parse(s);
+
+
+                            if (json.has("hours")) {
+                                JSONArray jarray = json.getJSONArray("hours");
+                                for (int n = 0; n < jarray.length(); n++) {
+                                    Integer hour = jarray.getInt(n);
+                                    Date end = new Date();
+                                    Calendar cal = Calendar.getInstance();
+                                    cal.setTime(initDate);
+                                    cal.add(Calendar.HOUR_OF_DAY, hour);
+                                    wf.datetimes.add(cal.getTime());
+                                }
+                            }
+
+                            if (json.has("WINDSPD")) {
+                                JSONArray jarray = json.getJSONArray("WINDSPD");
+                                for (int n = 0; n < jarray.length(); n++) {
+                                    Double value = jarray.getDouble(n);
+                                    wf.speeds.add(value);
+                                }
+                            }
+
+                            if (json.has("WINDDIR")) {
+                                JSONArray jarray = json.getJSONArray("WINDDIR");
+                                for (int n = 0; n < jarray.length(); n++) {
+                                    Double value = jarray.getDouble(n);
+                                    wf.speedDirs.add(value);
+                                }
+                            }
+
+                            if (json.has("TMP")) {
+                                JSONArray jarray = json.getJSONArray("TMP");
+                                for (int n = 0; n < jarray.length(); n++) {
+                                    Double value = jarray.getDouble(n);
+                                    wf.temperatures.add(value);
+                                }
+                            }
+                        } else {
+                            return null;
+                        }
+                    }
+                } else {
+                    return null;
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
         } catch (ParseException e) {
-            LOGGER.info("unparsable data: spotName=" + name);
             e.printStackTrace();
         }
-        return null;
-    }
-
-    private String getDirection (String direction ) {
-        String txt = direction;
-        if (txt == null) {
-            return "";
-        } else {
-            txt = txt.replaceAll(" ", "");
-            txt = txt.replaceAll("-", "");
-            txt = txt.trim();
-            txt = txt.toUpperCase();
-            txt = txt.replaceAll("NORTH", "N");
-            txt = txt.replaceAll("SOUTH", "S");
-            txt = txt.replaceAll("EAST", "E");
-            txt = txt.replaceAll("WEST", "O");
-            return txt;
-        }
+        return wf;
     }
 }

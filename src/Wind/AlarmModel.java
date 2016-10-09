@@ -70,6 +70,7 @@ public class AlarmModel {
         return mSpotDataList;
     }
 
+
     public void pullData() {
 
 
@@ -80,16 +81,35 @@ public class AlarmModel {
 
     public void pullForecastData() {
 
-        OpenWeatherForecast owf = new OpenWeatherForecast(2,524901);
-        owf.getMeteoForecastData();
+        for (PullData spot : mSpotDataList) {
+            if (spot.getOpenweathermapid() != null) {
+
+                OpenWeatherForecast owf = new OpenWeatherForecast(spot.getSpotId(),spot.getOpenweathermapid());
+                WindForecast wf = owf.getMeteoForecastData();
+                WindForecastDataSource f = new WindForecastDataSource();
+                f.insert(wf);
+            }
+        }
 
 
-        WindguruForecast wf = new WindguruForecast(1,49162); // porto pollo
-        wf.getForecastData();
+        WindForecast wf;
+        WindForecastDataSource f = new WindForecastDataSource();
 
-        wf = new WindguruForecast(2,49011); // puntone
-        wf.getForecastData();
+        /*OpenWeatherForecast owf = new OpenWeatherForecast(1,"524901");
+        wf = owf.getMeteoForecastData();
+        f.insert(wf);*/
 
+        WindfinderForecast wff = new WindfinderForecast(1,"marina_di_scarlino");
+        wf = wff.getForecastData();
+        f.insert(wf);
+
+        WindguruForecast wgf = new WindguruForecast(1,"49162"); // porto pollo
+        wf = wgf.getForecastData();
+        f.insert(wf);
+
+        wgf = new WindguruForecast(2,"49011"); // puntone
+        wf = wgf.getForecastData();
+        f.insert(wf);
     }
 
     public boolean Add(MeteoStationData md, long spotID) {

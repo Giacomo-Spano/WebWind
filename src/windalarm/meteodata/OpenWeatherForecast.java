@@ -4,6 +4,7 @@ package windalarm.meteodata;
 
 import Wind.Core;
 import Wind.data.WindForecastDataSource;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,12 +20,16 @@ public class OpenWeatherForecast extends PullData {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    private int openweathermapid = -1;
+    private String openweathermapid = null;
     private long spotId = -1;
 
-    public OpenWeatherForecast(int spotid, int openweathermapid) {
+    public OpenWeatherForecast(long spotid, String openweathermapid) {
         this.openweathermapid = openweathermapid;
         this.spotId = spotid;
+    }
+
+    public OpenWeatherForecast() {
+        super();
     }
 
     @Override
@@ -32,19 +37,57 @@ public class OpenWeatherForecast extends PullData {
         return null;
     }
 
-    public OpenWeatherForecast() {
-        super();
-    }
-
-    public MeteoForecast getMeteoForecastData() {
+    public WindForecast getMeteoForecastData() {
 
         LOGGER.info("getMeteoData: spotName=" + name);
 
         String APIKEY = "98d03ba3e2cdbfec512ed401f221b528";
         String url = "http://api.openweathermap.org/data/2.5/forecast?units=metric&mode=json";
+        url+= "&lang=it";
         url += "&id=" + openweathermapid;
         url += "&appid="+APIKEY;
 
+        return getWindForecast(url);
+
+    }
+
+    public WindForecast getMeteoForecastByCityName(String city, String country) {
+
+        LOGGER.info("getMeteoData: spotName=" + name);
+
+        String APIKEY = "98d03ba3e2cdbfec512ed401f221b528";
+        String url = "http://api.openweathermap.org/data/2.5/forecast?units=metric&mode=json";
+        url+= "&lang=it";
+        url += "&q=" + city;
+        if (country != null)
+            url += "," + country;
+        url += "&appid="+APIKEY;
+
+        //api.openweathermap.org/data/2.5/weather?q=London,uk
+
+        return getWindForecast(url);
+
+    }
+
+    public WindForecast getMeteoForecastByCityId(String cityId, String country) {
+
+        LOGGER.info("getMeteoData: spotName=" + name);
+
+        String APIKEY = "98d03ba3e2cdbfec512ed401f221b528";
+        String url = "http://api.openweathermap.org/data/2.5/forecast?units=metric&mode=json";
+        url+= "&lang=it";
+        url += "&id=" + cityId;
+        if (country != null)
+            url += "," + country;
+        url += "&appid="+APIKEY;
+
+        //api.openweathermap.org/data/2.5/weather?q=London,uk
+
+        return getWindForecast(url);
+
+    }
+
+    private WindForecast getWindForecast(String url) {
         String htmlResultString = getHTMLPage(url);
         if (htmlResultString == null)
             return null;
@@ -52,8 +95,10 @@ public class OpenWeatherForecast extends PullData {
         JSONObject jobj = null;
         try {
             jobj = new JSONObject(htmlResultString);
-            MeteoForecast f = new MeteoForecast(spotId,openweathermapid);
-            //f.fromJson(jobj);
+            WindForecast f = fromJson(jobj);
+            f.sourceId = openweathermapid;
+            f.spotId = spotId;
+            f.source = FORECAST_OPENWEATHERMAP;
 
             //WindForecastDataSource f = new WindForecastDataSource();
             //f.insert(forecastData);
@@ -65,54 +110,80 @@ public class OpenWeatherForecast extends PullData {
 
 
         return null;
-
     }
 
+    public WindForecast fromJson(JSONObject obj) {
 
-
-    private Date getDate(String date, String time) {
-
-
-
-        String dayofweek = date.substring(0,3);
-        int idx = date.indexOf(",")+1;
-        String month = date.substring(idx,idx+4).trim();
-        String day = date.substring(idx+5).trim();
-        Date yd = Core.getDate();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(yd);
-        int year = cal.get(Calendar.YEAR);
-        //int month = cal.get(Calendar.MONTH);
-        //int day = cal.get(Calendar.DAY_OF_MONTH);
-
-        String fulldate = day + "-" + month + "-" + year + " " + time;
-
-        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mm", Locale.ENGLISH);
-
+        WindForecast wf = new WindForecast();
         try {
-            Date d = df.parse(fulldate);
-            return d;
+            if (obj.has("city")) {
+                JSONObject city = obj.getJSONObject("city");
+                wf.sourceSpotName = city.getString("name");
+                wf.sourceSpotCountry = city.getString("country");
+                JSONObject jcoord = city.getJSONObject("coord");
+                wf.lon = jcoord.getDouble("lon");
+                wf.lat = jcoord.getDouble("lat");
+                wf.lastUpdate = Core.getDate();
+
+            } else
+                return null;
+
+            if (obj.has("list")) {
+                JSONArray jarray = obj.getJSONArray("list");
+                for (int n = 0; n < jarray.length(); n++) {
+                    JSONObject j = jarray.getJSONObject(n);
+
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String dt_txt = j.getString("dt_txt");
+                    Date date = df.parse(dt_txt);
+                    wf.datetimes.add(date);
+
+                    JSONObject jmain = j.getJSONObject("main");
+                    Double temperature = jmain.getDouble("temp");
+                    wf.temperatures.add(temperature);
+                    Double maxtemp = jmain.getDouble("temp_max");
+                    wf.maxtemperatures.add(maxtemp);
+                    Double mintemp = jmain.getDouble("temp_min");
+                    wf.mintemperatures.add(mintemp);
+                    int humidity = jmain.getInt("humidity");
+                    wf.humidities.add(humidity);
+                    Double pressure = jmain.getDouble("pressure");
+                    wf.pressures.add(pressure);
+
+                    JSONArray jweatherlist = j.getJSONArray("weather"); // perchè è un jarray e non un jobc??
+                    JSONObject jweather = jweatherlist.getJSONObject(0);
+                    String weather = jweather.getString("main");
+                    wf.weathers.add(weather);
+                    String weatherdescription = jweather.getString("description");
+                    wf.weatherdescriptions.add(weatherdescription);
+                    String icon = jweather.getString("icon");
+                    wf.icons.add(icon);
+
+                    JSONObject jcloud = j.getJSONObject("clouds");
+                    int cloudPercentage = jcloud.getInt("all");
+                    wf.cloudPercentages.add(cloudPercentage);
+
+                    JSONObject jwind = j.getJSONObject("wind");
+                    Double speed = jwind.getDouble("speed");
+                    wf.speeds.add(speed);
+                    Double deg = jwind.getDouble("deg");
+                    wf.speedDirs.add(deg);
+
+                    JSONObject jrain = j.getJSONObject("rain");
+                    Double rain = 0.0;
+                    if (jrain.has("3h"))
+                        rain = jrain.getDouble("3h");
+                    wf.rains.add(rain);
+
+                }
+            } else
+                return null;
+
+        } catch (JSONException e) {
+            e.printStackTrace();
         } catch (ParseException e) {
-            LOGGER.info("unparsable data: spotName=" + name);
             e.printStackTrace();
         }
-        return null;
-    }
-
-    private String getDirection (String direction ) {
-        String txt = direction;
-        if (txt == null) {
-            return "";
-        } else {
-            txt = txt.replaceAll(" ", "");
-            txt = txt.replaceAll("-", "");
-            txt = txt.trim();
-            txt = txt.toUpperCase();
-            txt = txt.replaceAll("NORTH", "N");
-            txt = txt.replaceAll("SOUTH", "S");
-            txt = txt.replaceAll("EAST", "E");
-            txt = txt.replaceAll("WEST", "O");
-            return txt;
-        }
+        return wf;
     }
 }

@@ -18,6 +18,10 @@ import java.util.logging.Logger;
  */
 public abstract class PullData extends Spot {
 
+    public static final String FORECAST_WINDFINDER = "Windfinder";
+    public static final String FORECAST_WINDGURU = "Windguru";
+    public static final String FORECAST_OPENWEATHERMAP = "OpenWeathermap";
+
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     public Boolean offline = false;
     public Date lastHighWindNotificationSentDate;

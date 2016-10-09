@@ -61,7 +61,7 @@ public class Favorites {
 
             String sql;
             sql = "INSERT INTO favorites (spotid, personid)" +
-                    " VALUES (" + spotid + "," + personid + ") ";
+                    " VALUES (" + spotid + ",'" + personid + "') ";
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = stmt.getGeneratedKeys();

@@ -46,9 +46,13 @@ public class Windfinder extends PullData {
         meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
 
         //datetime
-        String time = findBetweenKeywords(htmlResultString, "Report from local weather station at ", "local time.");
+        //String time = findBetweenKeywords(htmlResultString, "Report from local weather station at ", "local time.");
+        String time = findBetweenKeywords(htmlResultString, "<span id=\"last-update\">", "</span>");
         String date = findBetweenKeywords(htmlResultString, "<div class=\"weathertable__header\">", "</div>");
-        meteoStationData.datetime = getDate(date, time);
+        if (time == null || date == null)
+            meteoStationData.datetime = meteoStationData.sampledatetime;
+        else
+            meteoStationData.datetime = getDate(date, time);
 
         // temperature
         String temperature = findBetweenKeywords(htmlResultString, "<span class=\"current__temp__value\">", "<span class=\"current__temp__unit\">");

@@ -2,6 +2,8 @@ package Wind.servlet;
 
 import Wind.Core;
 import Wind.data.Favorites;
+import Wind.data.Location;
+import Wind.data.Locations;
 import Wind.data.RequestLog;
 import windalarm.meteodata.MeteoStationData;
 import windalarm.meteodata.PullData;
@@ -63,6 +65,8 @@ public class MeteoServlet extends HttpServlet {
         String history = request.getParameter("history");
         String log = request.getParameter("log");
         String spot = request.getParameter("spot");
+        String forecastlocations = request.getParameter("forecastlocations");
+        String filter = request.getParameter("filter");
         String fullinfo = request.getParameter("fullinfo");
         String userid = request.getParameter("userid");
         String webcamimage = request.getParameter("webcamimage");
@@ -90,6 +94,16 @@ public class MeteoServlet extends HttpServlet {
                 fullInfoRequest = true;
 
             String str = getSpotListJson(fullInfoRequest, userid);
+            out.print(str);
+
+        } else if (forecastlocations != null && forecastlocations.equals("openweathermap")) {
+
+            RequestLog req = new RequestLog();
+            req.insert("authcode", "forecastspotlist", userid, "");
+
+            if (filter == null) filter = "";
+
+            String str = getForecastSpotListJson(userid, forecastlocations, filter);
             out.print(str);
 
         } else if (lastdata != null && lastdata.equals("true")) { // Last meteo data
@@ -312,6 +326,34 @@ public class MeteoServlet extends HttpServlet {
         }
         str += "] }";
         return str;
+    }
+
+    private String getForecastSpotListJson(String userid, String source, String filter) {
+
+        Locations locations = new Locations();
+        List<Location> list = locations.getLocations(source, filter);
+
+        String str = "{\"locations\" : [";
+
+        int count = 0;
+        for (Location l : list) {
+
+            if (count++ != 0)
+                str += ",";
+
+            str += "{\"name\" : \"" + l.name + "\",";
+            str += "\"id\" : " + "\"" + l.id + "\",";
+            str += "\"lat\" : " + "\"" + l.lat + "\",";
+            str += "\"lon\" : " + "\"" + l.lon + "\",";
+            str += "\"countrycode\" : " + "\"" + l.countryCode + "\"";
+
+            str += " }";
+        }
+        str += "] ";
+
+        str += " }";
+        return str;
+
     }
 
     private String getSpotListJson(boolean fullInfoRequest, String userid) {

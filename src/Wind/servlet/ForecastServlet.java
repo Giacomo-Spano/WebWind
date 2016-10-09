@@ -2,6 +2,8 @@ package Wind.servlet;
 
 import Wind.data.WindForecastDataSource;
 import Wind.data.RequestLog;
+import windalarm.meteodata.OpenWeatherForecast;
+import windalarm.meteodata.PullData;
 import windalarm.meteodata.WindForecast;
 
 import javax.servlet.ServletException;
@@ -31,74 +33,57 @@ public class ForecastServlet extends HttpServlet {
 
         String spot = request.getParameter("spot");
         String userid = request.getParameter("userid");
+        String forecastSource = request.getParameter("source");
+        String city = request.getParameter("location");
 
         response.setContentType("application/json");
         PrintWriter out = response.getWriter();
 
-        if (spot != null) {
+        if (spot != null && forecastSource != null &&
+                (forecastSource.equals(PullData.FORECAST_OPENWEATHERMAP) ||
+                forecastSource.equals(PullData.FORECAST_WINDFINDER) ||
+                forecastSource.equals(PullData.FORECAST_WINDGURU))) {
 
             RequestLog req = new RequestLog();
             req.insert("authcode", "forecast", userid, "");
 
             long spotId = Long.valueOf(spot);
 
+            String str = getForecastJson(spotId, forecastSource);
 
-            String str = getForecastJson(spotId);
+            if (str == null) { //
+                OpenWeatherForecast owf = new OpenWeatherForecast();
+                WindForecast wf = owf.getMeteoForecastByCityId(""+spotId,/*"uk"*/null);
+                str = wf.toJson();
+            }
+
+            out.print(str);
+
+        } else if (city != null) {
+
+            RequestLog req = new RequestLog();
+            req.insert("authcode", "forecast", userid, "");
+
+            OpenWeatherForecast owf = new OpenWeatherForecast();
+            WindForecast wf = owf.getMeteoForecastByCityName(city,/*"uk"*/null);
+
+            String str = wf.toJson();
             out.print(str);
 
         } else {
+
             out.println("no data");
         }
         out.close();
     }
 
-    private String getForecastJson(long spotId) {
-
+    private String getForecastJson(long spotId, String source) {
 
         WindForecastDataSource forecastDBData = new WindForecastDataSource();
+        WindForecast f = forecastDBData.getForecast(spotId,source);
+        if (f == null) return null;
 
-        WindForecast f = forecastDBData.getForecast(spotId);
-        DateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-
-        String str = "{ ";
-
-        str += "\"datetimes\" : [";
-        int count = 1;
-        for (Date d : f.datetimes) {
-            if (count++ > 1)
-                str += ",";
-            str += df.format(d);
-        }
-        str += "],";
-
-        str += "\"speeds\" : [";
-        count = 1;
-        for (Double h : f.speeds) {
-            if (count++ > 1)
-                str += ",";
-            str += h;
-        }
-        str += "],";
-
-        str += "\"directions\" : [";
-        count = 1;
-        for (Double h : f.speedDirs) {
-            if (count++ > 1)
-                str += ",";
-            str += h;
-        }
-        str += "],";
-
-        str += "\"temperatures\" : [";
-        count = 1;
-        for (Double h : f.temperatures) {
-            if (count++ > 1)
-                str += ",";
-            str += h;
-        }
-        str += "]";
-
-        str += "}";
+        String str = f.toJson();
 
         return str;
     }
