@@ -59,13 +59,13 @@ public class Core {
 
     public static String getDbUrl() {
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) { // production
-            return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
+            return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "";
         } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) { // test
-            return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
+            return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "windalarm";
             //return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
         }
         //test
-        return "jdbc:mysql://127.0.0.1:3306/jbossews";
+        return "jdbc:mysql://127.0.0.1:3306/windalarm";
         //return "jdbc:mysql://127.0.0.1:3307/jbossews"; // production
     }
 
