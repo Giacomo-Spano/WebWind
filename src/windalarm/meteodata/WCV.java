@@ -33,99 +33,67 @@ public class WCV extends PullData {
         Calendar cal = Calendar.getInstance();
         meteoStationData.sampledatetime = Core.getDate();//dateFormat.format(cal.getTime());
 
-        String txt = htmlResultString;
-        String keyword = "Velocit&agrave; del vento:";
-        int start = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        keyword = "<strong>";
-        start = txt.indexOf(keyword, start);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + keyword.length());
-        keyword = "</strong>";
-        int end = txt.indexOf("</strong>");
-        txt = txt.substring(0, end);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        meteoStationData.speed = Double.valueOf(txt.trim().replace(',', '.'));
 
-        txt = htmlResultString;
-        start = txt.indexOf("Temperatura:");
-        start = txt.indexOf("<strong>", start);
-        txt = txt.substring(start + 8);
-        end = txt.indexOf("</strong>");
-        txt = txt.substring(0, end);
-        meteoStationData.temperature = Double.valueOf(txt.trim());
+        // date
+        String txt = rightOfKeywords(htmlResultString, "Dati aggiornati il");
+        String val = findBetweenKeywords(txt, "<strong>", "</strong>");
+        String date = "";
+        if (val != null)
+            date = val.trim();
 
-        txt = htmlResultString;
-        start = txt.indexOf("Pressione:");
-        start = txt.indexOf("<strong>", start);
-        txt = txt.substring(start + 8);
-        end = txt.indexOf("</strong>");
-        txt = txt.substring(0, end);
-        meteoStationData.pressure = Double.valueOf(txt.trim());
+        // time
+        txt = rightOfKeywords(htmlResultString, "alle ore");
+        val = findBetweenKeywords(txt, "<strong>", "</strong>");
+        String time = "";
+        if (val != null) {
+            val = val.replace(".",":");
+            time = val.trim();
+        }
 
-        txt = htmlResultString;
-        start = txt.indexOf("Umidit&agrave;:");
-        start = txt.indexOf("<strong>", start);
-        txt = txt.substring(start + 8);
-        end = txt.indexOf("</strong>");
-        txt = txt.substring(0, end);
-        meteoStationData.humidity = Double.valueOf(txt.trim());
+        // direction
+        txt = rightOfKeywords(htmlResultString, "direzione");
+        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
+        val = findBetweenKeywords(val, "http://www.wcv.it/ws2files/", ".png");
+        if (val != null) {
+            meteoStationData.direction = val.trim();
+            meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
+        }
+        //speed
+        txt = rightOfKeywords(txt, "attuale");
+        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
+        if (val != null)
+            meteoStationData.speed = Double.valueOf(val.trim());
 
-        txt = htmlResultString;
-        start = txt.indexOf("Rain Rate:");
-        start = txt.indexOf("<strong>", start);
-        txt = txt.substring(start + 8);
-        end = txt.indexOf("</strong>");
-        txt = txt.substring(0, end);
-        meteoStationData.rainrate = Double.valueOf(txt.trim().replace(',', '.'));
+        //average speed
+        txt = rightOfKeywords(txt, "media");
+        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
+        if (val != null)
+            meteoStationData.averagespeed = Double.valueOf(val.trim());
 
-        txt = htmlResultString;
-        start = txt.indexOf("Velocit&agrave; del vento:");
-        start = txt.indexOf("img src=\"ws2files/", start);
-        txt = txt.substring(start + 18);
-        end = txt.indexOf(".gif\"></div>");
-        txt = txt.substring(0, end);
-        meteoStationData.direction = txt.trim();
+        // temperature
+        txt = rightOfKeywords(txt, "temp");
+        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
+        if (val != null)
+            meteoStationData.temperature = Double.valueOf(val.trim());
 
-        meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
+        // humidity
+        txt = rightOfKeywords(txt, "umidit");
+        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
+        if (val != null)
+            meteoStationData.humidity = Double.valueOf(val.trim());
 
-        txt = htmlResultString;
-        keyword = "Velocit&agrave; media:";
-        start = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        keyword = "<span class=\"avgvento\">";
-        start = txt.indexOf(keyword, start);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(start + 23);
-        keyword = "</span>";
-        end = txt.indexOf(keyword);
-        if (start == -1)
-            LOGGER.severe(txt + " not found " + keyword);
-        txt = txt.substring(0, end);
-        meteoStationData.averagespeed = Double.valueOf(txt.trim().replace(',', '.'));
+        // pressure
+        txt = rightOfKeywords(txt, "pressione");
+        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
+        if (val != null)
+            meteoStationData.pressure = Double.valueOf(val.trim());
 
-        txt = htmlResultString;
-        start = txt.indexOf("Dati aggiornati il ");
-        start = txt.indexOf("<strong>", start);
-        txt = txt.substring(start + 8);
-        end = txt.indexOf("</strong>");
-        txt = txt.substring(0, end);
-        String date = txt.trim();
+        // pioggia
+        txt = rightOfKeywords(txt, "pioggia");
+        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
+        if (val != null)
+            meteoStationData.rainrate = Double.valueOf(val.trim());
 
-        txt = htmlResultString;
-        start = txt.indexOf("alle ore ");
-        start = txt.indexOf("<strong>", start);
-        txt = txt.substring(start + 8);
-        end = txt.indexOf("</strong>");
-        txt = txt.substring(0, end);
-        txt = txt.trim();
-        txt = txt.replace(".", ":");
-        String time = txt;
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         try {

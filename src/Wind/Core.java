@@ -36,6 +36,10 @@ public class Core {
     private static String version = "0.11";
 
     public static String getUser() {
+
+        if (appDNS_envVar == null)
+            return "root";
+
         if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
             return "adminzdVX5dl";
         else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
@@ -47,9 +51,9 @@ public class Core {
     }
 
     public static String getPassword() {
-        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT))
+        if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFT))
             return "eEySMcJ6WCj4";
-        else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
+        else if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))
             return "xX1MAIXQLLHq";
             //return "MhbY-61ZlqU4";
         else
@@ -58,9 +62,13 @@ public class Core {
     }
 
     public static String getDbUrl() {
-        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) { // production
+
+        if (appDNS_envVar == null)
+            return "jdbc:mysql://127.0.0.1:3306/windalarm";
+
+        if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFT)) { // production
             return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "";
-        } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) { // test
+        } else if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) { // test
             return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "windalarm";
             //return "jdbc:mysql://" + mysqlDBHost_envVar + ":" + mysqlDBPort_envVar + "/" + "jbossews";
         }
@@ -70,18 +78,18 @@ public class Core {
     }
 
     public static String getTmpDir() {
-        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
+        if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
             return tmpDir_envVar;
-        } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
+        } else if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
             return tmpDir_envVar;
         } else
             return "c:\\scratch";
     }
 
     public static String getDataDir() {
-        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
+        if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
             return dataDir_envVar;
-        } else if (appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
+        } else if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
             return dataDir_envVar;
         } else
             return "c:\\scratch";
@@ -158,7 +166,7 @@ public class Core {
 
         final String dateInString;// = df.format(date);
 
-        if (appDNS_envVar.equals(APP_DNS_OPENSHIFT) || appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
+        if (appDNS_envVar != null && (appDNS_envVar.equals(APP_DNS_OPENSHIFT) || appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST))) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
             cal.add(Calendar.HOUR_OF_DAY, 6); //minus number would decrement the datetimes
