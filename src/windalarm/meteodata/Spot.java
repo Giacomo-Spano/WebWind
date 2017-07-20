@@ -5,6 +5,7 @@ package windalarm.meteodata;
  */
 public class Spot {
     protected String name;
+    protected String shortname;
     protected long id;
     protected String webcamUrl;
     protected String webcamUrl2;
@@ -43,6 +44,14 @@ public class Spot {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getShortName() {
+        return shortname;
+    }
+
+    public void setShortName(String name) {
+        this.shortname = name;
     }
 
     public String getWebcamUrl(int index) {

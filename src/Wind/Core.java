@@ -3,6 +3,9 @@ package Wind;
 import Wind.data.*;
 import Wind.notification.PushNotificationThread;
 import com.google.android.gcm.server.Message;
+import org.telegram.telegrambots.ApiContextInitializer;
+import org.telegram.telegrambots.TelegramBotsApi;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 import windalarm.meteodata.*;
 
 import java.io.BufferedReader;
@@ -201,10 +204,7 @@ public class Core {
         return alarmModel.getTrend(spotID, startDate, endDate);
     }
 
-    public static MeteoStationData getLastfromID(long id) {
 
-        return alarmModel.getLastfromID(id);
-    }
 
     public static List<MeteoStationData> getLastFavorites(String personid) {
 
@@ -227,13 +227,50 @@ public class Core {
         for (PullData spot : list) {
             alarmModel.addSpotData(spot);
         }
+
+        instantiateBOT();
+    }
+
+    public void instantiateBOT() {
+        // TODO Initialize Api Context
+        ApiContextInitializer.init();
+
+        // TODO Instantiate Telegram Bots API
+        TelegramBotsApi botsApi = new TelegramBotsApi();
+
+        // TODO Register our bot
+        try {
+            botsApi.registerBot(new MyAmazingBot());
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Spot getSpotFromID(long id) {
 
-        int index = alarmModel.getIndexFromID(id);
+        int index = alarmModel.getIndexFromSpotId(id);
         if (index < 0) return null;
         return alarmModel.getSpotList().get(index);
+    }
+
+    public static MeteoStationData getLastMeteoData(long spotid) {
+
+        return alarmModel.getLastMeteodatafromSpotId(spotid);
+    }
+
+    /*public static MeteoStationData getLastfromID(long id) {
+
+        return alarmModel.getLastMeteodatafromSpotId(id);
+    }*/
+
+
+    public static Spot getSpotFromShortName(String shortname) {
+
+        for (Spot spot : alarmModel.getSpotList()) {
+            if (spot.getShortName().equalsIgnoreCase(shortname))
+                return spot;
+        }
+        return null;
     }
 
     private static final String CONTENT_TYPE = "text/html; charset=windows-1252";
@@ -246,6 +283,7 @@ public class Core {
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         Calendar cal = Calendar.getInstance();
 
+        /*
         try {
             meteocentralech m = new meteocentralech();
             ArrayList<CHMeteoForecast> list = m.getMeteoData(meteocentralech.LUGANO);
@@ -266,7 +304,7 @@ public class Core {
             sendForecastToWorksheet(list, dateFormat.format(cal.getTime()), "Valmadrera");
         } catch (Exception e) {
             LOGGER.severe("cannot get data for meteo valmadrera");
-        }
+        }*/
     }
 
 

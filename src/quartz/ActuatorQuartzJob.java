@@ -26,8 +26,7 @@ public class ActuatorQuartzJob implements Job {
 
             ServletContext servletContext = (ServletContext) context.getMergedJobDataMap().get("servletContext");
             Core core = (Core)servletContext.getAttribute(QuartzListener.CoreClass);
-            core.updateMeteoData();;
-            //core.mPrograms.checkProgram();
+            core.updateMeteoData();
 
         } catch (Exception e) {
 

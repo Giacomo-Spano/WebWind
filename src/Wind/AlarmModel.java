@@ -114,7 +114,7 @@ public class AlarmModel {
 
     public boolean Add(MeteoStationData md, long spotID) {
 
-        int index = getIndexFromID(spotID);
+        int index = getIndexFromSpotId(spotID);
         if (index < 0) return false;
 
         meteoHistory.get(index).add(md);
@@ -137,9 +137,9 @@ public class AlarmModel {
         LOGGER.info("<---evaluate ALARMS");
     }
 
-    public MeteoStationData getLastfromID(long id) {
+    public MeteoStationData getLastMeteodatafromSpotId(long spotid) {
 
-        int index = getIndexFromID(id);
+        int index = getIndexFromSpotId(spotid);
         if (index < 0 || index >= meteoHistory.size()) return null;
 
         int len = meteoHistory.get(index).size();
@@ -147,7 +147,7 @@ public class AlarmModel {
 
         MeteoStationData md = meteoHistory.get(index).get(len - 1);
 
-        Spot spot = Core.getSpotFromID(id);
+        Spot spot = Core.getSpotFromID(spotid);
         if (spot.getOffline())
             md.offline = true;
 
@@ -160,7 +160,7 @@ public class AlarmModel {
         return list;
     }
 
-    public int getIndexFromID(long spotID) {
+    public int getIndexFromSpotId(long spotID) {
 
         for (int i = 0; i < mSpotDataList.size(); i++) {
             if (mSpotDataList.get(i).getSpotId() == spotID)

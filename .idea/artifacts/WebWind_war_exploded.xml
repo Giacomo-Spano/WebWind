@@ -10,6 +10,8 @@
           <element id="library" level="project" name="org.json-20120521" />
           <element id="library" level="project" name="quartz-jobs-2.2.2" />
           <element id="library" level="project" name="gcm-server" />
+          <element id="library" level="project" name="telegrambots-3.1.2-jar-with-dependencies" />
+          <element id="library" level="project" name="emoji-java-3.2.0" />
         </element>
       </element>
       <element id="javaee-facet-resources" facet="WebWind/web/Web" />

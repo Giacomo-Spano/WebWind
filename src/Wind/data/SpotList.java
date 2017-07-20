@@ -66,6 +66,7 @@ public class SpotList {
 
             spot.setSpotId(rs.getInt("id"));
             spot.setName(rs.getString("name"));
+            spot.setShortName(rs.getString("shortname"));
             spot.setMeteodataUrl(rs.getString("meteodataurl"));
             spot.setSourceUrl(rs.getString("sourceurl"));
             spot.setWebcamUrl(1,rs.getString("webcamurl"));

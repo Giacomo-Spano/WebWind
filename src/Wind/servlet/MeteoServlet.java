@@ -265,7 +265,7 @@ public class MeteoServlet extends HttpServlet {
 
             ArrayList<PullData> sl = Core.getSpotList();
             for (int i = 0; i < sl.size(); i++) {
-                MeteoStationData md = Core.getLastfromID(sl.get(i).getSpotId());
+                MeteoStationData md = Core.getLastMeteoData(sl.get(i).getSpotId());
                 if (md != null)
                     mdList.add(md);
             }
@@ -275,7 +275,7 @@ public class MeteoServlet extends HttpServlet {
             if (l != null) {
                 for (int i = 0; i < l.length; i++) {
                     int id = Integer.valueOf(l[i]);
-                    MeteoStationData md = Core.getLastfromID(id);
+                    MeteoStationData md = Core.getLastMeteoData(id);
                     if (md != null)
                         mdList.add(md);
                 }
@@ -375,7 +375,7 @@ public class MeteoServlet extends HttpServlet {
             str += "\"webcamurl3\" : " + "\"" + spot.getWebcamUrl(3) + "\"";
 
             if (fullInfoRequest) {
-                MeteoStationData meteoStationData = Core.getLastfromID(spot.getSpotId());
+                MeteoStationData meteoStationData = Core.getLastMeteoData(spot.getSpotId());
                 if (meteoStationData != null) {
                     str += ",";
                     SimpleDateFormat df = new SimpleDateFormat("DD/MM/YYY HH:mm:ss");

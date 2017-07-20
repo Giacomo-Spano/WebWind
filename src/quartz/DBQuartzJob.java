@@ -26,8 +26,8 @@ public class DBQuartzJob implements Job {
 
             ServletContext servletContext = (ServletContext) context.getMergedJobDataMap().get("servletContext");
             Core core = (Core)servletContext.getAttribute(QuartzListener.CoreClass);
-            core.pullForecastData();
-            //core.mPrograms.checkProgram();
+            //core.pullForecastData();
+
 
         } catch (Exception e) {
 

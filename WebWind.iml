@@ -26,5 +26,7 @@
     <orderEntry type="library" name="Java EE 6-Java EE 6" level="project" />
     <orderEntry type="library" name="Java EE 6-Java EE 6 (2)" level="project" />
     <orderEntry type="library" name="Java EE 6-Java EE 6 (3)" level="project" />
+    <orderEntry type="library" name="telegrambots-3.1.2-jar-with-dependencies" level="project" />
+    <orderEntry type="library" name="emoji-java-3.2.0" level="project" />
   </component>
 </module>
