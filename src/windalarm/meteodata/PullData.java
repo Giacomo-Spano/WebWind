@@ -69,6 +69,10 @@ public abstract class PullData extends Spot {
     }
 
     public String getHTMLPage(String url) {
+        return getHTMLPage(url,false);
+    }
+
+    public String getHTMLPage(String url, boolean withNewLine) {
 
         String htmlResultString = "";
 
@@ -85,6 +89,8 @@ public abstract class PullData extends Spot {
             htmlResultString = "";
             while ((line = rd.readLine()) != null) {
                 htmlResultString += line;
+                if (withNewLine)
+                    htmlResultString += "\n";
             }
             reader.close();
 

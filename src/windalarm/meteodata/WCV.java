@@ -1,12 +1,13 @@
 package windalarm.meteodata;
 
 
-import Wind.AlarmModel;
 import Wind.Core;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Scanner;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
@@ -23,91 +24,67 @@ public class WCV extends PullData {
 
         LOGGER.info("getMeteoData: spotName=" + name);
 
-        String htmlResultString = getHTMLPage(meteodataUrl/*"http://www.wcv.it/news.php"*/);
-        if (htmlResultString == null)
-            return null;
-        MeteoStationData meteoStationData = new MeteoStationData();
-
+        MeteoStationData md = new MeteoStationData();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         Calendar cal = Calendar.getInstance();
-        meteoStationData.sampledatetime = Core.getDate();//dateFormat.format(cal.getTime());
+        md.sampledatetime = Core.getDate();//dateFormat.format(cal.getTime());
 
+        SimpleDateFormat todayFormat = new SimpleDateFormat("yyyyMMdd");
+        String htmlResultString = getHTMLPage(meteodataUrl+todayFormat.format(md.sampledatetime) + ".txt",true);
+        if (htmlResultString == null)
+            return null;
 
-        // date
-        String txt = rightOfKeywords(htmlResultString, "Dati aggiornati il");
-        String val = findBetweenKeywords(txt, "<strong>", "</strong>");
-        String date = "";
-        if (val != null)
-            date = val.trim();
+        String line = "";
+        Scanner scanner = new Scanner(htmlResultString);
+        while (scanner.hasNextLine()) {
+            line = scanner.nextLine();
+        }
+        scanner.close();
+        if (line != null && !line.equals("")) {
+            // process the line
+            String[] fields = line.split(",");
+            int id = Integer.parseInt(fields[0]);
+            md.speed = Double.parseDouble(fields[1]);
+            md.averagespeed = Double.parseDouble(fields[2]);
+            //md.directionangle = Double.parseDouble(fields[3]);
+            md.direction = fields[4];
+            md.directionangle = md.getAngleFromDirectionSymbol(md.direction);
+            String time = fields[5];
+            md.temperature = Double.parseDouble(fields[6]);
+            md.rainrate = Double.parseDouble(fields[7]);
 
-        // time
-        txt = rightOfKeywords(htmlResultString, "alle ore");
-        val = findBetweenKeywords(txt, "<strong>", "</strong>");
-        String time = "";
-        if (val != null) {
-            val = val.replace(".",":");
-            time = val.trim();
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+            try {
+                md.datetime = md.sampledatetime;
+                Date date = timeFormat.parse(time);
+                Calendar cal2 = Calendar.getInstance();
+                cal2.setTime(date);
+                cal.set(Calendar.HOUR_OF_DAY,cal2.get(Calendar.HOUR_OF_DAY));
+                cal.set(Calendar.MINUTE,cal2.get(Calendar.MINUTE));
+                cal.set(Calendar.SECOND,0);
+                md.datetime = cal.getTime();
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            MeteoStationData lastMeteoData = Core.getLastMeteoData(getSpotId());
+            if (lastMeteoData != null) {
+
+                String lastTime = timeFormat.format(lastMeteoData.datetime);
+                if (lastTime.equals(time))
+                    return null;
+            }
         }
 
-        // direction
-        txt = rightOfKeywords(htmlResultString, "direzione");
-        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
-        val = findBetweenKeywords(val, "http://www.wcv.it/ws2files/", ".png");
-        if (val != null) {
-            meteoStationData.direction = val.trim();
-            meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
-        }
-        //speed
-        txt = rightOfKeywords(txt, "attuale");
-        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
-        if (val != null)
-            meteoStationData.speed = Double.valueOf(val.trim());
 
-        //average speed
-        txt = rightOfKeywords(txt, "media");
-        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
-        if (val != null)
-            meteoStationData.averagespeed = Double.valueOf(val.trim());
-
-        // temperature
-        txt = rightOfKeywords(txt, "temp");
-        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
-        if (val != null)
-            meteoStationData.temperature = Double.valueOf(val.trim());
-
-        // humidity
-        txt = rightOfKeywords(txt, "umidit");
-        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
-        if (val != null)
-            meteoStationData.humidity = Double.valueOf(val.trim());
-
-        // pressure
-        txt = rightOfKeywords(txt, "pressione");
-        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
-        if (val != null)
-            meteoStationData.pressure = Double.valueOf(val.trim());
-
-        // pioggia
-        txt = rightOfKeywords(txt, "pioggia");
-        val = findBetweenKeywords(txt, "<span class=\"td_value\">", "</span>");
-        if (val != null)
-            meteoStationData.rainrate = Double.valueOf(val.trim());
-
-
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        try {
-            meteoStationData.datetime = formatter.parse(date + " " + time);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-       long difference = meteoStationData.datetime.getTime() - meteoStationData.sampledatetime.getTime();
+       long difference = md.datetime.getTime() - md.sampledatetime.getTime();
         if (difference / 1000 / 60 > 60)
            offline = true;
         else
            offline = false;
 
-        return meteoStationData;
+        return md;
     }
 }

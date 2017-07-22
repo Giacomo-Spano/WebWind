@@ -2,7 +2,9 @@ package Wind;
 
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.api.objects.Chat;
 import org.telegram.telegrambots.api.objects.File;
+import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
@@ -65,22 +67,44 @@ public class MyAmazingBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
 
-        if (update.hasMessage() && update.getMessage().isCommand()){
+        if (!update.hasMessage())
+            return;
+        Message updateMessage = update.getMessage();
+
+        TelegramDataLog datalog = new TelegramDataLog();
+        TelegramUser  users = new TelegramUser();
+        long userid = updateMessage.getChatId();
+        Chat chat = updateMessage.getChat();
+        String firstname = chat.getFirstName();
+        String lastname = chat.getLastName();
+        String username = chat.getUserName();
+        users.insert(userid,firstname,lastname,username);
+
+        if (updateMessage.isCommand()){
+
+
             String command = update.getMessage().getEntities().get(0).getText();
             if(command.equalsIgnoreCase("/start"/*START_COMMAND*/)){ // "/start" string
+
+                datalog.writelog(command, updateMessage.getChatId(),updateMessage.getText());
+
                 sendResponse("Hi, Nice to meet you!" , update.getMessage().getChatId().toString());
-            } else if (command.equalsIgnoreCase("/valma"/*START_COMMAND*/) || command.equalsIgnoreCase("/valmadrera"/*START_COMMAND*/)){ // "/valma" string
+            } else if (command.equalsIgnoreCase("/valma"/*START_COMMAND*/)
+                    || command.equalsIgnoreCase("/valma2"/*START_COMMAND*/)){ // "/valma" string
+
+                datalog.writelog(command, updateMessage.getChatId(),updateMessage.getText());
                 sendMeteodata(command , update.getMessage().getChatId());
-
                 //sendPhoto(update.getMessage().getChatId());
-
             }
-        } else if (update.hasMessage() && update.getMessage().hasText()) { // We check if the update has a message and the message has text
+        } else if (updateMessage.hasText()) { // We check if the update has a message and the message has text
             SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
                     .setChatId(update.getMessage().getChatId())
                     .setText("risposta: " + smile_emoji + update.getMessage().getText());
 
             setButtons(message);
+
+            datalog.writelog("message", updateMessage.getChatId(),updateMessage.getText());
+
 
             try {
                 sendMessage(message); // Call method to send the message
@@ -111,6 +135,9 @@ public class MyAmazingBot extends TelegramLongPollingBot {
 
         try {
             sendMessage(response); // Call method to send the message
+
+            TelegramDataLog datalog = new TelegramDataLog();
+            datalog.writelog("sendmeteodata", chatid,message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -132,6 +159,10 @@ public class MyAmazingBot extends TelegramLongPollingBot {
 
         try {
             sendPhoto(photo); // Call method to send the message
+
+            TelegramDataLog datalog = new TelegramDataLog();
+            datalog.writelog("sendphoto", chatid,filepath);
+
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -199,8 +230,10 @@ public class MyAmazingBot extends TelegramLongPollingBot {
             avspeed += md.averagespeed;
 
             if (count > 0) direction += ",";
-            direction += md.directionangle * maxspeed / 360.0;
+            double val = md.directionangle * maxspeed / 360.0;
+            val = Math.floor(val * 100) / 100;
 
+            direction += val;
             count++;
         }
 
@@ -217,20 +250,31 @@ public class MyAmazingBot extends TelegramLongPollingBot {
 
         String str = "";
         String chd = "&chd=t:" + xserie + "|" + speed + "|" + xserie + "|" + avspeed + "|" + xserie + "|" + direction;
-        String chs = "&chs=700x250";
-        String chg = "&chg=10,10";
+        String chs = "&chs=600x300";
+        String chg = "&chg=15,10";
         //String chxl = "&chxl=0:|Freezing|C|kk|kk|Hot|2:|S|E|N|O|";
-        String chxl = "&chxl=0:" + times + "2:|E|N|O|S|";
+        String chxl = "&chxl=0:" + times + "2:|km/h|"+ "3:|E|N|O|S|";
+        String chxp = "&chxp=|2,50|";
+        String chdl = "&chdl=vel|media|dir";
+        //chdl=NASDAQ|FTSE100|DOW
+        String chco = "&chco=FF0000,00FF00,0000FF";
+        String chdlp= "&chdlp=t";
+        String chma = "&chma=20,0,30,0";
 
         //String sourceimage = "https://chart.googleapis.com/chart?chxt=x,y,r&chds=a&cht=lxy&chco=FF0000,00FF00,0000FF&chd=t:0.0,2.0,4.0,7.0,9.0,11.0,16.0,18.0,20.0,22.0,25.0,27.0,30.0,31.0,34.0,36.0,39.0,40.0,43.0,45.0,48.0,50.0,52.0,54.0,57.0,59.0,61.0,63.0,66.0,68.0,69.0,72.0,75.0,77.0,80.0,81.0,84.0,86.0,89.0,90.0,93.0,95.0,98.0,100.0|0.0,0.0,0.0,0.0,0.0,1.7,0.0,0.0,0.0,1.7,0.0,3.1,1.7,0.0,0.0,0.0,0.0,1.7,0.0,1.7,0.0,1.7,1.7,3.1,1.7,1.7,0.0,0.0,0.0,0.0,1.7,0.0,1.7,0.0,0.0,0.0,0.0,1.7,0.0,0.0,0.0,0.0,0.0,0.0|0.0,2.0,4.0,7.0,9.0,11.0,16.0,18.0,20.0,22.0,25.0,27.0,30.0,31.0,34.0,36.0,39.0,40.0,43.0,45.0,48.0,50.0,52.0,54.0,57.0,59.0,61.0,63.0,66.0,68.0,69.0,72.0,75.0,77.0,80.0,81.0,84.0,86.0,89.0,90.0,93.0,95.0,98.0,100.0|1.7,1.7,1.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.7,1.7,1.7,1.7,1.7,1.7,0.0,0.0,0.0,1.7,1.7,1.7,1.7,1.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0&chs=700x250&chg=10,10&chxl=0:|Freezing|C|kk|kk|Hot|2:|S|E|N|O|";
 
         //String chd = "&chd=t:0.0,2.0,4.0,7.0,9.0,11.0,16.0,18.0,20.0,22.0,25.0,27.0,30.0,31.0,34.0,36.0,39.0,40.0,43.0,45.0,48.0,50.0,52.0,54.0,57.0,59.0,61.0,63.0,66.0,68.0,69.0,72.0,75.0,77.0,80.0,81.0,84.0,86.0,89.0,90.0,93.0,95.0,98.0,100.0|0.0,0.0,0.0,0.0,0.0,1.7,0.0,0.0,0.0,1.7,0.0,3.1,1.7,0.0,0.0,0.0,0.0,1.7,0.0,1.7,0.0,1.7,1.7,3.1,1.7,1.7,0.0,0.0,0.0,0.0,1.7,0.0,1.7,0.0,0.0,0.0,0.0,1.7,0.0,0.0,0.0,0.0,0.0,0.0|0.0,2.0,4.0,7.0,9.0,11.0,16.0,18.0,20.0,22.0,25.0,27.0,30.0,31.0,34.0,36.0,39.0,40.0,43.0,45.0,48.0,50.0,52.0,54.0,57.0,59.0,61.0,63.0,66.0,68.0,69.0,72.0,75.0,77.0,80.0,81.0,84.0,86.0,89.0,90.0,93.0,95.0,98.0,100.0|1.7,1.7,1.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.7,1.7,1.7,1.7,1.7,1.7,0.0,0.0,0.0,1.7,1.7,1.7,1.7,1.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0";
 
-        String sourceimage = "https://chart.googleapis.com/chart?chxt=x,y,r&chds=a&cht=lxy&chco=FF0000,00FF00,0000FF" +
+        String sourceimage = "https://chart.googleapis.com/chart?chxt=x,y,y,r&chds=a&cht=lxy" +
+                chco +
+                chdl +
+                chdlp +
+                chma +
                 chd +
                 chs +
                 chg +
-                chxl;
+                chxl +
+                chxp;
                 //"&chs=700x250&chg=10,10&chxl=0:|Freezing|C|kk|kk|Hot|2:|S|E|N|O|";
 
 

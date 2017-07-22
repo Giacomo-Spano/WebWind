@@ -18,9 +18,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -45,10 +47,43 @@ public class Core {
 
     static  boolean production = false;
 
+    private static List<TelegramUser> telegramUsers; // = new ArrayList<TelegramUser>();
+
     public static boolean isProduction() {
 
         return production;
     }
+
+    private void readTelegramUsers() {
+        LOGGER.info(" readTelegramUsers");
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+            String sql;
+            sql = "SELECT * FROM telegramusers";
+            ResultSet rs = stmt.executeQuery(sql);
+            telegramUsers = new ArrayList<>();
+            while (rs.next()) {
+                TelegramUser user = new TelegramUser();
+                user.chatid = rs.getInt("id");
+                user.firstName = rs.getString("firstname");
+                user.lastName = rs.getString("lastname");
+                user.userName = rs.getString("username");
+                if (user != null)
+                    telegramUsers.add(user);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException se) {
+            se.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static String getUser() {
 
