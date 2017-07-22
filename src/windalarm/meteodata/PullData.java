@@ -51,15 +51,17 @@ public abstract class PullData extends Spot {
         }
 
         try {
-
+            String filepath = System.getenv("tmp") + "/";
             if (webcamUrl != "") {
-                getWebcamImage(webcamUrl, "" + id + "webcam");
+
+                //  filepath = System.getProperty("java.io.tmpdir") + "/" + imageName + ".jpg";
+                Core.getImage(webcamUrl, filepath + id + "webcam.jpg");
             }
             if (webcamUrl2 != "") {
-                getWebcamImage(webcamUrl2, "" + id + "webcam2");
+                Core.getImage(webcamUrl2, filepath + id + "webcam2.jpg");
             }
             if (webcamUrl3 != "") {
-                getWebcamImage(webcamUrl3, "" + id + "webcam3");
+                Core.getImage(webcamUrl3, filepath + id + "webcam3.jpg");
             }
         } catch (Exception e) {
             LOGGER.severe("cannot get webcam for spot " + name + "(" + id + ")");
@@ -103,7 +105,7 @@ public abstract class PullData extends Spot {
         return null;
     }
 
-    public static void getWebcamImage(String imagepath, String imageName) {
+    /*public static void getWebcamImage(String imagepath, String imageName) {
 
         try {
             BufferedImage bufferedImage;
@@ -127,7 +129,7 @@ public abstract class PullData extends Spot {
             LOGGER.severe("Debug - IOException error: " + ioe.toString());
             return;
         }
-    }
+    }*/
 
     protected String findBetweenKeywords(String txt, String startKeyword, String endKeyword) {
 

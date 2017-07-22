@@ -8,7 +8,11 @@ import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import windalarm.meteodata.*;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -17,6 +21,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -37,6 +42,13 @@ public class Core {
     protected static String tmpDir_envVar;
     protected static String dataDir_envVar;
     private static String version = "0.11";
+
+    static  boolean production = false;
+
+    public static boolean isProduction() {
+
+        return production;
+    }
 
     public static String getUser() {
 
@@ -81,12 +93,13 @@ public class Core {
     }
 
     public static String getTmpDir() {
-        if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
+        /*if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
             return tmpDir_envVar;
         } else if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
             return tmpDir_envVar;
-        } else
-            return "c:\\scratch";
+        } else*/
+            return System.getenv("tmp");
+            //return System.getProperty("java.io.tmpdir");
     }
 
     public static String getDataDir() {
@@ -95,7 +108,8 @@ public class Core {
         } else if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
             return dataDir_envVar;
         } else
-            return "c:\\scratch";
+            //return "c:\\scratch";
+            return System.getProperty("java.io.tmpdir");
     }
 
     private static AlarmModel alarmModel = new AlarmModel();
@@ -113,6 +127,13 @@ public class Core {
         mysqlDBPort_envVar = System.getenv("OPENSHIFT_MYSQL_DB_PORT");
         tmpDir_envVar = System.getenv("OPENSHIFT_TMP_DIR");
         dataDir_envVar = System.getenv("OPENSHIFT_DATA_DIR");
+
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        if (tmpDir.equals("C:\\Program Files\\Apache Software Foundation\\Tomcat 9.0\\temp")  ||
+                tmpDir.equals("C:\\Program Files\\Apache Software Foundation\\Tomcat 7.0\\temp"))
+            production = false;
+        else
+            production = true;
     }
 
     public static void sendPushNotification(int deviceId, Message notification) {
@@ -211,7 +232,7 @@ public class Core {
         return alarmModel.getLastFavorites(personid);
     }
 
-    public static List<MeteoStationData> getHistory(int spotID, Date start, Date end, long windId) {
+    public static List<MeteoStationData> getHistory(long spotID, Date start, Date end, long windId) {
         return alarmModel.getHistory(spotID, start, end, windId);
     }
 
@@ -312,6 +333,44 @@ public class Core {
 
         alarmModel.pullForecastData();
 
+    }
+
+    public static boolean getImage(String imagepath, String imageName) {
+
+        try {
+            BufferedImage bufferedImage;
+
+            URL imageUrl = new URL(imagepath);
+            System.setProperty("java.io.tmpdir", Core.getTmpDir());
+            ImageIO.setUseCache(false);
+            bufferedImage = ImageIO.read(imageUrl);
+
+            // create a blank, RGB, same width and height, and a white background
+            BufferedImage newBufferedImage = new BufferedImage(bufferedImage.getWidth(),
+                    bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+            newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0, Color.WHITE, null);
+
+            String path = imageName;
+
+            //if(!Core.isProduction())
+                //path = System.getenv("tmp") + "/" + imageName + ".jpg";
+            //else
+              //  tmpDir = System.getProperty("java.io.tmpdir");
+
+
+            boolean res = ImageIO.write(newBufferedImage, "jpg", new File(path));
+            return res;
+
+        } catch (MalformedURLException ex) {
+            LOGGER.severe("Debug - MalformedURLException error: " + ex.toString());
+            return false;
+        } catch (IOException ioe) {
+            LOGGER.severe("Debug - IOException error: " + ioe.toString());
+            return false;
+        } catch (Exception e) {
+            LOGGER.severe("Debug - Exception error: " + e.toString());
+            return false;
+        }
     }
 
     public static void sendData(MeteoStationData meteoData, long spotID) {
