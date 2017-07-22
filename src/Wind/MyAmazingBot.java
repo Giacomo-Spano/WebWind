@@ -257,7 +257,7 @@ public class MyAmazingBot extends TelegramLongPollingBot {
         String chxp = "&chxp=|2,50|";
         String chdl = "&chdl=vel|media|dir";
         //chdl=NASDAQ|FTSE100|DOW
-        String chco = "&chco=FF0000,000000,00FF00";
+        String chco = "&chco=FF0000,000000,00FF00"; //fff
         String chdlp= "&chdlp=t";
         String chma = "&chma=20,0,30,0";
 
