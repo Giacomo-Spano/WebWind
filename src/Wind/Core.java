@@ -93,12 +93,13 @@ public class Core {
     }
 
     public static String getTmpDir() {
-        /*if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFT)) {
-            return tmpDir_envVar;
-        } else if (appDNS_envVar != null && appDNS_envVar.equals(APP_DNS_OPENSHIFTTEST)) {
-            return tmpDir_envVar;
-        } else*/
-            return System.getenv("tmp");
+        String tmpDir;
+        if(!Core.isProduction())
+            tmpDir = System.getenv("tmp");
+        else
+            tmpDir = System.getProperty("java.io.tmpdir");
+        return tmpDir;
+            //return System.getenv("tmp");
             //return System.getProperty("java.io.tmpdir");
     }
 
@@ -128,12 +129,17 @@ public class Core {
         tmpDir_envVar = System.getenv("OPENSHIFT_TMP_DIR");
         dataDir_envVar = System.getenv("OPENSHIFT_DATA_DIR");
 
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        if (tmpDir.equals("C:\\Program Files\\Apache Software Foundation\\Tomcat 9.0\\temp")  ||
-                tmpDir.equals("C:\\Program Files\\Apache Software Foundation\\Tomcat 7.0\\temp"))
+        String tmp = System.getProperty("java.io.tmpdir");
+        LOGGER.info("DEBUG - tmpDir = " + tmp);
+        if (tmp.equals("C:\\Program Files\\Apache Software Foundation\\Tomcat 9.0\\temp")  ||
+                tmp.equals("C:\\Program Files\\Apache Software Foundation\\Tomcat 7.0\\temp"))
             production = false;
         else
             production = true;
+
+        LOGGER.info("CREATING Core class - DEBUGGGGGGG");
+        //String tmpDir = System.getProperty("java.io.tmpdir");
+        String tmpDir = getTmpDir();
     }
 
     public static void sendPushNotification(int deviceId, Message notification) {
@@ -341,7 +347,7 @@ public class Core {
             BufferedImage bufferedImage;
 
             URL imageUrl = new URL(imagepath);
-            System.setProperty("java.io.tmpdir", Core.getTmpDir());
+            //System.setProperty("java.io.tmpdir", Core.getTmpDir());
             ImageIO.setUseCache(false);
             bufferedImage = ImageIO.read(imageUrl);
 
