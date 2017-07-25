@@ -90,10 +90,17 @@ public class MyAmazingBot extends TelegramLongPollingBot {
 
                 sendResponse("Hi, Nice to meet you!" , update.getMessage().getChatId().toString());
             } else if (command.equalsIgnoreCase("/valma"/*START_COMMAND*/)
-                    || command.equalsIgnoreCase("/valma2"/*START_COMMAND*/)){ // "/valma" string
+                    || command.equalsIgnoreCase("/sorico")
+                    || command.equalsIgnoreCase("/abbadia")
+                    || command.equalsIgnoreCase("/gera")
+                    || command.equalsIgnoreCase("/dervio")
+                    || command.equalsIgnoreCase("/dongo")
+                    || command.equalsIgnoreCase("/gravedona")
+                    || command.equalsIgnoreCase("/portopollo")
+                    || command.equalsIgnoreCase("/cremia"/*START_COMMAND*/)){ // "/valma" string
 
                 datalog.writelog(command, updateMessage.getChatId(),updateMessage.getText());
-                sendMeteodata(command , update.getMessage().getChatId());
+                sendMeteodata(command.replace("/","") , update.getMessage().getChatId());
                 //sendPhoto(update.getMessage().getChatId());
             }
         } else if (updateMessage.hasText()) { // We check if the update has a message and the message has text
@@ -116,7 +123,7 @@ public class MyAmazingBot extends TelegramLongPollingBot {
 
     private void sendMeteodata(String spotname, long chatid) {
 
-        Spot spot = Core.getSpotFromShortName(spotname.replace("/",""));
+        Spot spot = Core.getSpotFromShortName(spotname);
         if (spot == null) return;
         MeteoStationData md = Core.getLastMeteoData(spot.getSpotId());
         String message = "" + spot.getName() + "\n" +
