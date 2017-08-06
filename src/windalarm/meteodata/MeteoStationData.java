@@ -289,10 +289,10 @@ public class MeteoStationData {
 
             String sql;
             sql = "SELECT * FROM wind WHERE spotid=" + spotId
-                    + " AND datetime BETWEEN " + strStartDate + " and " + strEndDate;
+                    + " AND datetime BETWEEN " + strStartDate + " and " + strEndDate ;
             if ((long) lastWindId != -1)
                 sql += " AND id > " + lastWindId;
-            sql +=  " ;";
+            sql += " ORDER BY datetime ASC;";
 
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {

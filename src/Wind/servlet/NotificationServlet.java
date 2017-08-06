@@ -4,6 +4,8 @@ import Wind.AlarmModel;
 import Wind.Core;
 import Wind.data.Device;
 import com.google.android.gcm.server.Message;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -101,12 +103,23 @@ public class NotificationServlet extends HttpServlet {
             LOGGER.info("-regid: " + device.regId);
         }
 
-        Message notification = new Message.Builder()
+        JSONObject notification = new JSONObject();
+        try {
+            notification.put("title", title);
+            notification.put("body", message);
+            //notification.put("notificationtype", AlarmModel.NotificationType_Info);
+            //notification.put("spotName", "spotName");
+
+            Core.sendPushNotification(devices, notification, null);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        /*Message notification = new Message.Builder()
                 .addData("title", title)
                 .addData("message", message)
                 .addData("notificationtype", AlarmModel.NotificationType_Info)
                 .addData("spotName", "spotName")
-                .build();
-        Core.sendPushNotification(devices, notification);
+                .build();*/
+        //Core.sendPushNotification(devices, notification);
     }
 }

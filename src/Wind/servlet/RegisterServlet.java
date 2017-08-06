@@ -86,34 +86,32 @@ public class RegisterServlet extends HttpServlet {
 
         } else if (registerdevice != null && registerdevice.equals("true")) {
             String regId = getParameter(req, "regId");
-            String personId = getParameter(req, "personId");
+            /*String personId = getParameter(req, "personId");
             String personName = getParameter(req, "personName");
             String personEmail = getParameter(req, "personEmail");
             String personPhoto = getParameter(req, "personPhoto");
             String authCode = getParameter(req, "authCode");
 
-            int userid = Core.addUser(personId,personName,personEmail,authCode,personPhoto,authCode);
+            int userid = Core.addUser(personId,personName,personEmail,authCode,personPhoto,authCode);*/
 
             Device device = new Device();
             device.regId = regId;
             device.id = 0;
-            device.name = personId + "-" + getParameter(req, "name");
+            device.name = /*personId + "-" + */getParameter(req, "devicename");
             device.date = Core.getDate();
-            device.personId = personId;
+            device.personId = "";//personId;
             int deviceId = Core.addDevice(device);
 
             resp.setContentType("application/json");
             PrintWriter out;
             try {
                 out = resp.getWriter();
-                String str = "{\"deviceid\" : " + deviceId + ", \"userid\" : " + userid + " }";
+                String str = "{\"deviceid\" : " + deviceId + "}"; //", \"userid\" : " + userid + " }";
                 out.print(str);
                 out.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
             setSuccess(resp);
         }
     }

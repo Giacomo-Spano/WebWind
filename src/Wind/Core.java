@@ -3,6 +3,7 @@ package Wind;
 import Wind.data.*;
 import Wind.notification.PushNotificationThread;
 import com.google.android.gcm.server.Message;
+import org.json.JSONObject;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
@@ -177,18 +178,18 @@ public class Core {
         String tmpDir = getTmpDir();
     }
 
-    public static void sendPushNotification(int deviceId, Message notification) {
+    public static void sendPushNotification(int deviceId, JSONObject notification, JSONObject data) {
 
         LOGGER.info("sendPushNotification");
         //new PushNotificationThread(type,title,description,value).start();
-        new PushNotificationThread(deviceId, notification).start();
+        new PushNotificationThread(deviceId, notification, data).start();
 
         LOGGER.info("sendPushNotification sent");
     }
 
-    public static void sendPushNotification(List<Device> devices, Message notification) {
+    public static void sendPushNotification(List<Device> devices, JSONObject notification, JSONObject data) {
 
-        new PushNotificationThread(devices, notification).start();
+        new PushNotificationThread(devices, notification, data).start();
 
     }
 

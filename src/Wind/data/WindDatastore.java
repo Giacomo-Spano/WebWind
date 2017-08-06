@@ -392,8 +392,7 @@ public class WindDatastore {
                     Long minutesTimeDifference = (today.getTime() - lastRingDate.getTime()) / 1000 / 60;
                     if (minutesTimeDifference < 30) { // allarme già suonato da meno di 30 minuti
 
-                        if (alarm.snoozeMinutes == 0)
-                            continue; // se non è impostato snoozetime non suonare
+                        if (alarm.snoozeMinutes == 0) continue; // se non è impostato snoozetime non suonare
 
                         if (minutesTimeDifference < alarm.snoozeMinutes) {
                             continue;   // non suonare se non è ancora finito lo snooze time

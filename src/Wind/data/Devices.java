@@ -194,9 +194,9 @@ public class Devices {
 
             String sql;
 
-            sql = "INSERT INTO devices (regid, date, name, personid, lastupdate)" +
-                    " VALUES (" + "\"" + device.regId + "\"," + date + ",\"" + device.name + "\",\"" + device.personId + "\"," + date + ") " +
-                    "ON DUPLICATE KEY UPDATE lastupdate=" + date + ", personid=\"" + device.personId + "\";";
+            sql = "INSERT INTO devices (regid, date, name, lastupdate)" +
+                    " VALUES (" + "\"" + device.regId + "\"," + date + ",\"" + device.name + "\"," + date + ") " +
+                    "ON DUPLICATE KEY UPDATE lastupdate=" + date + ", name=\"" + device.name + "\";";
 
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);

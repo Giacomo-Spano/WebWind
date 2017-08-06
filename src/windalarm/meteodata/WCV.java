@@ -70,12 +70,14 @@ public class WCV extends PullData {
             }
 
             MeteoStationData lastMeteoData = Core.getLastMeteoData(getSpotId());
+
             if (lastMeteoData != null) {
 
                 String lastTime = timeFormat.format(lastMeteoData.datetime);
                 if (lastTime.equals(time))
                     return null;
             }
+
         }
 
 

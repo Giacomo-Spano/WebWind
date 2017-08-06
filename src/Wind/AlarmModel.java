@@ -237,7 +237,7 @@ public class AlarmModel {
 
                 //Core.sendPushNotification(devices, notification);
                 for (Device device : devices) {
-                    Core.sendPushNotification(device.id, notification);
+                    //Core.sendPushNotification(device.id, notification);
                     AlarmLog al = new AlarmLog();
                     al.insert("sendhighwind", 0, device.id, md.speed, md.averagespeed, md.spotID, 0, md.id);
 
@@ -268,7 +268,7 @@ public class AlarmModel {
 
                 //Core.sendPushNotification(devices, notification);
                 for (Device device : devices) {
-                    Core.sendPushNotification(device.id, notification);
+                    //Core.sendPushNotification(device.id, notification);
                     AlarmLog al = new AlarmLog();
                     al.insert("sendtrend", 0, device.id, md.trend, 0.0, md.spotID, 0, md.id);
                 }
@@ -295,7 +295,33 @@ public class AlarmModel {
         al.insert("sendalarm", alarm.id, deviceId, speed, avspeed, spotId, 0, windid);
         WindDatastore.updateAlarmLastRingDate(alarm.deviceId, alarm.id, currentDate);
 
-        Message notification = new Message.Builder()
+        JSONObject data = new JSONObject();
+        try {
+            data.put("title", "titolox");
+            data.put("alarmId", "" + alarm.id);
+            data.put("spotID", "" + alarm.spotID);
+            data.put("spotName", "" + Core.getSpotFromID(alarm.spotID).getName());
+            data.put("startDate", "" + alarm.startDate);
+            data.put("startTime", "" + alarm.startTime);
+            data.put("lastRingTime", "" + alarm.lastRingTime);
+            data.put("endDate", "" + alarm.endDate);
+            data.put("endTime", "" + alarm.endTime);
+            data.put("avspeed", "" + alarm.avspeed);
+            data.put("speed", "" + alarm.speed);
+            data.put("curspeed", "" + speed);
+            data.put("curavspeed", "" + avspeed);
+            data.put("curDate", "" + dateFormat.format(currentDate));
+            data.put("curspotId", "" + spotId);
+            data.put("notificationtype", AlarmModel.NotificationType_Alarm);
+            data.put("windid", "" + windid);
+
+            Core.sendPushNotification(deviceId, null, data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+       /* Message notification = new Message.Builder()
                 .addData("title", "titolox")
                 .addData("alarmId", "" + alarm.id)
                 .addData("spotID", "" + alarm.spotID)
@@ -313,8 +339,8 @@ public class AlarmModel {
                 .addData("curspotId", "" + spotId)
                 .addData("notificationtype", AlarmModel.NotificationType_Alarm)
                 .addData("windid", "" + windid)
-                .build();
-        Core.sendPushNotification(deviceId, notification);
+                .build();*/
+        //Core.sendPushNotification(deviceId, notification);
     }
 
     public boolean getHistoricalMeteoData() {// inizializza historical meteo data
