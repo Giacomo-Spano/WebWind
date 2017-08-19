@@ -122,13 +122,7 @@ public class ClubVentos extends PullData {
         txt = txt.substring(0, end).trim();
         meteoStationData.averagespeed = Double.valueOf(txt.trim());
 
-
         meteoStationData.datetime = Core.getDate();
-        long difference = meteoStationData.datetime.getTime() - meteoStationData.sampledatetime.getTime();
-        if (difference / 1000 / 60 > 60)
-            meteoStationData.offline = true;
-        else
-            meteoStationData.offline = false;
 
         return meteoStationData;
     }

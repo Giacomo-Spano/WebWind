@@ -6,12 +6,12 @@ import org.telegram.telegrambots.api.methods.ParseMode;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageReplyMarkup;
-import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.Chat;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -22,6 +22,7 @@ import windalarm.meteodata.MeteoStationData;
 import windalarm.meteodata.PullData;
 import windalarm.meteodata.Spot;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,6 +41,18 @@ public class MyAmazingBot extends TelegramLongPollingBot {
     private String money_emoji = EmojiParser.parseToUnicode(":moneybag:");
     private String wind_emoji = EmojiParser.parseToUnicode(":blowing_wind:");
     private String star_emoji = EmojiParser.parseToUnicode(":star:");
+
+    private String button_MeteoStations = "Stazioni meteo";
+    private String button_Back = "Indietro";
+    private String button_FoehnDiagram = "Diagramma del Foehn";
+    private String button_Settings = "Impostazioni";
+    private String button_Kmh = "Km/h";
+    private String button_Knots = "Knots";
+
+    private String settings_knots = "knots";
+    private String settings_kmh = "kmh";
+
+    //private int windUnit = settings_kmh;
 
     public void setButtons(SendMessage sendMessage) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
@@ -70,6 +83,7 @@ public class MyAmazingBot extends TelegramLongPollingBot {
         SendMessage response = new SendMessage() // Create a SendMessage object with mandatory fields
                 .setChatId(chatid)
                 .setParseMode(ParseMode.HTML)
+                .setReplyMarkup(getMainKeyboard())
                 .setText(message);
 
         try {
@@ -102,11 +116,11 @@ public class MyAmazingBot extends TelegramLongPollingBot {
 
                     datalog.writelog(command, updateMessage.getChatId(), updateMessage.getText());
 
-                    sendResponse("Hi, Nice to meet you!", update.getMessage().getChatId().toString());
+                    sendResponse("Ciao, Benvenuto nel bot del vento per windsurfisti", update.getMessage().getChatId().toString());
                 } else if (command.equalsIgnoreCase("/foehn")) {
                     sendFoehnDiagram(update.getMessage().getChatId());
 
-                } else if (command.equalsIgnoreCase("/valma"/*START_COMMAND*/)
+                } /*else if (command.equalsIgnoreCase("/valma")
                         || command.equalsIgnoreCase("/sorico")
                         || command.equalsIgnoreCase("/abbadia")
                         || command.equalsIgnoreCase("/gera")
@@ -114,36 +128,57 @@ public class MyAmazingBot extends TelegramLongPollingBot {
                         || command.equalsIgnoreCase("/dongo")
                         || command.equalsIgnoreCase("/gravedona")
                         || command.equalsIgnoreCase("/portopollo")
-                        || command.equalsIgnoreCase("/cremia"/*START_COMMAND*/)) { // "/valma" string
+                        || command.equalsIgnoreCase("/cremia")) {
 
-                    datalog.writelog(command, updateMessage.getChatId(), updateMessage.getText());
-
-                    Date endTime = Core.getDate();
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTime(endTime);
-                    cal.add(Calendar.HOUR, -3);
-                    Date startTime = cal.getTime();
-                    sendMeteodata(command.replace("/", ""), update.getMessage().getChatId(),startTime,endTime, "Ultime " + 3 +" ore");
-                    //sendPhoto(update.getMessage().getChatId());
-                }
+                    long chatid = updateMessage.getChatId();
+                    String text = updateMessage.getText();
+                    String spot = command.replace("/", "");
+                    datalog.writelog(command, chatid, text);
+                    sendLastThreeHoursMeteoData(chatid, spot);
+                }*/
             } else if (updateMessage.hasText()) { // We check if the update has a message and the message has text
 
-                String txt = "<b>prova</b>";
-                SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
+                String text = updateMessage.getText();
+                long chatid = updateMessage.getChatId();
+
+                Spot spot = Core.getSpotFromShortName(text);
+                SpotZone spotzone = SpotZones.getFromName(text);
+
+                if (spot != null) {
+                    sendLastThreeHoursMeteoData(chatid, spot.getShortName());
+                } else if (spotzone != null) {
+                    sendMeteoStationKeyboard(chatid, spotzone.id);
+                } else if (text.equals(button_Back)) {
+                    sendMainKeyboard(chatid,updateMessage.getMessageId());
+                } else if (text.equals(button_FoehnDiagram)) {
+                    sendFoehnDiagram(chatid);
+                } else if (text.equals(button_MeteoStations)) {
+                    sendMeteoStationKeyboard(chatid,-1);
+                } else if (text.equals(button_Settings)) {
+                    sendSettingsKeyboard(chatid,updateMessage.getMessageId());
+                } else if (text.equals(button_Kmh)) {
+                    users.setUnit(userid,settings_kmh);
+                    sendMainKeyboard(chatid,updateMessage.getMessageId());
+                } else if (text.equals(button_Knots)) {
+                    users.setUnit(userid,settings_knots);
+                    sendMainKeyboard(chatid,updateMessage.getMessageId());
+                } else {
+
+                    /*String txt = "<b>prova</b>";
+                    SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
                         .setChatId(update.getMessage().getChatId())
                         .setParseMode(ParseMode.HTML)
                         .setText("risposta: " + smile_emoji + update.getMessage().getText() + txt);
 
-                //setButtons(message);
-
-                datalog.writelog("message", updateMessage.getChatId(), updateMessage.getText());
+                    datalog.writelog("message", updateMessage.getChatId(), updateMessage.getText());
 
 
                 try {
                     sendMessage(message); // Call method to send the message
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
-                }
+                }*/
+            }
             }
         } else if (update.hasCallbackQuery()) {
 
@@ -238,6 +273,15 @@ public class MyAmazingBot extends TelegramLongPollingBot {
         }
     }
 
+    private void sendLastThreeHoursMeteoData(long chatid, String spot) {
+        Date endTime = Core.getDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(endTime);
+        cal.add(Calendar.HOUR, -3);
+        Date startTime = cal.getTime();
+        sendMeteodata(spot, chatid, startTime,endTime, "Ultime " + 3 +" ore");
+    }
+
     private InlineKeyboardMarkup getMeteoStationsInlineKeyboardMarkup() {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
@@ -280,27 +324,62 @@ public class MyAmazingBot extends TelegramLongPollingBot {
         return markupInline;
     }
 
-    private void sendMeteodata(String spotname, long chatid,Date startTime, Date endTime, String caption) {
+    private void sendMeteodata(String spotname, long chatid, Date startTime, Date endTime, String caption) {
 
         Spot spot = Core.getSpotFromShortName(spotname);
         if (spot == null) return;
         MeteoStationData md = Core.getLastMeteoData(spot.getSpotId());
+        if (spot.getOffline() || md == null) {
+            try {
+                SendMessage responseError = new SendMessage() // Create a SendMessage object with mandatory fields
+                        .setChatId(chatid)
+                        .setParseMode(ParseMode.HTML)
+                        .setReplyMarkup(getMainKeyboard())
+                        .setText("Stazione Meteo offline");
+
+
+                sendMessage(responseError); // Call method to send the message
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+
+            return;
+        }
+
+        TelegramUser user = new TelegramUser();
+        String unit = settings_kmh;
+        if (user.read(chatid)) {
+            unit = user.unit;
+        }
+        double low = 10;
+        double medium = 16;
+        double high = 25;
+        String unitText = "Km/h";
+        if (unit.equals(settings_knots)) {
+            low = MeteoStationData.kmhToKnots(low);
+            medium = MeteoStationData.kmhToKnots(medium);
+            high = MeteoStationData.kmhToKnots(high);
+            md.speed = MeteoStationData.kmhToKnots(md.speed);
+            md.averagespeed = MeteoStationData.kmhToKnots(md.averagespeed);
+            unitText = "Knots";
+        }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE dd/MM/yyyy HH:mm");
 
         String score = "";
-        if (md.speed >= 15)
+        if (md.speed >= low)
             score += star_emoji;
-        if (md.speed >= 20)
+        if (md.speed >= medium)
             score += star_emoji;
-        if (md.speed > 25)
+        if (md.speed > high)
             score += star_emoji;
+
 
         String message = "<b>" + spot.getName() + score + "</b>\n" +
                 "Dati aggiornati il: <b>" + dateFormat.format(md.datetime) + "</b>\n" +
                 "Direzione: <b>" + md.direction + "</b>\n" +
-                "Velocità vento: <b>" + md.speed + "km/h</b>\n" +
-                "Velocità media: <b>" + md.averagespeed + "km/h</b>\n" +
+                "Velocità vento: <b>" + md.speed + unitText + "</b>\n" +
+                "Velocità media: <b>" + md.averagespeed + unitText + "</b>\n" +
                 "Temperatura: <b>" + md.temperature + "°C</b>\n" /*+
                 "Pressione: <b>" + md.pressure + "HPa</b>\n" +
                 "Umidità: <b>" + md.humidity + "%</b>\n" +
@@ -308,31 +387,11 @@ public class MyAmazingBot extends TelegramLongPollingBot {
         SendMessage response = new SendMessage() // Create a SendMessage object with mandatory fields
                 .setChatId(chatid)
                 .setParseMode(ParseMode.HTML)
+                .setReplyMarkup(getMainKeyboard())
                 .setText(message);
 
-
-        //button
-        /*InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-        List<InlineKeyboardButton> rowInline = new ArrayList<>();
-
-        JSONObject json = new JSONObject();
         try {
-            json.put("command", "update");
-            json.put("parentid", "1232344");
 
-            rowInline.add(new InlineKeyboardButton().setText("Update").setCallbackData(json.toString()));
-            // Set the keyboard to the markup
-            rowsInline.add(rowInline);
-            // Add it to the message
-            markupInline.setKeyboard(rowsInline);
-            response.setReplyMarkup(markupInline);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }*/
-
-        try {
             sendMessage(response); // Call method to send the message
 
             TelegramDataLog datalog = new TelegramDataLog();
@@ -341,16 +400,184 @@ public class MyAmazingBot extends TelegramLongPollingBot {
             e.printStackTrace();
         }
 
-        /*Date endTime = Core.getDate();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(endTime);
-        cal.add(Calendar.HOUR, -3);
-        Date startTime = cal.getTime();*/
         String chartCaption = /*"Diagramma vento " + */spot.getName() + " - " + caption;
-        String filepath = getData(spot.getSpotId(),startTime,endTime);
-        sendChart(filepath, chatid, chartCaption, 1,spot.getShortName());
+        String filepath = getData(spot.getSpotId(),startTime,endTime,unit,low,medium,high);
+        if (filepath != null && !filepath.equals("")) {
+            sendChart(filepath, chatid, chartCaption, 1, spot.getShortName(),spot.getSourceUrl());
+        } else {
+            try {
+                SendMessage responseError = new SendMessage() // Create a SendMessage object with mandatory fields
+                    .setChatId(chatid)
+                    .setParseMode(ParseMode.HTML)
+                    .setText("impossibile creare grafico");
+
+                sendMessage(responseError); // Call method to send the message
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
+
+    private void sendHideKeyboard(Long chatId, Integer messageId) throws TelegramApiException {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId.toString());
+        sendMessage.enableMarkdown(true);
+        sendMessage.setReplyToMessageId(messageId);
+        sendMessage.setText("prova");
+
+        ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
+        replyKeyboardRemove.setSelective(true);
+        sendMessage.setReplyMarkup(replyKeyboardRemove);
+
+        sendMessage(sendMessage);
+    }
+
+    private void sendMainKeyboard(Long chatId, Integer messageId) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId.toString());
+        sendMessage.enableMarkdown(true);
+        sendMessage.setReplyToMessageId(messageId);
+        //replyKeyboardRemove.setSelective(true);
+        sendMessage.setReplyMarkup(getMainKeyboard());
+        sendMessage.setText("scegli");
+
+        try {
+            sendMessage(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+    private void sendSettingsKeyboard(Long chatId, Integer messageId) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId.toString());
+        sendMessage.enableMarkdown(true);
+        sendMessage.setReplyToMessageId(messageId);
+        sendMessage.setText("Scegli le impostazioni");
+        //replyKeyboardRemove.setSelective(true);
+        sendMessage.setReplyMarkup(getSettingsKeyboard());
+
+
+
+        /*String answer = "Updated message text";
+        EditMessageText new_message = new EditMessageText()
+                //.setChatId(chatId)
+                //.setMessageId(messageId)
+                //.setMessageId(toIntExact(messageId))
+                .setInlineMessageId(messageId.toString())
+                .setText(answer);
+        try {
+            editMessageText(new_message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }*/
+
+
+        try {
+            sendMessage(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+
+        //sendMainKeyboard(chatId,sendMessage.getReplyToMessageId());
+    }
+
+    private void sendMeteoStationKeyboard(Long chatId, int fatherid) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId.toString());
+        sendMessage.enableMarkdown(true);
+        //sendMessage.setReplyToMessageId(messageId);
+        sendMessage.setText("stazioni meteo");
+
+        //ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
+        //replyKeyboardRemove.setSelective(true);
+        sendMessage.setReplyMarkup(getMeteostationsKeyboard(fatherid));
+
+        try {
+            sendMessage(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private ReplyKeyboardMarkup getMainKeyboard() {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        row.add(button_MeteoStations);
+        row.add(button_FoehnDiagram);
+        row.add(button_Settings);
+        keyboard.add(row);
+        replyKeyboardMarkup.setKeyboard(keyboard);
+
+        return replyKeyboardMarkup;
+    }
+
+    private ReplyKeyboardMarkup getSettingsKeyboard() {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        row.add(button_Kmh);
+        row.add(button_Knots);
+        //row.add(button_Settings);
+        keyboard.add(row);
+        replyKeyboardMarkup.setKeyboard(keyboard);
+
+        return replyKeyboardMarkup;
+    }
+
+    private ReplyKeyboardMarkup getMeteostationsKeyboard(int fatherid) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(true);
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+
+        List<SpotZone> spotzones = SpotZones.getChildren(fatherid);
+
+        int count = 0; // 1 perchè c'è già il bottone iondietro
+        for (SpotZone spotzone : spotzones) {
+            if (count != 0 && count % 3 == 0) {
+                keyboard.add(row);
+                row = new KeyboardRow();
+            }
+            row.add(spotzone.name);
+            count++;
+        }
+
+        SpotZone father = SpotZones.getFromId(fatherid);
+        if (father != null) {
+            for (Spot spot : father.spotlist) {
+                if (count != 0 && count % 3 == 0) {
+                    keyboard.add(row);
+                    row = new KeyboardRow();
+                }
+                String shortname = spot.getShortName();
+                row.add(shortname);
+                count++;
+            }
+        }
+        keyboard.add(row);
+
+        row = new KeyboardRow();
+        row.add(button_Back);
+        keyboard.add(row);
+
+        replyKeyboardMarkup.setKeyboard(keyboard);
+
+        return replyKeyboardMarkup;
+    }
+
 
     private void sendFoehnDiagram(long chatid) {
 
@@ -403,9 +630,8 @@ public class MyAmazingBot extends TelegramLongPollingBot {
         }
     }
 
-    private void sendChart(String filepath, long chatid, String caption, int parentMessageId, String spotShortName) {
+    private void sendChart(String filepath, long chatid, String caption, int parentMessageId, String spotShortName, String source) {
 
-        //java.io.File file = new java.io.File("C:\\Users\\gs163400\\Downloads\\IMG_20140518_155544.jpg");
         java.io.File file = new java.io.File(filepath);
 
         SendPhoto photo = new SendPhoto() // Create a SendMessage object with mandatory fields
@@ -441,13 +667,16 @@ public class MyAmazingBot extends TelegramLongPollingBot {
             json.put("spot", spotShortName);
             json.put("hours", 3);
             rowInline2.add(new InlineKeyboardButton().setText("Aggiorna").setCallbackData(json.toString()));
-            json.put("command", "meteostation");
-            rowInline2.add(new InlineKeyboardButton().setText("Stazioni Meteo").setCallbackData(json.toString()));
-            json.put("command", "foehn");
+            json.put("command", "link");
+            //rowInline2.add(new InlineKeyboardButton().setText("Stazioni Meteo").setCallbackData(json.toString()));
+            rowInline2.add(new InlineKeyboardButton().setUrl(source).setText(source.replace("http://","")).setCallbackData(json.toString()));
+
+            /*json.put("command", "foehn");
             rowInline2.add(new InlineKeyboardButton().setText("Diagramma foehn").setCallbackData(json.toString()));
+            */
 
             // Set the keyboard to the markup
-            //rowsInline.add(rowInline);
+            rowsInline.add(rowInline);
             rowsInline.add(rowInline2);
             // Add it to the message
             markupInline.setKeyboard(rowsInline);
@@ -456,8 +685,6 @@ public class MyAmazingBot extends TelegramLongPollingBot {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        //
 
         try {
             sendPhoto(photo); // Call method to send the message
@@ -486,21 +713,24 @@ public class MyAmazingBot extends TelegramLongPollingBot {
             return "368348893:AAG41vFx8ScaFyQoufL-W4gcBDgfpPx9tFo";
     }
 
+    private String getData(long spotid,Date startTime,Date endTime, String windUnit, double low, double medium, double high) {
 
-    private String getData(long spotid,Date startTime,Date endTime) {
+        List<MeteoStationData> list = Core.getHistory(spotid, startTime, endTime, 0,40);
 
-
-
-
-        List<MeteoStationData> list = Core.getHistory(spotid, startTime, endTime, 0);
+        if (windUnit.equals(settings_knots)) {
+            for (MeteoStationData data : list) {
+                data.speed = MeteoStationData.kmhToKnots(data.speed);
+                data.averagespeed = MeteoStationData.kmhToKnots(data.averagespeed);
+            }
+        }
 
         SimpleDateFormat df = new SimpleDateFormat("HH:mm");
 
         if (list == null || list.size() <= 0)
             return "";
 
-        long min = startTime.getTime();//list.get(0).datetime.getTime();
-        long max = endTime.getTime();//list.get(list.size() - 1).datetime.getTime();
+        long min = startTime.getTime();//list.getFromName(0).datetime.getTime();
+        long max = endTime.getTime();//list.getFromName(list.size() - 1).datetime.getTime();
         if (min == max) return "";
         long duration = (max - min) / 1000 / 60; //durata espressa in minuti
 
@@ -516,8 +746,11 @@ public class MyAmazingBot extends TelegramLongPollingBot {
             if (maxspeed < md.speed) maxspeed = md.speed;
             if (maxspeed < md.averagespeed) maxspeed = md.averagespeed;
         }
-        if (maxspeed < 25)
-            maxspeed = 25;
+        double defaultMaxSpeed = 36;
+        if (windUnit.equals(settings_knots))
+            defaultMaxSpeed = MeteoStationData.kmhToKnots(defaultMaxSpeed);
+        if (maxspeed < defaultMaxSpeed)
+            maxspeed = defaultMaxSpeed;
 
         for (MeteoStationData md : list) {
 
@@ -545,11 +778,9 @@ public class MyAmazingBot extends TelegramLongPollingBot {
             count++;
         }
 
-
-
         Calendar calcounter = Calendar.getInstance();
         calcounter.setTime(startTime);
-        Date cursor = /*list.get(0).datetime;*/startTime;
+        Date cursor = /*list.getFromName(0).datetime;*/startTime;
 
         int step = (int) duration / 6;//30; //intervallo temporale in minuti
         Calendar cal = Calendar.getInstance();
@@ -583,6 +814,10 @@ public class MyAmazingBot extends TelegramLongPollingBot {
         String chg = "&chg=" + xstep + "," + 2 * 100 / maxspeed;
         //String chxl = "&chxl=0:|Freezing|C|kk|kk|Hot|2:|S|E|N|O|";
         String chxl = "&chxl=0:" + times + "1:|E|N|O|S|E|" + "3:|km/h|";
+        if (windUnit.equals(settings_knots))
+            chxl += "3:|knots|";
+        else if (windUnit.equals(settings_kmh))
+            chxl += "3:|km/h|";
         //String chxp = "&chxp=0,0,20,40,60,80,100";
         String chxp = "&chxp=0," + xlabels;//,0,20,40,60,80,100";
         chxp += "|3,100";
@@ -599,6 +834,19 @@ public class MyAmazingBot extends TelegramLongPollingBot {
 
         String chm = "&chm=H,000000,0," + 20 * maxspeed / 100 + ",1";
 
+
+        double lowband = round(low/maxspeed);
+        double mediumband = round((medium-low)/maxspeed);
+        double highband = round((high-medium)/maxspeed);
+        double veryhighband = round((maxspeed-high)/maxspeed);
+
+
+
+        String chf = "&chf=c,ls,90"
+                        + ",ebebff," + lowband
+                        + ",ebffeb," + mediumband
+                        + ",ffffeb," + highband
+                        + ",ffebeb," + veryhighband;
 
         Double markervalue = 20 * 100 / maxspeed;
         //String chm = "&chm=r,ccffcc,0,0.0," + markervalue.toString();
@@ -620,6 +868,7 @@ public class MyAmazingBot extends TelegramLongPollingBot {
                 chxl +
                 //chm +
                 chxs +
+                chf +
                 //chxtc +
                 chxp;
         //"&chs=700x250&chg=10,10&chxl=0:|Freezing|C|kk|kk|Hot|2:|S|E|N|O|";
@@ -627,9 +876,32 @@ public class MyAmazingBot extends TelegramLongPollingBot {
 
         //String filepath = System.getenv("tmp") + "/" + "chartx" + ".jpg";
         String filepath = Core.getTmpDir() + "/" + "chartx" + ".jpg";
+
+        try{
+
+            File file = new File(filepath);
+
+            if(file.delete()){
+                System.out.println(file.getName() + " is deleted!");
+            }else{
+                System.out.println("Delete operation is failed.");
+            }
+
+        }catch(Exception e){
+
+            e.printStackTrace();
+
+        }
+
+
         Core.getImage(sourceimage, filepath);
 
-
         return filepath;
+    }
+
+    private double round(double val) {
+        val = Math.round(val * 10.0);
+        val = val / 10;
+        return val;
     }
 }

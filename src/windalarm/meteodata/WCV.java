@@ -19,7 +19,6 @@ public class WCV extends PullData {
         super();
     }
 
-
     public MeteoStationData getMeteoData() {
 
         LOGGER.info("getMeteoData: spotName=" + name);
@@ -28,7 +27,7 @@ public class WCV extends PullData {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         Calendar cal = Calendar.getInstance();
-        md.sampledatetime = Core.getDate();//dateFormat.format(cal.getTime());
+        md.sampledatetime = Core.getDate();
 
         SimpleDateFormat todayFormat = new SimpleDateFormat("yyyyMMdd");
         String htmlResultString = getHTMLPage(meteodataUrl+todayFormat.format(md.sampledatetime) + ".txt",true);
@@ -77,16 +76,7 @@ public class WCV extends PullData {
                 if (lastTime.equals(time))
                     return null;
             }
-
         }
-
-
-       long difference = md.datetime.getTime() - md.sampledatetime.getTime();
-        if (difference / 1000 / 60 > 60)
-           offline = true;
-        else
-           offline = false;
-
         return md;
     }
 }

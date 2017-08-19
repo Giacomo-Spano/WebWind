@@ -153,7 +153,7 @@ public class MeteoServlet extends HttpServlet {
                 out.close();
             }
 
-            String str = getLogJson(spot, start, end, lastWindId);
+            String str = getLogJson(spot, start, end, lastWindId,10);
             out.print(str);
 
         } else {
@@ -183,8 +183,8 @@ public class MeteoServlet extends HttpServlet {
         }
     }
 
-    private String getLogJson(String spot, Date start, Date end, long lastWindId) {
-        List<MeteoStationData> list = Core.getHistory(Integer.valueOf(spot), start, end, lastWindId);
+    private String getLogJson(String spot, Date start, Date end, long lastWindId, int maxpoint) {
+        List<MeteoStationData> list = Core.getHistory(Integer.valueOf(spot), start, end, lastWindId, maxpoint);
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
 
         String str = "\n{";

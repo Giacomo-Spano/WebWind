@@ -274,8 +274,12 @@ public class Core {
         return alarmModel.getLastFavorites(personid);
     }
 
+    public static List<MeteoStationData> getHistory(long spotID, Date start, Date end, long windId, int maxpoint) {
+        return alarmModel.getHistory(spotID, start, end, windId,maxpoint);
+    }
+
     public static List<MeteoStationData> getHistory(long spotID, Date start, Date end, long windId) {
-        return alarmModel.getHistory(spotID, start, end, windId);
+        return alarmModel.getHistory(spotID, start, end, windId,-1);
     }
 
     public static String getVersion() {
@@ -336,6 +340,16 @@ public class Core {
         return null;
     }
 
+    public static List<Spot> getSpotListFromZone(int zoneid) {
+
+        List<Spot> list = new ArrayList<>();
+        for (Spot spot : alarmModel.getSpotList()) {
+            if (spot.getSpotZone() == zoneid)
+                list.add(spot);
+        }
+        return list;
+    }
+
     private static final String CONTENT_TYPE = "text/html; charset=windows-1252";
 
     public void updateMeteoData() {
@@ -352,21 +366,21 @@ public class Core {
             ArrayList<CHMeteoForecast> list = m.getMeteoData(meteocentralech.LUGANO);
             sendForecastToWorksheet(list, dateFormat.format(cal.getTime()), "Lugano");
         } catch (Exception e) {
-            LOGGER.severe("cannot get data for meteo svizzera lugano");
+            LOGGER.severe("cannot getFromName data for meteo svizzera lugano");
         }
         try {
             meteocentralech m = new meteocentralech();
             ArrayList<CHMeteoForecast> list = m.getMeteoData(meteocentralech.ZURIGO);
             sendForecastToWorksheet(list, dateFormat.format(cal.getTime()), "Zurigo");
         } catch (Exception e) {
-            LOGGER.severe("cannot get data for meteo zurigo");
+            LOGGER.severe("cannot getFromName data for meteo zurigo");
         }
         try {
             meteocentralech m = new meteocentralech();
             ArrayList<CHMeteoForecast> list = m.getMeteoData(meteocentralech.VALMADRERA);
             sendForecastToWorksheet(list, dateFormat.format(cal.getTime()), "Valmadrera");
         } catch (Exception e) {
-            LOGGER.severe("cannot get data for meteo valmadrera");
+            LOGGER.severe("cannot getFromName data for meteo valmadrera");
         }*/
     }
 
@@ -402,7 +416,6 @@ public class Core {
             //else
               //  tmpDir = System.getProperty("java.io.tmpdir");
 
-
             boolean res = ImageIO.write(newBufferedImage, "jpg", new File(path));
             return res;
 
@@ -418,12 +431,14 @@ public class Core {
         }
     }
 
-    public static void sendData(MeteoStationData meteoData, long spotID) {
-        //mdList.add(meteoData);
+    public static boolean sendData(MeteoStationData meteoData, long spotID) {
         int windId = meteoData.insert();
-        alarmModel.Add(meteoData, spotID);
-        alarmModel.evaluate(windId, meteoData);
-        //sendToWorksheet(meteoData);
+        if (windId != 0 ) {
+            alarmModel.Add(meteoData, spotID);
+            alarmModel.evaluate(windId, meteoData);
+            return true;
+        }
+        return false;
     }
 
     private boolean sendXivelydata(MeteoStationData data) {
@@ -479,7 +494,7 @@ public class Core {
 
         LOGGER.info("url=" + params);
 
-        params += "&spot=" + data.spotName.trim(); // elimino gli spazi perch� alrimenti la get si blocca
+        params += "&spot=" + data.spotName.trim(); // elimino gli spazi perch� alrimenti la getFromName si blocca
 
         result = callget(url, params);
         return result;
@@ -523,7 +538,7 @@ public class Core {
 
             if (i != 0)
                 json += ",";
-            json += list.get(i).toJson();
+            json += list.getFromName(i).toJson();
 
 
         }

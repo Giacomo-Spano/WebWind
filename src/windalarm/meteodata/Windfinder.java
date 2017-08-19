@@ -2,6 +2,7 @@ package windalarm.meteodata;
 
 import Wind.AlarmModel;
 import Wind.Core;
+import com.sun.xml.internal.ws.api.model.MEP;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,29 +34,40 @@ public class Windfinder extends PullData {
         meteoStationData.sampledatetime = Core.getDate();
 
         //speed
-        String speed = findBetweenKeywords(htmlResultString, "<span class=\"current__wind__speed\">", "<span class=\"current__wind__unit\">kts</span>");
-        if (speed != null)
-            meteoStationData.speed = Double.valueOf(speed);
+        String txt = rightOfKeywords(htmlResultString,"current-wind-speed");
+        String speed = findBetweenKeywords(txt, ">", "<");
+        if (speed == null)
+            return null;
+        meteoStationData.speed = Double.valueOf(speed);
+        meteoStationData.speed = MeteoStationData.knotsToKMh(meteoStationData.speed);
 
         //average speed
         meteoStationData.averagespeed = Core.getAverage(id);
 
         // direction
-        String direction = findBetweenKeywords(htmlResultString, "<span class=\"current__wind__dir\">", "</span>");
-        meteoStationData.direction = getDirection(direction);
+        txt = rightOfKeywords(htmlResultString,"current-wind__dir");
+        String direction = findBetweenKeywords(txt, ">", "<");
+        direction = direction.trim();
+        meteoStationData.direction = direction;
         meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
+        if (meteoStationData.directionangle == -1) {
+            meteoStationData.directionangle = 0.0;
+            LOGGER.severe("Cannod find direction " + direction);
+        }
 
         //datetime
-        //String time = findBetweenKeywords(htmlResultString, "Report from local weather station at ", "local time.");
-        String time = findBetweenKeywords(htmlResultString, "<span id=\"last-update\">", "</span>");
-        String date = findBetweenKeywords(htmlResultString, "<div class=\"weathertable__header\">", "</div>");
-        if (time == null || date == null)
-            meteoStationData.datetime = meteoStationData.sampledatetime;
-        else
-            meteoStationData.datetime = getDate(date, time);
+
+        txt = rightOfKeywords(htmlResultString,"data-spotmeta-update");
+        String time = findBetweenKeywords(txt, ">", "<");
+        txt = rightOfKeywords(htmlResultString,"weathertable__headline");
+        String date = findBetweenKeywords(txt, ">", "<");
+        if (date == null)
+            return null;
+        meteoStationData.datetime = getDate(date, time);
 
         // temperature
-        String temperature = findBetweenKeywords(htmlResultString, "<span class=\"current__temp__value\">", "<span class=\"current__temp__unit\">");
+        txt = rightOfKeywords(htmlResultString,"current-temp-value");
+        String temperature = findBetweenKeywords(txt, ">", "<");
         meteoStationData.temperature = Double.valueOf(temperature);;
 
         //pressure
@@ -72,7 +84,6 @@ public class Windfinder extends PullData {
 
     private Date getDate(String date, String time) {
 
-        String dayofweek = date.substring(0,3);
         int idx = date.indexOf(",")+1;
         String month = date.substring(idx,idx+4).trim();
         String day = date.substring(idx+5).trim();
@@ -80,12 +91,9 @@ public class Windfinder extends PullData {
         Calendar cal = Calendar.getInstance();
         cal.setTime(yd);
         int year = cal.get(Calendar.YEAR);
-        //int month = cal.get(Calendar.MONTH);
-        //int day = cal.get(Calendar.DAY_OF_MONTH);
-
         String fulldate = day + "-" + month + "-" + year + " " + time;
 
-        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy hh:mm", Locale.ENGLISH);
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm", Locale.ITALIAN);
 
         try {
             Date d = df.parse(fulldate);

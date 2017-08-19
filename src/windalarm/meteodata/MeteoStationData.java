@@ -47,37 +47,37 @@ public class MeteoStationData {
     public MeteoStationData() {
 
         List<String> symbols;
-        symbols = asList("E", "EAST"); // 0
+        symbols = asList("E", "EAST", "Est"); // 0
         symbolList.add(symbols);
-        symbols = asList("NEE", "ENE");//1
+        symbols = asList("NEE", "ENE", "Est-NordEst", "Est-Nord-Est");//1
         symbolList.add(symbols);
-        symbols = asList("NE", "EN");//2
+        symbols = asList("NE", "EN", "Nord-Est");//2
         symbolList.add(symbols);
-        symbols = asList("NNE", "ENE");//3
+        symbols = asList("NNE", "ENE", "Nord-Nord-Est", "Nord-NordEst");//3
         symbolList.add(symbols);
-        symbols = asList("N");//4
+        symbols = asList("N", "Nord");//4
         symbolList.add(symbols);
-        symbols = asList("NWN", "NNW", "NON", "NNO");//5
+        symbols = asList("NWN", "NNW", "NON", "NNO", "NordOvest-Nord", "Nord-Ovest-Nord");//5
         symbolList.add(symbols);
-        symbols = asList("NW", "WN", "NO", "ON");//6
+        symbols = asList("NW", "WN", "NO", "ON", "Nord-Ovest");//6
         symbolList.add(symbols);
-        symbols = asList("WNW", "NWW", "ONO", "NON");//7
+        symbols = asList("WNW", "NWW", "ONO", "NON", "Ovest-NordOvest", "Ovest-Nord-Ovest");//7
         symbolList.add(symbols);
-        symbols = asList("W", "O");//8
+        symbols = asList("W", "O", "Ovest");//8
         symbolList.add(symbols);
-        symbols = asList("WSW", "SWW", "OSO", "SSO");//9
+        symbols = asList("WSW", "SWW", "OSO", "SSO", "Sud-SudOvest", "Sud-Sud-Ovest");//9
         symbolList.add(symbols);
-        symbols = asList("SW", "WS", "SO", "OS");//10
+        symbols = asList("SW", "WS", "SO", "OS", "Sud-Ovest");//10
         symbolList.add(symbols);
-        symbols = asList("SSW", "SWS", "SSO", "SOS");//11
+        symbols = asList("SSW", "SWS", "OSO", "SOS", "SudOvest-Sud", "Sud-Ovest-Sud");//11
         symbolList.add(symbols);
-        symbols = asList("S");//12
+        symbols = asList("S", "Sud");//12
         symbolList.add(symbols);
-        symbols = asList("SSE", "SEE");//13
+        symbols = asList("SSE", "SEE", "Sud-Sud-Est");//13
         symbolList.add(symbols);
-        symbols = asList("SE", "ES"); // 14
+        symbols = asList("SE", "ES", "Sud-Est"); // 14
         symbolList.add(symbols);
-        symbols = asList("ESE", "SEE"); // 15
+        symbols = asList("ESE", "SEE", "Est-Sud-Est"); // 15
         symbolList.add(symbols);
     }
 
@@ -89,7 +89,7 @@ public class MeteoStationData {
 
         for (int i = 0; i < symbolList.size(); i++) {
             for (int k = 0; k < symbolList.get(i).size(); k++) {
-                if (symbolList.get(i).get(k).equals(symbol))
+                if (symbolList.get(i).get(k).equalsIgnoreCase(symbol))
                     return i * 22.5;
             }
         }
@@ -214,7 +214,15 @@ public class MeteoStationData {
         return kmh;
     }
 
-    public int insert(/*Device device*/) {
+    public static Double kmhToKnots(double kmh) {
+
+        double knots = kmh / 1.85200;
+        knots = Math.round(knots * 10.0);
+        knots = knots / 10;
+        return knots;
+    }
+
+    public int insert() {
 
         int lastid;
         try {
@@ -274,7 +282,7 @@ public class MeteoStationData {
         }
     }
 
-    public List<MeteoStationData> getHistory(Long spotId, Date startDate, Date endDate, Long lastWindId) {
+    public List<MeteoStationData> getHistory(Long spotId, Date startDate, Date endDate, Long lastWindId, int maxpoint) {
 
         List<MeteoStationData> list = new ArrayList<MeteoStationData>();
 
@@ -312,7 +320,14 @@ public class MeteoStationData {
             e.printStackTrace();
             return null;
         }
-        return list;
+
+        //return list;
+        if (maxpoint <= 0 || list.size() < maxpoint)
+            return list;
+
+        InterpolationSearch interpolation = new InterpolationSearch();
+        List<MeteoStationData> iList = interpolation.getInterpolatedArray(list,startDate,endDate,maxpoint);
+        return iList;
     }
     public List<MeteoStationData> getLastFavorites(String personId) {
 

@@ -206,8 +206,8 @@ public class SendPushMessages {
 				List<Result> results = multicastResult.getResults();
 				// analyze the results
 				for (int i = 0; i < devices.size(); i++) {
-					String regId = devices.get(i);
-					Result result = results.get(i);
+					String regId = devices.getFromName(i);
+					Result result = results.getFromName(i);
 					String messageId = result.getMessageId();
 					if (messageId != null) {
 						logger.fine("Succesfully sent message to device: "

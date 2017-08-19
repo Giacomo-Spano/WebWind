@@ -108,8 +108,8 @@ public class WindfinderForecast extends PullData {
         Calendar cal = Calendar.getInstance();
         cal.setTime(yd);
         int year = cal.get(Calendar.YEAR);
-        //int month = cal.get(Calendar.MONTH);
-        //int day = cal.get(Calendar.DAY_OF_MONTH);
+        //int month = cal.getFromName(Calendar.MONTH);
+        //int day = cal.getFromName(Calendar.DAY_OF_MONTH);
 
         String fulldate = day + "-" + month + "-" + year + " " + time;
 

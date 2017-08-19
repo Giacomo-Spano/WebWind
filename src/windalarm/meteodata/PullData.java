@@ -41,13 +41,25 @@ public abstract class PullData extends Spot {
                 md.spotName = name;
                 md.spotID = id;
 
+                // evaluate wind trend
                 long minutes = 30;
                 Date startTime = new Date(md.datetime.getTime() - (minutes * AlarmModel.ONE_MINUTE_IN_MILLIS));
                 md.trend = Core.getTrend(id, startTime, md.datetime);
-                Core.sendData(md, id);
+
+                // metti offline se ultima lettura più vecchia di 60 minuti
+                long difference = md.datetime.getTime() - md.sampledatetime.getTime();
+                if (difference / 1000 / 60 > 60)
+                    offline = true;
+                else
+                    offline = false;
+
+                if (Core.sendData(md, id)) {
+                    offline = false;
+                } //  Non metto offline tru se senddata ritorna zero perchè potrebbe essere un dato duplicato.
             }
         } catch (Exception e) {
-            LOGGER.severe("cannot get data for spot " + name + "(" + id + ")");
+            LOGGER.severe("cannot getFromName data for spot " + name + "(" + id + ")");
+            offline = true;
         }
 
         try {
@@ -64,7 +76,7 @@ public abstract class PullData extends Spot {
                 Core.getImage(webcamUrl3, filepath + id + "webcam3.jpg");
             }
         } catch (Exception e) {
-            LOGGER.severe("cannot get webcam for spot " + name + "(" + id + ")");
+            LOGGER.severe("cannot getFromName webcam for spot " + name + "(" + id + ")");
         }
     }
 

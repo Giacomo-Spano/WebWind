@@ -1,12 +1,6 @@
 package windalarm.meteodata;
 
-//import com.google.appengine.repackaged.org.joda.time.DateTimeZone;
-
-//import Wind.HomeServlet;
-
-import Wind.AlarmModel;
 import Wind.Core;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -51,10 +45,8 @@ public class CML extends PullData {
             }
         }
 
-        //String address = "http://rete.centrometeolombardo.com/@spot@/immagini/v.png";
-        //address = address.replace("@spot@", mSpotUrl);
         String value = "";
-        value = getTextFromImage(/*address*/meteodataUrl);
+        value = getTextFromImage(meteodataUrl);
         LOGGER.info("value=" + value);
 
         char character = 176;// �
@@ -171,18 +163,9 @@ public class CML extends PullData {
                 newImageData = baos.toByteArray();
                 baos.close();
 
-                System.out.println("Done");
-
-
-                //--
-
                 // prepare header
                 URL url = new URL(urlString);
                 conn = (HttpURLConnection) url.openConnection();
-
-                //conn.setReadTimeout(20000); //10 Sec
-                //conn.setConnectTimeout(60000);  //60 Seconds
-                //conn.setReadTimeout(60000);  //60 Seconds
 
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
@@ -219,9 +202,7 @@ public class CML extends PullData {
             } catch (IOException e) {
 
                 e.printStackTrace();
-
             }
-
         } catch (MalformedURLException ex) {
             LOGGER.severe("Debug - MalformedURLException error: " + ex.toString());
             return "0";
@@ -250,6 +231,4 @@ public class CML extends PullData {
 
         return result;
     }
-
-
 }

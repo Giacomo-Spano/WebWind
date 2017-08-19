@@ -14,6 +14,7 @@ public class TelegramUser {
     String firstName;
     String lastName;
     String userName;
+    String unit;
 
     public int insert(long userId, String firstName, String lastName, String userName) {
 
@@ -62,5 +63,68 @@ public class TelegramUser {
         return lastid;
     }
 
+    public boolean setUnit(long userId, String unit) {
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+
+            String sql;
+            sql = "UPDATE telegramusers SET unit='" + unit + "' WHERE chatid=" + userId;
+
+            Statement stmt = conn.createStatement();
+            stmt.execute(sql);
+            stmt.close();
+            conn.close();
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+            return false;
+
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
+    public boolean read(long chatid) {
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            String sql;
+            sql = "SELECT * FROM telegramusers WHERE chatid='"+chatid+"'";
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                userName = rs.getString("username");
+                firstName = rs.getString("firstname");
+                lastName = rs.getString("lastname");
+                unit = rs.getString("unit");
+                rs.close();
+                stmt.close();
+                conn.close();
+
+            } else {
+                rs.close();
+                stmt.close();
+                conn.close();
+                return false;
+            }
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
 }
 

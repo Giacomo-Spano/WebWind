@@ -61,7 +61,7 @@ public class AlarmModel {
         cal.add(Calendar.HOUR_OF_DAY, -6); //minus number would decrement the datetimes
         Date start = cal.getTime();
         MeteoStationData md = new MeteoStationData();
-        List<MeteoStationData> list = md.getHistory(Long.valueOf(spot.getSpotId()), start, end,-1L);
+        List<MeteoStationData> list = md.getHistory(Long.valueOf(spot.getSpotId()), start, end,-1L,-1);
         meteoHistory.add(list);
     }
 
@@ -177,10 +177,10 @@ public class AlarmModel {
         return list;
     }
 
-    public List<MeteoStationData> getHistory(long spotID, Date startDate, Date endDate, long lastWindId) {
+    public List<MeteoStationData> getHistory(long spotID, Date startDate, Date endDate, long lastWindId, int maxpoint) {
 
         MeteoStationData md = new MeteoStationData();
-        List<MeteoStationData> list = md.getHistory(spotID, startDate, endDate, lastWindId);
+        List<MeteoStationData> list = md.getHistory(spotID, startDate, endDate, lastWindId,maxpoint);
 
         return list;
     }

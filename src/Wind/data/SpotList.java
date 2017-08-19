@@ -65,6 +65,7 @@ public class SpotList {
                 return null;
 
             spot.setSpotId(rs.getInt("id"));
+            spot.setSpotZoneId(rs.getInt("zone"));
             spot.setName(rs.getString("name"));
             spot.setShortName(rs.getString("shortname"));
             spot.setMeteodataUrl(rs.getString("meteodataurl"));

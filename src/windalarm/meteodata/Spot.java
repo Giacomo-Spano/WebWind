@@ -7,6 +7,7 @@ public class Spot {
     protected String name;
     protected String shortname;
     protected long id;
+    protected long zoneId;
     protected String webcamUrl;
     protected String webcamUrl2;
     protected String webcamUrl3;
@@ -21,9 +22,10 @@ public class Spot {
     public Spot() {
     }
 
-    public Spot(String name, int id,String sourceUrl, String webcamUrl, String webcamUrl2, String webcamUrl3) {
+    public Spot(String name, int id, int zoneId, String sourceUrl, String webcamUrl, String webcamUrl2, String webcamUrl3) {
         this.name = name;
         this.id = id;
+        this.zoneId = zoneId;
         this.sourceUrl = sourceUrl;
         this.webcamUrl = webcamUrl;
         this.webcamUrl2 = webcamUrl2;
@@ -34,8 +36,16 @@ public class Spot {
         return id;
     }
 
+    public long getSpotZone() {
+        return zoneId;
+    }
+
     public void setSpotId(long id) {
         this.id = id;
+    }
+
+    public void setSpotZoneId(long id) {
+        this.zoneId = id;
     }
 
     public String getName() {

@@ -198,12 +198,6 @@ public class Colico extends PullData {
         try {
             meteoStationData.datetime = formatter.parse(txt);
 
-            long difference = Core.getDate().getTime() - meteoStationData.sampledatetime.getTime();
-            if (difference/1000/60 >  60)
-                meteoStationData.offline = true;
-            else
-                meteoStationData.offline = false;
-
         } catch (ParseException e) {
             e.printStackTrace();
         }

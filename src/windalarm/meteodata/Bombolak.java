@@ -36,14 +36,7 @@ public class Bombolak extends PullData {
 
         meteoStationData.direction = split[0].trim();
         meteoStationData.directionangle = meteoStationData.getAngleFromDirectionSymbol(meteoStationData.direction);
-
-        String keyword = " kts";
-        if (split[1].indexOf(keyword) != -1) {
-            txt = leftOfKeywords(split[1],keyword).trim();
-            meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(txt));// * 1.85200; // convert knots to km/h
-        } else {
-            meteoStationData.speed = 0.0;
-        }
+        meteoStationData.speed = MeteoStationData.knotsToKMh(Double.valueOf(split[1]));
 
         // temperature
         txt = findBetweenKeywords(htmlResultString,"Temperatura:","&deg;C");
@@ -72,15 +65,11 @@ public class Bombolak extends PullData {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         try {
             meteoStationData.datetime = formatter.parse(txt);
-            long difference = Core.getDate().getTime() - meteoStationData.sampledatetime.getTime();
-            if (difference/1000/60 >  60)
-                meteoStationData.offline = true;
-            else
-                meteoStationData.offline = false;
+            return meteoStationData;
+
         } catch (ParseException e) {
             e.printStackTrace();
+            return null;
         }
-
-        return meteoStationData;
     }
 }
