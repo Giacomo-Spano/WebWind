@@ -169,10 +169,13 @@ public class OpenWeatherForecast extends PullData {
                     Double deg = jwind.getDouble("deg");
                     wf.speedDirs.add(deg);
 
-                    JSONObject jrain = j.getJSONObject("rain");
+
                     Double rain = 0.0;
-                    if (jrain.has("3h"))
-                        rain = jrain.getDouble("3h");
+                    if (j.has("rain")) {
+                        JSONObject jrain = j.getJSONObject("rain");
+                        if (jrain.has("3h"))
+                            rain = jrain.getDouble("3h");
+                    }
                     wf.rains.add(rain);
 
                 }

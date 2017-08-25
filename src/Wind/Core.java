@@ -36,8 +36,6 @@ public class Core {
 
     public static String APP_DNS_OPENSHIFT = "jbossews-giacomohome.rhcloud.com";
     public static String APP_DNS_OPENSHIFTTEST = "jbossewsbeta-giacomohome.rhcloud.com";
-    //public static String APP_DNS_OPENSHIFTTEST = "jbossewstest-giacomohome.rhcloud.com";
-
 
     protected static String appDNS_envVar;
     protected static String mysqlDBHost_envVar;
@@ -48,10 +46,9 @@ public class Core {
 
     static  boolean production = false;
 
-    private static List<TelegramUser> telegramUsers; // = new ArrayList<TelegramUser>();
+    private static List<TelegramUser> telegramUsers;
 
     public static boolean isProduction() {
-
         return production;
     }
 
@@ -359,7 +356,11 @@ public class Core {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("Europe/Rome"));
         Calendar cal = Calendar.getInstance();
+    }
 
+    public void updateForecastData() {
+
+        pullForecastData();
         /*
         try {
             meteocentralech m = new meteocentralech();

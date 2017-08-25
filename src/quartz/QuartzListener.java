@@ -10,7 +10,6 @@ import javax.servlet.ServletContextListener;
 import java.util.logging.Logger;
 
 import static org.quartz.JobBuilder.newJob;
-import static org.quartz.SimpleScheduleBuilder.*;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
@@ -44,12 +43,13 @@ public class QuartzListener implements ServletContextListener {
             JobDataMap jobDataMap = new JobDataMap();
             jobDataMap.put("servletContext", servletContext.getServletContext());
             // define the job and tie it to our job's class
-            JobDetail sensorJob = newJob(ActuatorQuartzJob.class).withIdentity(
-                    "CronSensorQuartzJob", "Group")
+
+            JobDetail meteodataJob = newJob(MeteoDataQuartzJob.class).withIdentity(
+                    "MeteoDataQuartzJob", "Group")
                     .usingJobData(jobDataMap)
                     .build();
-            // Trigger the job to run now, and then every 40 seconds
-            Trigger sensorTrigger = newTrigger()
+            // Trigger the job to run now, and then every 60 seconds
+            Trigger meteodataTrigger = newTrigger()
                     .withIdentity("SensorTriggerName", "Group")
                     .startNow()
                     .withSchedule(simpleSchedule()
@@ -57,7 +57,22 @@ public class QuartzListener implements ServletContextListener {
                             .repeatForever())
                     .build();
             // Setup the Job and Trigger with Scheduler & schedule jobs
-            scheduler.scheduleJob(sensorJob, sensorTrigger);
+            scheduler.scheduleJob(meteodataJob, meteodataTrigger);
+
+            JobDetail forecastJob = newJob(ForecastQuartzJob.class).withIdentity(
+                    "ForecastQuartzJob", "Group")
+                    .usingJobData(jobDataMap)
+                    .build();
+            // Trigger the job to run now, and then every 30 minuti
+            Trigger forecastTrigger = newTrigger()
+                    .withIdentity("ForecastTriggerName", "Group")
+                    .startNow()
+                    .withSchedule(simpleSchedule()
+                            .withIntervalInSeconds(60*30) //  30 mimnuti
+                            .repeatForever())
+                    .build();
+            // Setup the Job and Trigger with Scheduler & schedule jobs
+            scheduler.scheduleJob(forecastJob, forecastTrigger);
 
             // Setup the Job class and the Job group
             JobDetail dbJob = newJob(DBQuartzJob.class).withIdentity(

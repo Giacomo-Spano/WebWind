@@ -73,7 +73,6 @@ public class AlarmModel {
 
     public void pullData() {
 
-
         for (PullData spot : mSpotDataList) {
             spot.pull();
         }

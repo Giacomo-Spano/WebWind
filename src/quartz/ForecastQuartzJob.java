@@ -12,27 +12,23 @@ import javax.servlet.ServletContext;
 import java.util.Date;
 import java.util.logging.Logger;
 
-public class ActuatorQuartzJob implements Job {
+public class ForecastQuartzJob implements Job {
 
-    private static final Logger LOGGER = Logger.getLogger(ActuatorQuartzJob.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ForecastQuartzJob.class.getName());
 
     public void execute(JobExecutionContext context)
             throws JobExecutionException {
 
         try {
-            LOGGER.info("ActuatorQuartzJob START");
+            LOGGER.info("ForecastQuartzJob START");
             Date date = Core.getDate();
-            LOGGER.info("" + date.toString() + " ActuatorQuartzJob");
+            LOGGER.info("" + date.toString() + " ForecastQuartzJob");
 
             ServletContext servletContext = (ServletContext) context.getMergedJobDataMap().get("servletContext");
             Core core = (Core)servletContext.getAttribute(QuartzListener.CoreClass);
-            core.updateMeteoData();
+            core.updateForecastData();
 
         } catch (Exception e) {
-
-            //LOGGER.info("execute" + e.getStackTrace());
-            //e.printStackTrace();
-
             LOGGER.info("--- Error in job!");
             JobExecutionException e2 =
                     new JobExecutionException(e);
@@ -40,6 +36,6 @@ public class ActuatorQuartzJob implements Job {
             e2.refireImmediately();
             throw e2;
         }
-        LOGGER.info("ProgramQuartzJob END");
+        LOGGER.info("ForecastQuartzJob END");
     }
 }
