@@ -34,22 +34,43 @@ public class MeteoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 
-        String spotIdstr = request.getParameter("spotid");
-        long spotid = Long.valueOf(spotIdstr);
+
         String userid = request.getParameter("userid");
         String deletekey = request.getParameter("remove");
+        String reorder = request.getParameter("reorder");
+        String order = request.getParameter("spotlist");
 
-        LOGGER.info("doPost: postfavorite spotid=" + spotid + "userid=" + userid);
+        LOGGER.info("doPost: postfavorite spotid="  + "userid=" + userid);
 
         if (deletekey != null && deletekey.equals("true")) {
 
+            String spotIdstr = request.getParameter("spotid");
+            long spotid = Long.valueOf(spotIdstr);
             Favorites favorites = new Favorites();
             favorites.delete(userid, spotid);
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("text/plain");
 
-        } else {
+        } else if (reorder != null && reorder.equals("true") && order != null) {
 
+            Favorites favorites = new Favorites();
+            List<Long> list = favorites.getFavorites(userid);
+            for(Long id : list) {
+                favorites.delete(userid, id);
+            }
+
+            String[] neworder = order.split(",");
+            for(String spot : neworder) {
+                favorites.insert(userid, Integer.valueOf(spot));
+            }
+
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("text/plain");
+
+        } else {
+            String spotIdstr = request.getParameter("spotid");
+            long spotid = Long.valueOf(spotIdstr);
             Favorites favorites = new Favorites();
             favorites.insert(userid, spotid);
         }

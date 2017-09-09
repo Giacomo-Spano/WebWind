@@ -27,7 +27,7 @@ public class Favorites {
             Statement stmt = conn.createStatement();
 
             String sql;
-            sql = "SELECT * FROM favorites WHERE personid='" + userid + "';";
+            sql = "SELECT * FROM favorites WHERE personid='" + userid + "' ORDER BY id;";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 long spotid = rs.getLong("spotid");

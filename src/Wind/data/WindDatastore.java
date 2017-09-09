@@ -46,7 +46,6 @@ public class WindDatastore {
 
     }
 
-
     public static void updateAlarmLastRingDate(int deviceId, long alarmId, Date date) {
 
         try {

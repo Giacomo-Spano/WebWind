@@ -43,6 +43,8 @@ public class MeteoStationData {
     public String webcamurl2 = null;
     public String webcamurl3 = null;
     private ArrayList<List<String>> symbolList = new ArrayList<List<String>>();
+    private Double maxTodaySpeed = null;
+    private Date maxTodaySpeedDatetime = null;
 
     public MeteoStationData() {
 
@@ -65,11 +67,11 @@ public class MeteoStationData {
         symbolList.add(symbols);
         symbols = asList("W", "O", "Ovest");//8
         symbolList.add(symbols);
-        symbols = asList("WSW", "SWW", "OSO", "SSO", "Sud-SudOvest", "Sud-Sud-Ovest");//9
+        symbols = asList("WSW", "SWW", "OSO", "SSO", "Ovest-SudOvest", "Ovest-Sud-Ovest");//9
         symbolList.add(symbols);
         symbols = asList("SW", "WS", "SO", "OS", "Sud-Ovest");//10
         symbolList.add(symbols);
-        symbols = asList("SSW", "SWS", "OSO", "SOS", "SudOvest-Sud", "Sud-Ovest-Sud");//11
+        symbols = asList("SSW", "SWS", "OSO", "SOS", "Sud-SudOvest", "Sud-Sud-Ovest");//11
         symbolList.add(symbols);
         symbols = asList("S", "Sud");//12
         symbolList.add(symbols);
@@ -95,6 +97,16 @@ public class MeteoStationData {
         }
         LOGGER.severe("cannot decode wind direction " + symbol);
         return -1;
+    }
+
+    public String getSymbolFromAngle(double angle) {
+
+        if (angle < 0 || angle > 360) {
+            return "";
+        }
+
+        int n = (int) (angle / 22.5);
+        return symbolList.get(0).get(n);
     }
 
     public String toJson() {
@@ -128,6 +140,10 @@ public class MeteoStationData {
                 obj.put("source", source);
 
             obj.put("offline", offline);
+            if (maxTodaySpeed != null && maxTodaySpeedDatetime != null) {
+                obj.put("maxtodayspeed", maxTodaySpeed);
+                obj.put("maxtodayspeeddatetime", dateFormat.format(maxTodaySpeedDatetime));
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -329,6 +345,40 @@ public class MeteoStationData {
         List<MeteoStationData> iList = interpolation.getInterpolatedArray(list,startDate,endDate,maxpoint);
         return iList;
     }
+
+    public boolean getMaxSpeed(Long spotId, Date startDate, Date endDate) {
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            DateFormat df = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss");
+            String strStartDate = "'" + df.format(startDate) + "'";
+            String strEndDate = "'" + df.format(endDate) + "'";
+
+            String sql;
+            sql = "SELECT speed,datetime FROM wind WHERE spotid=" + spotId
+                    + " AND datetime BETWEEN " + strStartDate + " and " + strEndDate + " ORDER BY speed DESC limit 1;";
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                maxTodaySpeed = rs.getDouble("speed");
+                maxTodaySpeedDatetime = rs.getTimestamp("datetime");
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     public List<MeteoStationData> getLastFavorites(String personId) {
 
         List<MeteoStationData> list = new ArrayList<MeteoStationData>();
@@ -339,21 +389,12 @@ public class MeteoStationData {
             Statement stmt = conn.createStatement();
 
             String sql;
-            /*  SELECT * FROM
-                (SELECT max(id) as maxid,spotid
-                FROM wind GROUP BY spotid ORDER by id) as lastdata
-                INNER JOIN wind ON wind.id = lastdata.maxid
-                INNER JOIN spot ON lastdata.spotid = spot.id
-                INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '112171344340940317913';
-            */
             sql = "SELECT * FROM\n" +
                     "(SELECT max(id) as maxid,spotid\n" +
                     "FROM wind GROUP BY spotid ORDER by id) as lastdata\n" +
                     "INNER JOIN wind ON wind.id = lastdata.maxid\n" +
                     "INNER JOIN spot ON lastdata.spotid = spot.id\n" +
                     "INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '" + personId + "' ;";
-
-
 
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
@@ -371,6 +412,24 @@ public class MeteoStationData {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+        for (MeteoStationData md: list) {
+
+            Date date = Core.getDate();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.set(Calendar.MILLISECOND, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            Date startDate = calendar.getTime();
+            calendar.set(Calendar.MILLISECOND, 99);
+            calendar.set(Calendar.SECOND, 59);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.HOUR, 23);
+            Date endDate = calendar.getTime();
+
+             md.getMaxSpeed(md.spotID,startDate, endDate);
         }
         return list;
     }

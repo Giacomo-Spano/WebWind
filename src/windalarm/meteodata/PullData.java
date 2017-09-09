@@ -46,6 +46,9 @@ public abstract class PullData extends Spot {
                 Date startTime = new Date(md.datetime.getTime() - (minutes * AlarmModel.ONE_MINUTE_IN_MILLIS));
                 md.trend = Core.getTrend(id, startTime, md.datetime);
 
+                // normalizza il simbolo della direzione
+                md.direction = md.getSymbolFromAngle(md.directionangle);
+
                 // metti offline se ultima lettura più vecchia di 60 minuti
                 long difference = md.datetime.getTime() - md.sampledatetime.getTime();
                 if (difference / 1000 / 60 > 60)
