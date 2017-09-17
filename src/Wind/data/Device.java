@@ -11,8 +11,7 @@ public class Device {
     public int id;
     public String regId;
     public Date date;
-    public String personId;
-
+    //public String personId;
     public Device() {
 
     }

@@ -24,7 +24,7 @@ public class MeteoStationData {
     private static final Logger LOGGER = Logger.getLogger(MeteoStationData.class.getName());
 
     public long id;
-    public boolean offline;
+    //public boolean offline;
     public Double speed;
     public Double averagespeed = -1.0;
     public String direction;
@@ -45,6 +45,7 @@ public class MeteoStationData {
     private ArrayList<List<String>> symbolList = new ArrayList<List<String>>();
     private Double maxTodaySpeed = null;
     private Date maxTodaySpeedDatetime = null;
+    public boolean offline;
 
     public MeteoStationData() {
 
@@ -106,7 +107,10 @@ public class MeteoStationData {
         }
 
         int n = (int) (angle / 22.5);
-        return symbolList.get(0).get(n);
+        if (n < 0 || n >= symbolList.size())
+            return "err";
+
+        return symbolList.get(n).get(0);
     }
 
     public String toJson() {
@@ -139,7 +143,8 @@ public class MeteoStationData {
             if (source != null)
                 obj.put("source", source);
 
-            obj.put("offline", offline);
+            Spot spot = Core.getSpotFromID(spotID);
+            obj.put("offline", spot.getOffline());
             if (maxTodaySpeed != null && maxTodaySpeedDatetime != null) {
                 obj.put("maxtodayspeed", maxTodaySpeed);
                 obj.put("maxtodayspeeddatetime", dateFormat.format(maxTodaySpeedDatetime));
@@ -221,6 +226,31 @@ public class MeteoStationData {
         }
         return obj.toString();
     }
+
+    /*public void setOffline(boolean offline) {
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String str = "false";
+            if (offline)
+                str = "true";
+            String sql = "UPDATE spot SET offlinedate = '" + df.format(Core.getDate()) + "', offline=" + str + " WHERE id = " + spotID;
+
+            Statement stmt = conn.createStatement();
+            stmt.execute(sql);
+
+            stmt.close();
+            conn.close();
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }*/
 
     public static Double knotsToKMh(double knots) {
 
@@ -391,10 +421,10 @@ public class MeteoStationData {
             String sql;
             sql = "SELECT * FROM\n" +
                     "(SELECT max(id) as maxid,spotid\n" +
-                    "FROM wind GROUP BY spotid ORDER by id) as lastdata\n" +
+                    "FROM wind GROUP BY spotid) as lastdata\n" +
                     "INNER JOIN wind ON wind.id = lastdata.maxid\n" +
                     "INNER JOIN spot ON lastdata.spotid = spot.id\n" +
-                    "INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '" + personId + "' ;";
+                    "INNER JOIN favorites ON lastdata.spotid = favorites.spotid WHERE personid = '" + personId + "' ORDER by favorites.id;";
 
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {

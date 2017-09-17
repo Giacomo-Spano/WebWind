@@ -35,9 +35,14 @@ public abstract class PullData extends Spot {
 
     public void pull() {
 
+        MeteoStationData md;
         try {
-            MeteoStationData md = getMeteoData();
-            if (md != null) {
+            md = getMeteoData();
+
+
+            MeteoStationData lastMeteoData = Core.getLastMeteoData(getSpotId());
+            if (md != null && (lastMeteoData == null || lastMeteoData.sampledatetime.getTime() != md.datetime.getTime())) {
+
                 md.spotName = name;
                 md.spotID = id;
 
@@ -49,20 +54,29 @@ public abstract class PullData extends Spot {
                 // normalizza il simbolo della direzione
                 md.direction = md.getSymbolFromAngle(md.directionangle);
 
-                // metti offline se ultima lettura più vecchia di 60 minuti
+                // metti offline se ultima lettura più vecchia di 10 minuti
+                MeteoStationData lastData = Core.getLastMeteoData(id);
+                if (lastData != null) {
+                    long difference = md.sampledatetime.getTime() - lastData.sampledatetime.getTime();
+                    if (difference / 1000 / 60 > 10 * 60)
+                        setOffline(true);
+                }
+                // metti offline se ultimo campionamento più vecchio di 60 minuti
                 long difference = md.datetime.getTime() - md.sampledatetime.getTime();
                 if (difference / 1000 / 60 > 60)
-                    offline = true;
+                    setOffline(true);
                 else
-                    offline = false;
+                    setOffline(false);
+
 
                 if (Core.sendData(md, id)) {
-                    offline = false;
+                    setOffline(false);
                 } //  Non metto offline tru se senddata ritorna zero perchè potrebbe essere un dato duplicato.
             }
         } catch (Exception e) {
-            LOGGER.severe("cannot getFromName data for spot " + name + "(" + id + ")");
-            offline = true;
+            e.printStackTrace();
+            //offline = true;
+            //setOffline(true);
         }
 
         try {
@@ -84,7 +98,7 @@ public abstract class PullData extends Spot {
     }
 
     public String getHTMLPage(String url) {
-        return getHTMLPage(url,false);
+        return getHTMLPage(url, false);
     }
 
     public String getHTMLPage(String url, boolean withNewLine) {

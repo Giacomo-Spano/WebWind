@@ -13,7 +13,7 @@ public class Spot {
     protected String webcamUrl3;
     private String sourceUrl = "";
     protected String meteodataUrl = "";
-    protected Boolean offline = false;
+    protected Boolean offline = true;
 
     protected String openweathermapId;
     protected String windguruId;

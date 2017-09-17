@@ -16,9 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -196,10 +194,10 @@ public class Core {
         return devices.insert(device);
     }
 
-    public static int addUser(String personId, String personName, String personEmail, String authCode, String authcode, String name) {
+    public static int addUser(String personId, String personName, String personEmail, String photo) {
 
         Users users = new Users();
-        return users.insert(personId, personName, personEmail, authCode);
+        return users.insert(personId, personName, personEmail);
     }
 
     public static void removeDevice(String regId) {
@@ -684,6 +682,91 @@ public class Core {
 
     public void dbMaintenance() {
 
+    }
 
+    static public boolean validateTokenId(String token, User user) {
+
+        InputStreamReader responseInputStream;
+        try {
+            String strurl = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" + token;
+            URL jsonurl = new URL(strurl);
+            HttpURLConnection mConnection = (HttpURLConnection) jsonurl.openConnection();
+
+            mConnection.setDoOutput(false);
+            mConnection.setRequestProperty("Content-Type", "application/json");
+            mConnection.setRequestMethod("GET");
+            mConnection.setConnectTimeout(2000); //set timeout to 2 seconds
+            int res = mConnection.getResponseCode();
+            if (res == HttpURLConnection.HTTP_OK) {
+
+                responseInputStream = new InputStreamReader(
+                        mConnection.getInputStream());
+                BufferedReader rd = new BufferedReader(responseInputStream);
+                String line = "";
+
+                String strjson  = "";
+                while ((line = rd.readLine()) != null) {
+                    strjson += line;
+                }
+                responseInputStream.close();
+
+                JSONObject json = new JSONObject(strjson);
+                if (json !=null && json.has("aud") && json.has("sub")) {
+
+                    if (json.getString("aud").equals("546111443616-6k2ubm9q79k44oee8ihidnmjrvlptpuo.apps.googleusercontent.com")) {// app's client IDs
+                        if (user != null){
+                            if (json.has("name"))
+                                user.name = json.getString("name");
+                            if (json.has("email"))
+                                user.email = json.getString("email");
+                            if (json.has("picture"))
+                                user.photo = json.getString("picture");
+                            if (json.has("sub"))
+                                user.personid = json.getString("sub");
+                                                               /* {
+                                            // These six fields are included in all Google ID Tokens.
+                                            "iss": "https://accounts.google.com",
+                                    "sub": "110169484474386276334",
+                                    "azp": "1008719970978-hb24n2dstb40o45d4feuo2ukqmcc6381.apps.googleusercontent.com",
+                                    "aud": "1008719970978-hb24n2dstb40o45d4feuo2ukqmcc6381.apps.googleusercontent.com",
+                                    "iat": "1433978353",
+                                    "exp": "1433981953",
+
+                                    // These seven fields are only included when the user has granted the "profile" and
+                                    // "email" OAuth scopes to the application.
+                                    "email": "testuser@gmail.com",
+                                    "email_verified": "true",
+                                    "name" : "Test User",
+                                    "picture": "https://lh4.googleusercontent.com/-kYgzyAWpZzJ/ABCDEFGHI/AAAJKLMNOP/tIXL9Ir44LE/s99-c/photo.jpg",
+                                    "given_name": "Test",
+                                    "family_name": "User",
+                                    "locale": "en"
+                                    }*/
+                        }
+                        return true;
+                    }
+                }
+            } else {
+                return false;
+            }
+
+        } catch (MalformedURLException e) {
+            LOGGER.severe("error: MalformedURLException" + e.toString());
+            //e.printStackTrace();
+            return false;
+        } catch (NoRouteToHostException e) {
+            LOGGER.severe("error: NoRouteToHostException" + e.toString());
+            //e.printStackTrace();
+            return false;
+        } catch (SocketTimeoutException e) {
+            LOGGER.severe("error: SocketTimeoutException" + e.toString());
+            //e.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            LOGGER.severe("error: Exception" + e.toString());
+            //e.printStackTrace();
+            return false;
+        }
+        return false;
     }
 }

@@ -48,10 +48,47 @@ public class Favorites {
         return list;
     }
 
-    public int insert(String personid, long spotid) {
+    public long isFavorite(String personid, long spotid) {
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
+            Statement stmt = conn.createStatement();
+
+            String sql;
+            sql = "SELECT * FROM favorites WHERE personid='" + personid + "' AND spotid=" + spotid + ";";
+            ResultSet rs = stmt.executeQuery(sql);
+            long res;
+            if (rs.next()) {
+                res = rs.getLong("id");
+            } else {
+                res = -1;
+            }
+
+            rs.close();
+            stmt.close();
+            conn.close();
+            return res;
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+            return -1;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+
+    public long insert(String personid, long spotid) {
 
         LOGGER.info("insert: personid=" + personid + "spotid=" + spotid);
         int lastid;
+
+        long id = isFavorite(personid,spotid);
+        if (id > 0)
+            return id;
 
         try {
             // Register JDBC driver

@@ -30,14 +30,11 @@ public class AlarmServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        // to accept the json data
 
         String jsonData = request.getParameter("json");
-        //String regId = request.getParameter("regId");
         String deletekey = request.getParameter("delete");
         String ringkey = request.getParameter("ring");
         String snoozekey = request.getParameter("snooze");
-        //String strDeviceId = request.getParameter("deviceId");
         String strAlarmId = request.getParameter("alarmId");
         String test = request.getParameter("test");
 
@@ -47,48 +44,62 @@ public class AlarmServlet extends HttpServlet {
         else
             alarmid = 0;
 
-
         try {
             if (deletekey != null) {
+                String tokenid = request.getParameter("tokenid");
+                User user = new User();
+                if (!Core.validateTokenId(tokenid,user)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.setContentType("text/plain");
+                    return;
+                }
 
                 LOGGER.info("deleteAll alarm  id=" + alarmid);
                 WindDatastore.deleteAlarm(alarmid);
-
-            } else if (ringkey != null) {
+            } else if (ringkey != null) { //
                 AlarmLog al = new AlarmLog();
                 al.insert("ring enable", alarmid, -1, 0, 0);
                 LOGGER.info("update ring date alarmid " + alarmid);
-            } else if (snoozekey != null) {
-
+            } else if (snoozekey != null) { // snooze
                 int snoozeMinutes = Integer.valueOf(request.getParameter("minutes"));
                 AlarmLog al = new AlarmLog();
                 al.insert("snooze alarm", alarmid, -1, snoozeMinutes, 0);
                 LOGGER.info("snooze alarmid " + alarmid + ";snooze minutes=" + snoozeMinutes);
                 WindDatastore.updateAlarmSnoozeMinutes(alarmid, snoozeMinutes);
-            } else if (test != null && test.equals("true")) {
+            } else if (test != null && test.equals("true")) { // test alarm
+                String tokenid = request.getParameter("tokenid");
+                User user = new User();
+                if (!Core.validateTokenId(tokenid,user)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.setContentType("text/plain");
+                    return;
+                }
 
                 LOGGER.info("testing alarm");
                 Date localDate = Core.getDate();
                 double speed = 99.0;
                 double avspeed = 99.0;
                 int spotId = 0;
-
                 List<Alarm> list = WindDatastore.getAlarms();
                 Iterator<Alarm> iterator = list.iterator();
                 while (iterator.hasNext()) {
-
                     Alarm alarm = iterator.next();
                     if (alarm.id == alarmid) {
-
                         AlarmModel.sendAlarm(alarm.deviceId, alarm, speed, avspeed, localDate, spotId, 0);
                     }
                 }
-            } else {
+            } else { // save alarm
+                String tokenid = request.getParameter("tokenid");
+                User user = new User();
+                if (!Core.validateTokenId(tokenid,user)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.setContentType("text/plain");
+                    return;
+                }
 
                 JSONObject json = new JSONObject(jsonData);
                 Alarm alarm = new Alarm(json);
                 Core.windDatastore.saveAlarm(alarm);
-
                 response.setContentType("application/json");
                 PrintWriter out = response.getWriter();
                 out.println(jsonData);
@@ -104,6 +115,14 @@ public class AlarmServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        String tokenid = request.getParameter("tokenid");
+        User user = new User();
+        if (!Core.validateTokenId(tokenid,user)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("text/plain");
+            return;
+        }
 
         try {
 

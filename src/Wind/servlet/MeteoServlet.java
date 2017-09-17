@@ -1,10 +1,12 @@
 package Wind.servlet;
 
 import Wind.Core;
+import Wind.User;
 import Wind.data.Favorites;
 import Wind.data.Location;
 import Wind.data.Locations;
 import Wind.data.RequestLog;
+import org.json.JSONObject;
 import windalarm.meteodata.MeteoStationData;
 import windalarm.meteodata.PullData;
 import windalarm.meteodata.Spot;
@@ -15,10 +17,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
+import java.net.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -33,70 +33,79 @@ public class MeteoServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-
-
-        String userid = request.getParameter("userid");
+        String tokenid = request.getParameter("tokenid");
+        User user = new User();
+        if (!Core.validateTokenId(tokenid,user)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("text/plain");
+            return;
+        }
         String deletekey = request.getParameter("remove");
         String reorder = request.getParameter("reorder");
         String order = request.getParameter("spotlist");
 
-        LOGGER.info("doPost: postfavorite spotid="  + "userid=" + userid);
+        LOGGER.info("doPost: postfavorite spotid="  + "userid=" + user.personid);
 
-        if (deletekey != null && deletekey.equals("true")) {
+        if (deletekey != null && deletekey.equals("true")) { // elimina preferito
 
             String spotIdstr = request.getParameter("spotid");
             long spotid = Long.valueOf(spotIdstr);
             Favorites favorites = new Favorites();
-            favorites.delete(userid, spotid);
+            favorites.delete(user.personid, spotid);
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("text/plain");
 
-        } else if (reorder != null && reorder.equals("true") && order != null) {
+        } else if (reorder != null && reorder.equals("true") && order != null) { // riordina preferiti
 
             Favorites favorites = new Favorites();
-            List<Long> list = favorites.getFavorites(userid);
+            List<Long> list = favorites.getFavorites(user.personid);
             for(Long id : list) {
-                favorites.delete(userid, id);
+                favorites.delete(user.personid, id);
             }
-
             String[] neworder = order.split(",");
             for(String spot : neworder) {
-                favorites.insert(userid, Integer.valueOf(spot));
+                favorites.insert(user.personid, Integer.valueOf(spot));
             }
-
-
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("text/plain");
 
-        } else {
+        } else { // aggiungi preferito
             String spotIdstr = request.getParameter("spotid");
             long spotid = Long.valueOf(spotIdstr);
             Favorites favorites = new Favorites();
-            favorites.insert(userid, spotid);
+            favorites.insert(user.personid, spotid);
         }
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/plain");
     }
 
+
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        String tokenid = request.getParameter("tokenid");
+        User user = new User();
+        if (!Core.validateTokenId(tokenid,user)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("text/plain");
+            return;
+        }
 
         String lastdata = request.getParameter("lastdata");
         String favoriteslastdata = request.getParameter("favoriteslastdata");
         String spotlist = request.getParameter("requestspotlist");
-        String history = request.getParameter("history");
         String log = request.getParameter("log");
         String spot = request.getParameter("spot");
         String forecastlocations = request.getParameter("forecastlocations");
         String filter = request.getParameter("filter");
         String fullinfo = request.getParameter("fullinfo");
-        String userid = request.getParameter("userid");
         String webcamimage = request.getParameter("webcamimage");
         String windid = request.getParameter("lastwindid");
 
         if (webcamimage != null && webcamimage.equals("1")) { // webcamimage
 
             RequestLog req = new RequestLog();
-            req.insert("authcode", "webcamimage" + webcamimage, userid, "");
+            req.insert("authcode", "webcamimage" + webcamimage, user.personid, "");
 
             getWebcamImage(response,webcamimage);
             return;
@@ -108,43 +117,43 @@ public class MeteoServlet extends HttpServlet {
         if (spotlist != null && spotlist.equals("true")) {
 
             RequestLog req = new RequestLog();
-            req.insert("authcode", "spotlist", userid, "");
+            req.insert("authcode", "spotlist", user.personid, "");
 
             boolean fullInfoRequest = false;
             if (fullinfo != null && fullinfo.equals("true"))
                 fullInfoRequest = true;
 
-            String str = getSpotListJson(fullInfoRequest, userid);
+            String str = getSpotListJson(fullInfoRequest, user.personid);
             out.print(str);
 
         } else if (forecastlocations != null && forecastlocations.equals("openweathermap")) {
 
             RequestLog req = new RequestLog();
-            req.insert("authcode", "forecastspotlist", userid, "");
+            req.insert("authcode", "forecastspotlist", user.personid, "");
 
             if (filter == null) filter = "";
 
-            String str = getForecastSpotListJson(userid, forecastlocations, filter);
+            String str = getForecastSpotListJson(user.personid, forecastlocations, filter);
             out.print(str);
 
         } else if (lastdata != null && lastdata.equals("true")) { // Last meteo data
 
             RequestLog req = new RequestLog();
-            req.insert("authcode", "lastdata", userid, "");
+            req.insert("authcode", "lastdata", user.personid, "");
 
             String str = getLastData(spot);
             //response.setHeader("Length", "" + str.length());
             out.println(str);
 
-        } else if (favoriteslastdata != null && favoriteslastdata.equals("true") && userid != null) { // Last meteo data
+        } else if (favoriteslastdata != null && favoriteslastdata.equals("true") && user.personid != null) { // Last meteo data
 
             RequestLog req = new RequestLog();
-            req.insert("authcode", "lastdata", userid, "");
+            req.insert("authcode", "lastdata", user.personid, "");
 
             long lastWindId = 0l;
             if (windid != null)
                 lastWindId = Long.valueOf(windid);
-            String str = getFavoritesLastData(userid,lastWindId);
+            String str = getFavoritesLastData(user.personid,lastWindId);
             out.println(str);
 
         } else if (log != null && log.equals("true") && spot != null) { // Historical data

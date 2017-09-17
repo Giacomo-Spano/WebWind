@@ -68,14 +68,13 @@ public class WCV extends PullData {
                 e.printStackTrace();
             }
 
-            MeteoStationData lastMeteoData = Core.getLastMeteoData(getSpotId());
-
+            // se è identica alla precedente ritorna null
+            /*MeteoStationData lastMeteoData = Core.getLastMeteoData(getSpotId());
             if (lastMeteoData != null) {
-
                 String lastTime = timeFormat.format(lastMeteoData.datetime);
                 if (lastTime.equals(time))
                     return null;
-            }
+            }*/
         }
         return md;
     }

@@ -132,13 +132,6 @@ public class MarinaDiGrosseto extends PullData {
             }
         }
 
-
-        long difference = meteoStationData.datetime.getTime() - meteoStationData.sampledatetime.getTime();
-        if (difference / 1000 / 60 > 60)
-           offline = true;
-        else
-           offline = false;
-
         return meteoStationData;
     }
 }

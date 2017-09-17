@@ -19,6 +19,7 @@ public class Alarm {
 
     public long spotID;
     public int deviceId; // id di registrazione
+    public String personid;
     public Date startDate;
     public Date endDate;
     public double speed;
@@ -51,6 +52,10 @@ public class Alarm {
 
         if (jObject.has("startTime")) {
             deviceId = jObject.getInt("deviceId");
+        }
+
+        if (jObject.has("personid")) {
+            personid = jObject.getString("personid");
         }
 
         speed = jObject.getDouble("speed");
@@ -121,9 +126,6 @@ public class Alarm {
                 e.printStackTrace();
             }
         }
-
-        //lastRingDate = dateFormatter.parseLocalDate(jObject.getString("lastringdate"));
-
     }
 
     public String toJson() {
@@ -132,11 +134,11 @@ public class Alarm {
 
         try {
             obj.put("deviceId", deviceId);
+            obj.put("personid", personid);
             obj.put("speed", speed);
             obj.put("avspeed", avspeed);
 
             DateFormat tf = new SimpleDateFormat("HH:mm");
-
             DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 
             if (startDate != null)

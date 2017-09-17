@@ -139,17 +139,17 @@ public class Devices {
         // ritorna la lista di tutti i devices che sono associati ad utenti che abbiano
         // tra i favoriti lo spotId passato
 
-
+        String sql;
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
             Statement stmt = conn.createStatement();
 
-            String sql;
-            sql = "SELECT favorites.spotid, users.personid, devices.personid, devices.id, devices.regid, devices.name, devices.date " +
+
+            sql = "SELECT favorites.spotid, users.personid, devices.id, devices.regid, devices.name, devices.date " +
                     "FROM users " +
                     "INNER JOIN favorites ON users.personid = favorites.personid " +
-                    "INNER JOIN devices ON devices.personid = favorites.personid " +
+                    "INNER JOIN devices " + //" ON devices.personid = favorites.personid " +
                     "WHERE favorites.spotid = " + spotid + ";";
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -160,7 +160,7 @@ public class Devices {
                 device.regId = rs.getString("regid");
                 device.name = rs.getString("name");
                 device.date = rs.getDate("date");
-                device.personId = rs.getString("personid");
+                //device.personId = rs.getString("personid");
                 devices.add(device);
             }
             rs.close();
@@ -183,18 +183,13 @@ public class Devices {
 
         int lastid;
         try {
-            // Register JDBC driver
             Class.forName("com.mysql.jdbc.Driver");
-            // Open a connection
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
 
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String date = "NULL";
             date = "'" + df.format((device.date)) + "'";
-
-            String sql;
-
-            sql = "INSERT INTO devices (regid, date, name, lastupdate)" +
+            String sql = "INSERT INTO devices (regid, date, name, lastupdate)" +
                     " VALUES (" + "\"" + device.regId + "\"," + date + ",\"" + device.name + "\"," + date + ") " +
                     "ON DUPLICATE KEY UPDATE lastupdate=" + date + ", name=\"" + device.name + "\";";
 
@@ -248,6 +243,4 @@ public class Devices {
         }
         return res;
     }
-
-
 }

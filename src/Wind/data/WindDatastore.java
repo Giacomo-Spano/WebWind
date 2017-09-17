@@ -132,10 +132,11 @@ public class WindDatastore {
             else
                 strLastRingTime = "null";
 
-            String sql = "INSERT INTO alarms (id, deviceId, startdate,starttime,enddate,endtime,lastringdate,lastringtime,snoozeminutes,spotid,speed,avspeed,enabled,direction,mo,tu,we,th,fr,sa,su )" +
+            String sql = "INSERT INTO alarms (id, deviceId, personid, startdate,starttime,enddate,endtime,lastringdate,lastringtime,snoozeminutes,spotid,speed,avspeed,enabled,direction,mo,tu,we,th,fr,sa,su )" +
                     " VALUES ("
                     + alarm.id + ","
                     + alarm.deviceId + ","
+                    + "'" + alarm.personid + "'" + ","
                     + strStartDate + ","
                     + strStartTime + ","
                     + strEndDate + ","
@@ -159,6 +160,7 @@ public class WindDatastore {
                     + "ON DUPLICATE KEY UPDATE "
                     + "id=" + alarm.id + ","
                     + "deviceid=" + alarm.deviceId + ","
+                    + "personid=" + "'" + alarm.personid + "'" + ","
                     + "startdate=" + strStartDate + ","
                     + "starttime=" + strStartTime + ","
                     + "enddate=" + strEndDate + ","
@@ -199,28 +201,21 @@ public class WindDatastore {
             e.printStackTrace();
             return 0;
         }
-
-        //read(); // reload data
         return lastid;
     }
-
 
     public static long deleteAlarm(int id) {
 
         int deletedItems = 0;
-
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection conn = DriverManager.getConnection(Core.getDbUrl(), Core.getUser(), Core.getPassword());
-
             String sql;
             sql = "DELETE FROM alarms WHERE id=" + id + ";";
             Statement stmt = conn.createStatement();
             deletedItems = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
-
             stmt.close();
             conn.close();
-
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             return 0;
@@ -228,7 +223,6 @@ public class WindDatastore {
             e.printStackTrace();
             return 0;
         }
-
         return deletedItems;
     }
 
@@ -247,12 +241,10 @@ public class WindDatastore {
             }
             sql += ";";
             ResultSet rs = stmt.executeQuery(sql);
-
             while (rs.next()) {
-
                 Alarm alarm = new Alarm();
-
                 alarm.id = rs.getInt("id");
+                alarm.personid = rs.getString("personid");
                 alarm.startDate = rs.getDate("startdate");
                 alarm.endDate = rs.getDate("enddate");
                 alarm.startTime = rs.getTime("starttime");
@@ -271,7 +263,6 @@ public class WindDatastore {
                 alarm.su = rs.getBoolean("su");
                 alarm.lastRingTime = rs.getDate("lastringtime");
                 alarm.lastRingDate = rs.getDate("lastringdate");
-
                 registeredAlarms.add(alarm);
             }
             // Clean-up environment
@@ -282,14 +273,12 @@ public class WindDatastore {
         } catch (SQLException se) {
             //Handle errors for JDBC
             se.printStackTrace();
-
         } catch (Exception e) {
             //Handle errors for Class.forName
             e.printStackTrace();
         }
         return registeredAlarms;
     }
-
 
     private static Alarm getAlarmFromResultSet(ResultSet rs/*Entity entityAlarm*/) {
 
@@ -298,6 +287,7 @@ public class WindDatastore {
         try {
             alarm.id = rs.getInt("id");
             alarm.deviceId = rs.getInt("deviceId");
+            alarm.personid = rs.getString("personid");
             alarm.startDate = rs.getDate("startdate");
             alarm.endDate = rs.getDate("enddate");
             alarm.startTime = rs.getTime("starttime");
@@ -320,7 +310,6 @@ public class WindDatastore {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return alarm;
     }
 
@@ -342,7 +331,6 @@ public class WindDatastore {
             rs.close();
             stmt.close();
             conn.close();
-
         } catch (SQLException se) {
             //Handle errors for JDBC
             se.printStackTrace();
@@ -405,8 +393,6 @@ public class WindDatastore {
                 logger.info("ALARM ACTIVE: alarm.deviceId=" + alarm.deviceId +",alarm.speed=" + alarm.speed+",alarm.avspeed=" + alarm.avspeed+",alarm.direction=" + alarm.direction
                     +",alarm.id=" + alarm.id+",alarm.startTime=" + alarm.startTime.toString()+",alarm.endTime=" + alarm.endTime.toString()+",alarm.startDate=" + alarm.startDate.toString()
                     +",alarm.endDate=" + alarm.endDate.toString()+",alarm.spotId=" + alarm.spotID);
-
-                //registeredAlarms.add(alarm);
             }
             rs.close();
             stmt.close();
@@ -459,6 +445,4 @@ public class WindDatastore {
         }
         return ;
     }
-
-
 }

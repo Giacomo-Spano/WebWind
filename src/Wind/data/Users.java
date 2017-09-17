@@ -18,7 +18,7 @@ public class Users {
     public Users() {
     }
 
-    public int insert(String personId, String personName, String personEmail, String authCode) {
+    public int insert(String personId, String personName, String personEmail) {
 
         int lastid;
         try {
@@ -33,9 +33,9 @@ public class Users {
 
             String sql;
             sql = "INSERT INTO users (date, personid, personname, personemail, authcode)" +
-                    " VALUES (" + strdate + ",\"" + personId + "\",\"" + personName + "\",\"" + personEmail + "\",\"" + authCode  + "\")" +
+                    " VALUES (" + strdate + ",\"" + personId + "\",\"" + personName + "\",\"" + personEmail + "\",\"" + ""  + "\")" +
                     " ON DUPLICATE KEY UPDATE lastupdate=" + strdate + ",personName=\"" + personName + "\""
-                            + ",personemail=\"" + personEmail + "\",authcode=\"" + authCode + "\"" + ";";
+                            + ",personemail=\"" + personEmail + "\",authcode=\"" + "" + "\"" + ";";
 
             Statement stmt = conn.createStatement();
             Integer numero = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);

@@ -16,9 +16,11 @@
 package Wind.servlet;
 
 import Wind.Core;
+import Wind.User;
 import Wind.data.Device;
 import Wind.data.Devices;
 import Wind.notification.PushNotificationThread;
+import org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -64,19 +66,20 @@ public class RegisterServlet extends HttpServlet {
 
         if (registeruser != null && registeruser.equals("true")) {
 
-            String personId = getParameter(req, "personId");
-            String personName = getParameter(req, "personName");
-            String personEmail = getParameter(req, "personEmail");
-            String personPhoto = getParameter(req, "personPhoto");
-            String authCode = getParameter(req, "authCode");
-
-            int userid = Core.addUser(personId,personName,personEmail,authCode,personPhoto,authCode);
+            String tokenid = getParameter(req, "tokenid");
+            User user = new User();
+            if (!Core.validateTokenId(tokenid,user)) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.setContentType("text/plain");
+                return;
+            }
+            int userid = Core.addUser(user.personid,user.name,user.email,user.photo);
 
             resp.setContentType("application/json");
             PrintWriter out = null;
             try {
                 out = resp.getWriter();
-                out.println("{\"id\" : \"" + userid + "\", \"personid\" : \"" + personId + "\" }");
+                out.println("{\"id\" : \"" + userid + "\", \"personid\" : \"" + user.personid + "\" }");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -86,20 +89,11 @@ public class RegisterServlet extends HttpServlet {
 
         } else if (registerdevice != null && registerdevice.equals("true")) {
             String regId = getParameter(req, "regId");
-            /*String personId = getParameter(req, "personId");
-            String personName = getParameter(req, "personName");
-            String personEmail = getParameter(req, "personEmail");
-            String personPhoto = getParameter(req, "personPhoto");
-            String authCode = getParameter(req, "authCode");
-
-            int userid = Core.addUser(personId,personName,personEmail,authCode,personPhoto,authCode);*/
-
             Device device = new Device();
             device.regId = regId;
             device.id = 0;
-            device.name = /*personId + "-" + */getParameter(req, "devicename");
+            device.name = getParameter(req, "devicename");
             device.date = Core.getDate();
-            device.personId = "";//personId;
             int deviceId = Core.addDevice(device);
 
             resp.setContentType("application/json");
